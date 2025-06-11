@@ -198,3 +198,6 @@ cython_debug/
 
 # Data foldet
 src/jail-events/data
+
+# Any .ipynb noteook
+*.ipynb
