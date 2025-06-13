@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 def pdf_page_to_image(pdf_doc: fitz.Document, page_num: int = 0, dpi: int = 200) -> np.ndarray:
     """
     Render PDF page to a BGR OPENCV image (Numpy Arry)
-    Args: 
-        pdf_doc: Open Fitz.Document object
     """
     
     page = pdf_doc[page_num]
@@ -30,11 +28,46 @@ def pdf_page_to_image(pdf_doc: fitz.Document, page_num: int = 0, dpi: int = 200)
 
 
 # It need to be strengthed
-def deskew_image(image: np.ndarray):
-    pass
+def deskew_image(image: np.ndarray, limit: int = 45):
+    """
+    Detect and correct image skew: Hough line detection
+    """
+    
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    _, bw = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV +
+                          cv2.THRESH_OTSU)
+    edges = cv2.Canny(bw, 50, 150, apertureSize=3)
+    
+    # Lines 
+    lines = cv2.HoughLines(edges, 1, np.pi/ 180, threshold= 200)
+    if not lines: 
+        return image
+    
+    angles = []
+    for rho, theta in lines[:,0]:
+        angle = (theta * 180 / np.pi) - 90
+        if abs(angle) <= limit:
+            angles.append(angle)
+    
+    if not angles:
+        return image
+    
+    # 6) rotate by median angle
+    median_angle = np.median(angles)
+    (h, w) = image.shape[:2]
+    center = (w//2, h//2)
+    M = cv2.getRotationMatrix2D(center, median_angle, 1.0)
+    rotated = cv2.warpAffine(
+        image, M, (w, h),
+        flags=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_REPLICATE
+    )
+    return rotated
 
 
 # Resize after projection 
+
 
 # Crop
 
@@ -52,9 +85,10 @@ def main():
     file = data_folder / "FOIA - December 2024 UO Part 1P51.pdf"
     doc = fitz.open(file)
     image = pdf_page_to_image(doc)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     
     plt.figure(figsize=(12, 16))
-    plt.imshow(image)
+    plt.imshow(image_rgb)
 
 
 if __name__== "__main__":
