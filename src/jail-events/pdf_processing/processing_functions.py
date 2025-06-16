@@ -20,6 +20,13 @@ def get_roi(cv2_image, type_start_point, type_end_point):
 
     return roi
 
+def blur_edge_contours(roi):
+    blurred_image = cv2.GaussianBlur(roi, (5, 5), 0)
+    edges = cv2.Canny(blurred_image, 50, 150) #get contoured polygons
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    return contours
+
 def basic_text_line(roi):
     '''
     Takes simple text image and extracts text.
@@ -33,6 +40,7 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width): #note to ad
     '''
     Takes roi and contours, checks if contours are boxes then checks if boxes are filled.
     '''
+    text = "None"
     roi_height, roi_width = roi.shape[:2]
     for contour in contours:
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
@@ -51,7 +59,6 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width): #note to ad
                     fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
                     is_filled = fill_ratio > adjust_fill_ratio  # can adjust threashold
                     print(f"Checkbox at ({x},{y}) - Filled: {is_filled}, Fill Ratio: {fill_ratio:.2f}")
-
                     if is_filled:
                         text_offset_x = 10  # pixels to skip after box
                         text_width = adjust_width    # width of text region to extract
@@ -59,6 +66,7 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width): #note to ad
                         text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                         _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
                         text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
+    return text
 
 def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
     text = "No"

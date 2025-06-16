@@ -28,12 +28,11 @@ pil_image = doc[0]
 cv2_image = np.array(pil_image)
 
 cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
-blurred_image = cv2.GaussianBlur(cv2_image, (5, 5), 0)
-edges = cv2.Canny(blurred_image, 50, 150) #get contoured polygons
-contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 '''
 Assumes we are given the PDF with color and blur applied - should contours be applied first?
+
+Do contours need to be defined each time?
 '''
 
 def get_facility_type():
@@ -41,6 +40,7 @@ def get_facility_type():
     Retrieves first three letters of facility type, to be processed later
     """
     roi = processing_functions.get_roi(cv2_image, (880, 330), (1300, 480)) #what do we need to do again once we have the box?
+    contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=50)
 
     page_dict["Facility Type"] = text
@@ -93,6 +93,7 @@ def get_am_pm():
     For incidents not in military time, retrieves whether they occured in the AM or PM
     """
     roi = processing_functions.get_roi(cv2_image, (1400, 730), (1650, 800)) 
+    contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.5, adjust_width=40)
 
     page_dict["AM or PM"] = text
@@ -118,6 +119,7 @@ def get_occurence_dict(): #need to edit this down
     text = None
     roi = cv2_image[y1:y2, x1:x2]
     height, width = roi.shape[:2]
+    contours = processing_functions.blur_edge_contours(roi)
     for contour in contours:
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
         if len(approx) == 4 and cv2.isContourConvex(approx):
@@ -182,6 +184,7 @@ def get_injuries():
     """
 
     roi = processing_functions.get_roi(cv2_image, (300, 1380), (1600, 1450))
+    contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
 
     page_dict["Injuries?"] = text
@@ -192,6 +195,7 @@ def get_resulting_death():
     """
 
     roi = processing_functions.get_roi(cv2_image, (350, 1450), (1600, 1530)) 
+    contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.25, adjust_width=50)    
 
     page_dict["Resulting Death?"] = text
@@ -210,6 +214,7 @@ def get_suicide_watch():
     Retrieves whether the deceased was on suicide watch
     """
     roi = processing_functions.get_roi(cv2_image, (1000, 1700), (1300, 1780)) 
+    contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.5, adjust_width=40)
 
     page_dict["Deceased on Suicide Watch"] = text
@@ -228,6 +233,7 @@ def get_deceased_examined():
     Returns whether the deceased was examined by a doctor and if so, when
     """
     roi = processing_functions.get_roi(cv2_image, (640, 1820), (1600, 1880))
+    contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
 
     page_dict["Deceased Examined by Physician"] = text
@@ -237,6 +243,7 @@ def get_deceased_illness():
     Returns whether the deceased displayed signs of illness.
     """
     roi = processing_functions.get_roi(cv2_image, (640, 1820), (1600, 1880))
+    contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=800)
     if text != "No":
         new_roi = processing_functions.get_roi(cv2_image, (100,1940), (1600,2000))
