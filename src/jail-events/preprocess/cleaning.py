@@ -3,9 +3,12 @@ import cv2
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import Tuple
 
 # From pdf to image with PyMUPDF
-def pdf_page_to_image(pdf_doc: fitz.Document, page_num: int = 0, dpi: int = 200) -> np.ndarray:
+def pdf_page_to_image(pdf_doc: fitz.Document, 
+                      page_num: int = 0, dpi: int = 300) -> np.ndarray:
+    
     """
     Render PDF page to a BGR OPENCV image (Numpy Arry)
     """
@@ -26,6 +29,29 @@ def pdf_page_to_image(pdf_doc: fitz.Document, page_num: int = 0, dpi: int = 200)
         
     return img
 
+# Get rid off the header & footer
+def remove_header_footer(image: np.ndarray,
+                         header_frac: float = 0.15,
+                         footer_frac: int = 712) -> np.ndarray:
+    """
+    Crop out a fixed fraction of the top and bottom of the image,
+    to drop headers & footers that confuse auto-crop.
+    
+    Args:
+      image        – BGR or gray image
+      header_frac  – fraction of height to remove from top (0.15 = 15%)
+      footer_frac  – fraction of height to remove from bottom
+    Returns:
+      Cropped image without header/footer bands.
+    """
+    
+    h, w = image.shape[:2]
+    top_cut    = int(h * header_frac)
+    bottom_cut = int(h * (1 - footer_frac))
+    if top_cut >= bottom_cut:
+        print(f"W: Invalid crop coordinates (top={top_cut}, bottom={bottom_cut})")
+        return image
+    return image[top_cut:bottom_cut, :]
 
 # It need to be strengthed
 def deskew_image(image: np.ndarray, limit: int = 45):
@@ -41,7 +67,7 @@ def deskew_image(image: np.ndarray, limit: int = 45):
     
     # Lines 
     lines = cv2.HoughLines(edges, 1, np.pi/ 180, threshold= 200)
-    if not lines: 
+    if lines is None: 
         return image
     
     angles = []
@@ -53,44 +79,202 @@ def deskew_image(image: np.ndarray, limit: int = 45):
     if not angles:
         return image
     
-    # 6) rotate by median angle
     median_angle = np.median(angles)
     (h, w) = image.shape[:2]
     center = (w//2, h//2)
     M = cv2.getRotationMatrix2D(center, median_angle, 1.0)
-    rotated = cv2.warpAffine(
+    deskewed = cv2.warpAffine(
         image, M, (w, h),
         flags=cv2.INTER_LINEAR,
         borderMode=cv2.BORDER_REPLICATE
     )
-    return rotated
-
-
-# Resize after projection 
-
-
-# Crop
-
-
-# Projection of the pdfs 
-def project_pdf():
-    pass
-
-def main():
+    return deskewed   
     
+def auto_crop_margins(
+    image: np.ndarray,
+    threshold: int = 250, 
+    margin: int = 10) -> np.ndarray:
+    """
+    Auto-crop any white border on all sides by finding the 
+    darkest pixels in the image, then trimming off everything
+    outside [top–bottom] × [left–right] plus a small margin.
+    Works whether `image` is single-channel or BGR.
+    
+    Args: 
+        image: Input BGR image
+        threshold: Grayscale cutoff below which a pixel is 'black'
+        margin: Number of extra pixels to keep around detected content
+    Returns:
+        Cropped image with new top-left aligned to content.
+    """
+    
+    # get gray if needed
+    if image.ndim == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image
+
+    ys, xs = np.where(gray < threshold)
+    if ys.size == 0 or xs.size == 0:
+        return image  # nothing dark → no crop
+
+    top    = max(int(ys.min()) - margin,    0)
+    left   = max(int(xs.min()) - margin,    0)
+    bottom = min(int(ys.max()) + margin, image.shape[0])
+    right  = min(int(xs.max()) + margin, image.shape[1])
+
+    return image[top:bottom, left:right]
+
+# Resize after projection
+
+# Cropping and standarization:
+def extract_and_align_content(
+    image: np.ndarray,
+    threshold: int = 200,
+    margin: int = 30,
+    content_offset: Tuple[int,int] = (20, 20),
+    canvas_size: Tuple[int,int] = (1700, 2200),
+    bgcolor: Tuple[int,int,int] = (255, 255, 255)
+) -> np.ndarray:
+    """
+    Standarization:
+    1) Auto-crop to the darkest pixel box + margin (removes variable margins)
+    2) Scale content to fit in available canvas space
+    3) Place at fixed offset to ensure consistent positioning
+    
+    Args:
+        image: BGR input image
+        threshold: Grayscale cutoff for content detection (200 = very white backgrounds)
+        margin: Extra pixels around detected content
+        content_offset: (x,y) where top-left of content should be placed
+        canvas_size: (width, height) of final standardized image
+        bgcolor: Fill color for canvas background
+    Returns:
+        Fixed-size image with content aligned at consistent position
+    """
+    # 1: Auto-crop to content boundaries
+    cropped = auto_crop_margins(image)
+
+    # 2: Calculate available space on canvas
+    canvas_width, canvas_height = canvas_size
+    x_offset, y_offset = content_offset
+    
+    available_width = canvas_width - x_offset
+    available_height = canvas_height -y_offset
+    
+    crop_height, crop_width = cropped.shape[:2]
+
+    # 3: Scale content to fit available space
+    scale_x = available_width / crop_width
+    scale_y = available_height / crop_height
+    scale = min(scale_x, scale_y)
+    
+    new_width = int(crop_width * scale)
+    new_height = int(crop_height * scale)
+
+    if scale != 1.0:
+        cropped = cv2.resize(cropped, (new_width, new_height), 
+                                   interpolation=cv2.INTER_AREA)
+        print(f"Content scaled by {scale:.3f} to fit canvas")
+    else:
+        print("Content fits without scaling")
+
+    # Step 4: Create canvas and place content
+    canvas = np.full((canvas_height, canvas_width, 3), bgcolor, dtype=image.dtype)
+    
+    canvas[y_offset:y_offset+new_height, x_offset:x_offset+new_width] = cropped
+    
+    print(f"Content placed at ({x_offset}, {y_offset}) with size {new_width}x{new_height}")
+    return canvas
+
+
+def standardize_canvas(image: np.ndarray,
+                       target_size: tuple = (2550,3300),
+                       bg_color: tuple = (255,255,255),
+                       allow_upscale: bool = True) -> np.ndarray:
+    """
+    Resize the image to fit within `target_size` and then
+    pad with bg_color to exactly `target_size`.
+    """
+    W, H = target_size
+    h, w = image.shape[:2]
+
+    # Choose scale factor
+    if allow_upscale:
+        scale = min(W/w, H/h)
+    else:
+        scale = min(W/w, H/h, 1.0)
+
+    new_w, new_h = int(w * scale), int(h * scale)
+    resized = cv2.resize(image, (new_w, new_h),
+                         interpolation=cv2.INTER_CUBIC if scale>1 else cv2.INTER_AREA)
+    # create blank canvas
+    canvas = np.full((H, W, 3),
+                     bg_color,
+                     dtype=np.uint8)
+    x_off = (W - new_w)//2
+    y_off = (H - new_h)//2
+    canvas[y_off:y_off+new_h,
+           x_off:x_off+new_w] = resized
+    return canvas
+
+def process_pdf(aligned: bool = True):
     # PDFs folter
-    data_folder = Path(__file__).parent.parent / "data/Jail Reports/samples"
+    data_folder = Path(__file__).parent.parent / "data/jails-data/samples"
     
     # File 
-    file = data_folder / "FOIA - December 2024 UO Part 1P51.pdf"
+    file = data_folder / "FOIA - December 2024 UO Part 1P68.pdf"
     doc = fitz.open(file)
-    image = pdf_page_to_image(doc)
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image_original = pdf_page_to_image(doc)
+    print(f"Original size: {image_original.shape}")
+    deskewed = deskew_image(image_original)
+    print(f"Deskewed size: {deskewed.shape}")
     
-    plt.figure(figsize=(12, 16))
-    plt.imshow(image_rgb)
+    # Specs of output
+    canvas_size = (2550, 3300)  # Based on 21.59×27.94 cm at 300 DPI
+    content_start = (10,10)
+    
+    # remove header/footer
+    cleaned = remove_header_footer(deskewed,
+                                   header_frac=0.08,
+                                   footer_frac=0.12)
+    print(f"After header/footer removal: {cleaned.shape}")
+    
 
+    # Aligned to position if aligned is trye or Centered otherwise
+    if aligned:
+        # standard with start on specific location
+        out_img = extract_and_align_content(
+        cleaned,
+        threshold=250,        # Adjust based on the PDF background color
+        margin=15,            # Space around detected content
+        content_offset= content_start,  # Where content will be placed
+        canvas_size=canvas_size
+        )
+    else:
+        #Centered
+        cropped = auto_crop_margins(cleaned, threshold=200, margin=10)
+        out_img = standardize_canvas(cropped, target_size=canvas_size)
+
+    # Display comparison
+    plt.figure(figsize=(20, 10))
+    
+    plt.imshow(cv2.cvtColor(image_original, cv2.COLOR_BGR2RGB))
+    plt.title("1. Original PDF")
+
+    plt.figure(figsize=(20, 10))
+    plt.imshow(cv2.cvtColor(out_img, cv2.COLOR_BGR2RGB))
+    plt.title("6. Standard (centered)")
+    #plt.tight_layout()
+    plt.show()
+    
+    out_dir = Path(__file__).parent.parent / "data/jails-data/processed"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    
+    out_path = out_dir / "out_img.png"
+    cv2.imwrite(str(out_path), out_img)
+    print("success")
 
 if __name__== "__main__":
-    main()
+    process_pdf()
     
