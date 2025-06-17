@@ -25,7 +25,7 @@ page_dict = {"Deceased Cause, Date, and Time": "N/A",
 
 #initializing dictionary without conditional values at first
 
-pdf_path = Path(__file__).resolve().parents[3] / "testing" / "normal_test.pdf"
+pdf_path = Path(__file__).resolve().parents[3] / "testing" / "normal_test_more_text.pdf"
 
 doc = pdf2image.convert_from_path(pdf_path, dpi=300) #creates list object 
 
@@ -289,7 +289,7 @@ def main():
         get_reported()
         get_deceased_examined()
         get_deceased_illness()
-    print (page_dict["Table Contents"])
+    print (page_dict)
 
 if __name__ == "__main__":
     main()
