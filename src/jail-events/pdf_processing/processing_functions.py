@@ -50,7 +50,6 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width): #note to ad
             area = cv2.contourArea(approx) 
             if 0.85 <= aspect_ratio <= 1.15 and 500 <= area <= 5000: #check if its a box
                 if x >= 0 and y >= 0 and x + w <= roi_width and y + h <= roi_height:
-                    print ("here", x, y)
                     cropped_rect = roi[y : (y + h), x : (x + w)]
                     gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
                     _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
