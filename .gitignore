@@ -200,4 +200,4 @@ cython_debug/
 src/jail-events/data
 
 # Any .ipynb noteook
-*.ipynb
+#*.ipynb
