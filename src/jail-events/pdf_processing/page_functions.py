@@ -11,7 +11,7 @@ import processing_functions
 
 """
 TO DO
-Bad parse on the table
+link sip 
 """
 
 pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
@@ -21,11 +21,9 @@ page_dict = {"Deceased Cause, Date, and Time": "N/A",
              "Deceased Reporter": "N/A",
              "Deceased Examined by Physician": "N/A",
              "Deceased Signs of Illness": "N/A"
-} 
+} #initializing dictionary without conditional values at first
 
-#initializing dictionary without conditional values at first
-
-pdf_path = Path(__file__).resolve().parents[3] / "testing" / "normal_test_more_text.pdf"
+pdf_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "samples" / "FOIA - December 2024 UO Part 1P58.pdf"
 
 doc = pdf2image.convert_from_path(pdf_path, dpi=300) #creates list object 
 
@@ -271,7 +269,8 @@ def get_deceased_illness():
 
     page_dict["Deceased Signs of Illness"] = text
 
-def main():
+def main():#need to add image_path 
+    #cv2_image = Image.open(image_path) to be done at end - may need to add this as input to other functions?
     get_facility_type()
     get_facility_name()
     get_facility_phone()
