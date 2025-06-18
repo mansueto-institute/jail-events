@@ -6,14 +6,13 @@ import matplotlib.pyplot as plt
 from typing import Tuple
 
 # From pdf to image with PyMUPDF
-def pdf_page_to_image(pdf_doc: fitz.Document, 
-                      page_num: int = 0, dpi: int = 300) -> np.ndarray:
+def pdf_page_to_image(page: fitz.Page, dpi: int = 300) -> np.ndarray:
     
     """
     Render PDF page to a BGR OPENCV image (Numpy Arry)
     """
     
-    page = pdf_doc[page_num]
+    #page = pdf_doc[page_num]
     
     # Render page to pix map
     mat = fitz.Matrix(dpi/72, dpi/72)
@@ -218,63 +217,43 @@ def standardize_canvas(image: np.ndarray,
            x_off:x_off+new_w] = resized
     return canvas
 
-def process_pdf(aligned: bool = True):
-    # PDFs folter
-    data_folder = Path(__file__).parent.parent / "data/jails-data/samples"
-    
-    # File 
-    file = data_folder / "FOIA - December 2024 UO Part 1P68.pdf"
-    doc = fitz.open(file)
-    image_original = pdf_page_to_image(doc)
-    print(f"Original size: {image_original.shape}")
-    deskewed = deskew_image(image_original)
-    print(f"Deskewed size: {deskewed.shape}")
+def pre_process_page(page: fitz.Page,
+                     dpi: int = 300, aligned: bool = True):
+    """
+    Full clean & standardize pipeline for one PDF page
+    Out: a BGR OpenCV image to be saved
+    """
     
     # Specs of output
     canvas_size = (2550, 3300)  # Based on 21.59×27.94 cm at 300 DPI
-    content_start = (10,10)
+    content_start = (20,50)
+    header_frac = 0.08
+    footer_frac = 0.15
     
-    # remove header/footer
-    cleaned = remove_header_footer(deskewed,
-                                   header_frac=0.08,
-                                   footer_frac=0.12)
-    print(f"After header/footer removal: {cleaned.shape}")
+    # 1) page to array
+    img = pdf_page_to_image(page, dpi)
+    print(f"Original size: {img.shape}")
+    # 2) deskew
+    img = deskew_image(img)
+    print(f"Deskewed size: {img.shape}")
+    # 3) remove header/footer
+    img = remove_header_footer(img,header_frac,footer_frac)
+    print(f"After header/footer removal: {img.shape}")
     
 
     # Aligned to position if aligned is trye or Centered otherwise
     if aligned:
         # standard with start on specific location
         out_img = extract_and_align_content(
-        cleaned,
+        img,
         threshold=250,        # Adjust based on the PDF background color
-        margin=15,            # Space around detected content
+        margin=10,            # Space around detected content
         content_offset= content_start,  # Where content will be placed
         canvas_size=canvas_size
         )
     else:
         #Centered
-        cropped = auto_crop_margins(cleaned, threshold=200, margin=10)
-        out_img = standardize_canvas(cropped, target_size=canvas_size)
-
-    # Display comparison
-    plt.figure(figsize=(20, 10))
+        img = auto_crop_margins(img, threshold=200, margin=10)
+        out_img = standardize_canvas(img, target_size=canvas_size)
     
-    plt.imshow(cv2.cvtColor(image_original, cv2.COLOR_BGR2RGB))
-    plt.title("1. Original PDF")
-
-    plt.figure(figsize=(20, 10))
-    plt.imshow(cv2.cvtColor(out_img, cv2.COLOR_BGR2RGB))
-    plt.title("6. Standard (centered)")
-    #plt.tight_layout()
-    plt.show()
-    
-    out_dir = Path(__file__).parent.parent / "data/jails-data/processed"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    
-    out_path = out_dir / "out_img.png"
-    cv2.imwrite(str(out_path), out_img)
-    print("success")
-
-if __name__== "__main__":
-    process_pdf()
-    
+    return out_img
