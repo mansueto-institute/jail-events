@@ -4,6 +4,8 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Tuple
+from PIL import Image
+import pytesseract
 
 # From pdf to image with PyMUPDF
 def pdf_page_to_image(page: fitz.Page, dpi: int = 300) -> np.ndarray:
@@ -28,7 +30,81 @@ def pdf_page_to_image(page: fitz.Page, dpi: int = 300) -> np.ndarray:
         
     return img
 
+def crop_scanner_border(image: np.ndarray, border_threshold: int = 240) -> np.ndarray:
+    """
+    Remove grey scanner border and crop to actual document content.
+    Assumes document content is brighter than the border.
+    """
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Find areas BRIGHTER than border (the actual document)
+    _, clean_mask = cv2.threshold(gray, border_threshold, 255, cv2.THRESH_BINARY)
+    
+    # Find the largest white rectangle (the document area)
+    contours, _ = cv2.findContours(clean_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if contours:
+        # Get the largest contour (should be the document)
+        largest_contour = max(contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(largest_contour)
+        
+        # Crop to the document area with small margin
+        margin = 10
+        x_start = max(0, x - margin)
+        y_start = max(0, y - margin)  
+        x_end = min(image.shape[1], x + w + margin)
+        y_end = min(image.shape[0], y + h + margin)
+        
+        return image[y_start:y_end, x_start:x_end]
+    
+    return image  # If no clean area found, return original
+
 # Get rid off the header & footer
+def crop_above_keyword(image: np.ndarray,
+                       keyword: str,
+                       search_region_fr: float = 0.15,
+                       margin= 10, 
+                       oem: int =3,
+                       psm: int=3, 
+                       lang: str = "eng") -> np.ndarray:
+    """
+    OCR only the TOP portion of image, find keyword, crop everything above it.
+    Much faster than full-page OCR.
+    Args:
+        image: BGR input image
+        keyword: Text to search for (e.g., "JAIL BOOKING REPORT")
+        search_region_fr: Fraction of image height to search (0.12 = top 12%)
+        margin: Pixels to keep above found keyword
+    """
+
+    h, w = image.shape[:2]
+    search_height = int(h* search_region_fr)
+    
+    # Crop top of image
+    top_region = image[:search_height]
+    
+    pil = Image.fromarray(cv2.cvtColor(top_region, cv2.COLOR_BGR2RGB))
+    config = f"--oem {oem} --psm {psm} -l {lang}"
+    data = pytesseract.image_to_data(pil, config=config, output_type=pytesseract.Output.DICT)
+    
+    tops = []
+    list_keywords = keyword.split()
+    for i, text in enumerate(data["text"]):
+        if text and any(kw.lower() in text.lower() for kw in list_keywords):
+            tops.append(data["top"][i])
+    if not tops:
+        # keyword not found: no crop
+        return image
+    
+    top_pixel_in_region = min(tops)
+    actual_crop_line = max(0, top_pixel_in_region - margin)
+    print(f"Found '{keyword}' at y={top_pixel_in_region} in search region")
+    print(f"Cropping above y={actual_crop_line} in full image")
+
+    return image[actual_crop_line:]
+
+
+# Function to remove it
 def remove_header_footer(image: np.ndarray,
                          header_frac: float = 0.15,
                          footer_frac: int = 712) -> np.ndarray:
@@ -218,7 +294,8 @@ def standardize_canvas(image: np.ndarray,
     return canvas
 
 def pre_process_page(page: fitz.Page,
-                     dpi: int = 300, aligned: bool = True):
+                     dpi: int = 300, aligned: bool = True,
+                    title_keyword: str = "ILLINOIS DEPARTMENT"):
     """
     Full clean & standardize pipeline for one PDF page
     Out: a BGR OpenCV image to be saved
@@ -227,8 +304,8 @@ def pre_process_page(page: fitz.Page,
     # Specs of output
     canvas_size = (2550, 3300)  # Based on 21.59×27.94 cm at 300 DPI
     content_start = (20,50)
-    header_frac = 0.08
-    footer_frac = 0.15
+    header_frac = 0
+    footer_frac = 0
     
     # 1) page to array
     img = pdf_page_to_image(page, dpi)
@@ -236,24 +313,33 @@ def pre_process_page(page: fitz.Page,
     # 2) deskew
     img = deskew_image(img)
     print(f"Deskewed size: {img.shape}")
-    # 3) remove header/footer
-    img = remove_header_footer(img,header_frac,footer_frac)
-    print(f"After header/footer removal: {img.shape}")
-    
+    # NEW:
+    img = crop_scanner_border(img, border_threshold=140)
+    # 3) smart removal of header
+    img = crop_above_keyword(
+        img, 
+        keyword=title_keyword,
+        search_region_fr=0.15,  # Search top 15%
+        margin=15
+    )
+    # 4) run again deskew if needed
+    #img = deskew_image(img)
+    # 4) remove footer
+    img = remove_header_footer(img, header_frac=header_frac, footer_frac=footer_frac)
 
     # Aligned to position if aligned is trye or Centered otherwise
     if aligned:
         # standard with start on specific location
         out_img = extract_and_align_content(
         img,
-        threshold=250,        # Adjust based on the PDF background color
+        threshold=240,        # Adjust based on the PDF background color
         margin=10,            # Space around detected content
         content_offset= content_start,  # Where content will be placed
         canvas_size=canvas_size
         )
     else:
         #Centered
-        img = auto_crop_margins(img, threshold=200, margin=10)
+        img = auto_crop_margins(img, threshold=240, margin=10)
         out_img = standardize_canvas(img, target_size=canvas_size)
     
     return out_img
