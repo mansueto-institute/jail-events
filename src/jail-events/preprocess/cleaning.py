@@ -266,7 +266,8 @@ def extract_and_align_content(
 def standardize_canvas(image: np.ndarray,
                        target_size: tuple = (2550,3300),
                        bg_color: tuple = (255,255,255),
-                       allow_upscale: bool = True) -> np.ndarray:
+                       allow_upscale: bool = True,
+                       preserve_aspect: bool = True) -> np.ndarray:
     """
     Resize the image to fit within `target_size` and then
     pad with bg_color to exactly `target_size`.
@@ -274,11 +275,16 @@ def standardize_canvas(image: np.ndarray,
     W, H = target_size
     h, w = image.shape[:2]
 
-    # Choose scale factor
-    if allow_upscale:
-        scale = min(W/w, H/h)
-    else:
-        scale = min(W/w, H/h, 1.0)
+    if preserve_aspect:
+        scale_x = W / w
+        scale_y = H / h
+        scale = min(scale_x, scale_y)
+        if not allow_upscale:
+            scale = min(scale, 1.0)
+    else: 
+        #This disrtos to fill
+        scale_x = W / w
+        scale_y = H / h
 
     new_w, new_h = int(w * scale), int(h * scale)
     resized = cv2.resize(image, (new_w, new_h),
@@ -287,8 +293,8 @@ def standardize_canvas(image: np.ndarray,
     canvas = np.full((H, W, 3),
                      bg_color,
                      dtype=np.uint8)
-    x_off = (W - new_w)//2
-    y_off = (H - new_h)//2
+    x_off = (W - new_w) // 2
+    y_off = (H - new_h) // 2
     canvas[y_off:y_off+new_h,
            x_off:x_off+new_w] = resized
     return canvas
