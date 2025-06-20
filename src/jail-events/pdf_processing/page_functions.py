@@ -11,7 +11,7 @@ import processing_functions
 
 """
 TO DO
-link sip 
+update dimensions with final pdfs
 """
 
 pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
@@ -23,12 +23,9 @@ page_dict = {"Deceased Cause, Date, and Time": "N/A",
              "Deceased Signs of Illness": "N/A"
 } #initializing dictionary without conditional values at first
 
-pdf_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "samples" / "FOIA - December 2024 UO Part 1P58.pdf"
+image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "normal_test_more_text_p1.png"
 
-doc = pdf2image.convert_from_path(pdf_path, dpi=300) #creates list object 
-
-pil_image = doc[0]
-cv2_image = np.array(pil_image)
+cv2_image = cv2.imread(str(image_path))
 
 cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
 
@@ -36,8 +33,8 @@ def get_facility_type():
     """
     Retrieves first three letters of facility type, to be processed later
     """
-    #x1 = .5176, y1= .15, x2 = .7647, y2 = .2181
-    roi = processing_functions.get_roi(cv2_image, (1320, 395), (1950, 720)) #what do we need to do again once we have the box?
+    #x1 = .5372, y1= .1151, x2 = .7647, y2 = .1818
+    roi = processing_functions.get_roi(cv2_image, (1370, 380), (1950, 600)) #what do we need to do again once we have the box?
     contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=80)
 
@@ -48,7 +45,7 @@ def get_facility_name():
     Retrieves full name of the facility
     """
     #x1 = .1588, y1= .25, x2 = .6471, y2 = .2955
-    roi = processing_functions.get_roi(cv2_image, (405, 825), (1650, 975))
+    roi = processing_functions.get_roi(cv2_image, (310, 700), (1700, 820))
     text = processing_functions.basic_text_line(roi)
 
     page_dict["Facility Name"] = text
@@ -58,7 +55,7 @@ def get_facility_phone():
     Retrieves phone number to contact the facility
     """
     #x1 = .7529, y1= .25, x2 = .8823, y2 = .2955
-    roi = processing_functions.get_roi(cv2_image, (1920, 825), (2250, 975))
+    roi = processing_functions.get_roi(cv2_image, (1950, 700), (2450, 820))
     text = processing_functions.basic_text_line(roi)
 
     page_dict["Phone Number"] = text
@@ -68,7 +65,7 @@ def get_address():
     Retrieves street address for facility.
     """
     #x1 = .1235, y1= .3, x2 = .8823, y2 = .3181
-    roi = processing_functions.get_roi(cv2_image, (315, 990), (2250, 1050))
+    roi = processing_functions.get_roi(cv2_image, (210, 825), (2400, 950))
     text = processing_functions.basic_text_line(roi)
 
     page_dict["Address"] = text
@@ -76,7 +73,7 @@ def get_address():
 def get_date():
     """Retrieves date of incident. """
     #x1 = .2, y1= .3318, x2 = .4941, y2 = .3636
-    roi = processing_functions.get_roi(cv2_image, (510, 1095), (1260, 1200))
+    roi = processing_functions.get_roi(cv2_image, (430, 1000), (1250, 1100))
     text = processing_functions.basic_text_line(roi)
 
     page_dict["Date"] = text
@@ -86,7 +83,7 @@ def get_time():
     Retrieves the raw tine of the incident. May be in either military or standard time.
     """
     #x1 = .2, y1= .3318, x2 = .4941, y2 = .3636
-    roi = processing_functions.get_roi(cv2_image, (1650, 1095), (2100, 1200))
+    roi = processing_functions.get_roi(cv2_image, (1650, 1000), (2160, 1100))
     text = processing_functions.basic_text_line(roi)
 
     page_dict["Time of Day"] = text
@@ -96,7 +93,7 @@ def get_am_pm():
     For incidents not in military time, retrieves whether they occured in the AM or PM
     """
     #x1 = .8235, y1= .3318, x2 = .9706, y2 = .3636
-    roi = processing_functions.get_roi(cv2_image, (2100, 1095), (2475, 1200)) 
+    roi = processing_functions.get_roi(cv2_image, (2170, 1000), (2500, 1100)) 
     contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.3, adjust_width=100)
 
@@ -108,8 +105,8 @@ def get_occurence_dict(): #need to edit this down
     """
     #x1 = .2, y1= .375, x2 = .9706, y2 = .4545
 
-    type_start_point = (510, 1238)
-    type_end_point = (2475, 1500)
+    type_start_point = (430, 1150)
+    type_end_point = (2475, 1450)
 
     x1 = min(type_start_point[0], type_end_point[0])
     x2 = max(type_start_point[0], type_end_point[0])
@@ -164,7 +161,7 @@ def get_table():
     """Scans the prisoner table and returns of list of all elements. Needs to be cleaned by prisoner for the final data."""
     #x1 = .0294, y1= .4545, x2 = .9412, y2 = .6363
 
-    roi = processing_functions.get_roi(cv2_image, (75, 1500), (2400, 2100)) 
+    roi = processing_functions.get_roi(cv2_image, (50, 1500), (2450, 2100)) 
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
     text = pytesseract.image_to_string(thresh, config='--psm 12')
@@ -192,7 +189,7 @@ def get_injuries():
     """
     #x1 = .1765, y1= .6272, x2 = .9412, y2 = .6591
 
-    roi = processing_functions.get_roi(cv2_image, (450, 2070), (2400, 2175))
+    roi = processing_functions.get_roi(cv2_image, (350, 2070), (2400, 2175))
     contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1800)
 
@@ -204,7 +201,7 @@ def get_resulting_death():
     """
     #x1 = .2059, y1= .6591, x2 = .9412, y2 = .6954
 
-    roi = processing_functions.get_roi(cv2_image, (525, 2175), (2400, 2295)) 
+    roi = processing_functions.get_roi(cv2_image, (450, 2175), (2400, 2295)) 
     contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.25, adjust_width=75)    
 
@@ -216,7 +213,7 @@ def get_deceased_cause_date_time():
     """
     #x1 = .8235, y1= .3318, x2 = .9706, y2 = .3636
 
-    roi = processing_functions.get_roi(cv2_image, (150, 2265), (2400, 2550))
+    roi = processing_functions.get_roi(cv2_image, (550, 2265), (2400, 2550))
     text = processing_functions.basic_text_line(roi)
 
     page_dict["Deceased Cause, Date, and Time"] = text
@@ -238,7 +235,7 @@ def get_reported():
     Retrieves the name of the individual who reported the deceased.
     """
     #x1 = .0588, y1= .7955, x2 = .7272, y2 = .8272
-    roi = processing_functions.get_roi(cv2_image, (150, 2625), (2400, 2730))
+    roi = processing_functions.get_roi(cv2_image, (330, 2640), (2400, 2780))
     text = processing_functions.basic_text_line(roi)
 
     page_dict["Deceased Reporter"] = text
@@ -248,7 +245,7 @@ def get_deceased_examined():
     Returns whether the deceased was examined by a doctor and if so, when
     """
     #x1 = .3765, y1= .8272, x2 = .9412, y2 = .8545
-    roi = processing_functions.get_roi(cv2_image, (960, 2730), (2400, 2820))
+    roi = processing_functions.get_roi(cv2_image, (900, 2750), (2400, 2875))
     contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1800)
 
@@ -259,11 +256,11 @@ def get_deceased_illness():
     Returns whether the deceased displayed signs of illness.
     """
     #x1 = .3765, y1= .8273, x2 = .9412, y2 = .8545
-    roi = processing_functions.get_roi(cv2_image, (960, 2730), (2400, 2820))
+    roi = processing_functions.get_roi(cv2_image, (900, 2860), (2500, 2960))
     contours = processing_functions.blur_edge_contours(roi)
     text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
     if text != "No":
-        new_roi = processing_functions.get_roi(cv2_image, (150,2910), (2400,3000))
+        new_roi = processing_functions.get_roi(cv2_image, (150,2960), (2500,3060))
         follow_up_text = processing_functions.basic_text_line(new_roi)
         text += follow_up_text
 
