@@ -60,6 +60,30 @@ def crop_scanner_border(image: np.ndarray, border_threshold: int = 240) -> np.nd
     return image  # If no clean area found, return original
 
 # Get rid off the header & footer
+def find_title_y_coordinate(
+    image: np.ndarray, 
+    keyword: str, 
+    margin = 10,
+    search_region_frac: float = 0.15) -> int:
+    """ Find Y coordiante of ttle keyword"""
+    h, w = image.shape[:2]
+    search_height = int(h * search_region_frac)
+    #Crop image
+    top_region = image[:search_height]
+    
+    pil = Image.fromarray(cv2.cvtColor(top_region, cv2.COLOR_BGR2RGB))
+    config = f"--oem 3 --psm 3 -l eng"
+    data = pytesseract.image_to_data(pil, config=config, output_type=pytesseract.Output.DICT)
+    
+    tops = []
+    list_keywords = keyword.split()
+    for i, text in enumerate(data["text"]):
+        if text and any(kw.lower() in text.lower() for kw in list_keywords):
+            tops.append(data["top"][i])
+    if tops:
+        return min(tops) - margin
+    return None
+
 def crop_above_keyword(image: np.ndarray,
                        keyword: str,
                        search_region_fr: float = 0.15,
@@ -76,33 +100,70 @@ def crop_above_keyword(image: np.ndarray,
         search_region_fr: Fraction of image height to search (0.12 = top 12%)
         margin: Pixels to keep above found keyword
     """
-
-    h, w = image.shape[:2]
-    search_height = int(h* search_region_fr)
     
-    # Crop top of image
-    top_region = image[:search_height]
-    
-    pil = Image.fromarray(cv2.cvtColor(top_region, cv2.COLOR_BGR2RGB))
-    config = f"--oem {oem} --psm {psm} -l {lang}"
-    data = pytesseract.image_to_data(pil, config=config, output_type=pytesseract.Output.DICT)
-    
-    tops = []
-    list_keywords = keyword.split()
-    for i, text in enumerate(data["text"]):
-        if text and any(kw.lower() in text.lower() for kw in list_keywords):
-            tops.append(data["top"][i])
-    if not tops:
-        # keyword not found: no crop
-        return image
-    
-    top_pixel_in_region = min(tops)
+    top_pixel_in_region = find_title_y_coordinate(image, keyword, margin,search_region_fr)
     actual_crop_line = max(0, top_pixel_in_region - margin)
     print(f"Found '{keyword}' at y={top_pixel_in_region} in search region")
     print(f"Cropping above y={actual_crop_line} in full image")
 
     return image[actual_crop_line:]
 
+def crop_from_keyword_to_content(image: np.ndarray,
+    title_keyword: str = "REPORT EXTRAORDINARY UNUSUAL",
+    vertical_content_frac: float = 0.9,
+    horizontal_margin: int = 30,
+    scan_height: int = 120)-> np.ndarray:
+    """
+    Cropping content based on title detection:
+    """
+    h, w = image.shape[:2]
+    # 1. Title location
+    title_y = find_title_y_coordinate(image, title_keyword)
+    
+    if title_y is None:
+        print(f"Title '{title_keyword}' not found, using fallback crop")
+        title_y = int(0.1 * h) # 10% in case not
+    
+    # 2. Vertical Crop
+    y0 = max(0, title_y)
+    y1 = min(h, int(y0 + vertical_content_frac*(h-y0)))
+    
+    vertical_strip = image[y0:y1, :]
+    
+    # 3. Horizonal boundaries in title area 
+    scan_region_height = min(scan_height, vertical_strip.shape[0] //2)
+    title_area = vertical_strip[:scan_region_height, :]
+    
+        # Convert to grayscale and threshold
+    gray = cv2.cvtColor(title_area, cv2.COLOR_BGR2GRAY)
+    _, binary = cv2.threshold(gray, 240, 255, cv2.THRESH_BINARY_INV)
+    
+    # Project onto horizontal axis to find content edges
+    h_projection = np.sum(binary, axis=0)
+    
+    # Find first and last columns with content
+    non_zero_cols = np.nonzero(h_projection)[0]
+    
+    if len(non_zero_cols) > 0:
+        left_edge = non_zero_cols[0]
+        right_edge = non_zero_cols[-1]
+
+        x0 = max(0, left_edge - horizontal_margin)
+        x1 = min(w, right_edge + horizontal_margin)
+        
+        print(f"With margins: x0={x0}, x1={x1}")
+    else:
+        print("No horizontal boundaries found, using default margins")
+        x0 = int(0.05 * w)
+        x1 = int(0.95 * w)
+    
+    # Step 4: Final horizontal crop
+    final_content = vertical_strip[:, x0:x1]
+    
+    print(f"Final content size: {final_content.shape}")
+    return final_content
+    
+    
 
 # Function to remove it
 def remove_header_footer(image: np.ndarray,
@@ -167,7 +228,7 @@ def deskew_image(image: np.ndarray, limit: int = 45):
     
 def auto_crop_margins(
     image: np.ndarray,
-    threshold: int = 250, 
+    threshold: int = 180, 
     margin: int = 10) -> np.ndarray:
     """
     Auto-crop any white border on all sides by finding the 
@@ -205,8 +266,8 @@ def auto_crop_margins(
 # Cropping and standarization:
 def extract_and_align_content(
     image: np.ndarray,
-    threshold: int = 200,
-    margin: int = 30,
+    threshold: int = 180,
+    margin: int = 10,
     content_offset: Tuple[int,int] = (20, 20),
     canvas_size: Tuple[int,int] = (1700, 2200),
     bgcolor: Tuple[int,int,int] = (255, 255, 255)
@@ -239,7 +300,8 @@ def extract_and_align_content(
     
     crop_height, crop_width = cropped.shape[:2]
 
-    # 3: Scale content to fit available space
+    # 3: Scale content
+    
     scale_x = available_width / crop_width
     scale_y = available_height / crop_height
     scale = min(scale_x, scale_y)
@@ -247,19 +309,13 @@ def extract_and_align_content(
     new_width = int(crop_width * scale)
     new_height = int(crop_height * scale)
 
-    if scale != 1.0:
-        cropped = cv2.resize(cropped, (new_width, new_height), 
-                                   interpolation=cv2.INTER_AREA)
-        print(f"Content scaled by {scale:.3f} to fit canvas")
-    else:
-        print("Content fits without scaling")
+    cropped = cv2.resize(cropped, (new_width, new_height), 
+                                interpolation=cv2.INTER_AREA)
 
     # Step 4: Create canvas and place content
     canvas = np.full((canvas_height, canvas_width, 3), bgcolor, dtype=image.dtype)
     
     canvas[y_offset:y_offset+new_height, x_offset:x_offset+new_width] = cropped
-    
-    print(f"Content placed at ({x_offset}, {y_offset}) with size {new_width}x{new_height}")
     return canvas
 
 
@@ -282,7 +338,7 @@ def standardize_canvas(image: np.ndarray,
         if not allow_upscale:
             scale = min(scale, 1.0)
     else: 
-        #This disrtos to fill
+        #This distorts to fill available space
         scale_x = W / w
         scale_y = H / h
 
@@ -298,6 +354,8 @@ def standardize_canvas(image: np.ndarray,
     canvas[y_off:y_off+new_h,
            x_off:x_off+new_w] = resized
     return canvas
+
+# New approach using 90% of document croping after detection of title:
 
 def pre_process_page(page: fitz.Page,
                      dpi: int = 300, aligned: bool = True,
@@ -315,30 +373,38 @@ def pre_process_page(page: fitz.Page,
     
     # 1) page to array
     img = pdf_page_to_image(page, dpi)
-    print(f"Original size: {img.shape}")
+
     # 2) deskew
     img = deskew_image(img)
-    print(f"Deskewed size: {img.shape}")
-    # NEW:
+
+    # NEW: TODO
     img = crop_scanner_border(img, border_threshold=140)
     # 3) smart removal of header
-    img = crop_above_keyword(
-        img, 
-        keyword=title_keyword,
-        search_region_fr=0.15,  # Search top 15%
-        margin=15
-    )
+    # img = crop_above_keyword(
+    #     img, 
+    #     keyword=title_keyword,
+    #     search_region_fr=0.15,  # Search top 15%
+    #     margin=15
+    # )
     # 4) run again deskew if needed
     #img = deskew_image(img)
     # 4) remove footer
-    img = remove_header_footer(img, header_frac=header_frac, footer_frac=footer_frac)
+    #img = remove_header_footer(img, header_frac=header_frac, footer_frac=footer_frac)
 
-    # Aligned to position if aligned is trye or Centered otherwise
+    content_roi = crop_from_keyword_to_content(
+        img, 
+        title_keyword=title_keyword,
+        vertical_content_frac=0.9, 
+        horizontal_margin=30
+    )
+
+
+    # Aligned to position if aligned is set or Centered otherwise
     if aligned:
         # standard with start on specific location
         out_img = extract_and_align_content(
-        img,
-        threshold=240,        # Adjust based on the PDF background color
+        content_roi,
+        threshold=140,        # Adjust based on the PDF background color
         margin=10,            # Space around detected content
         content_offset= content_start,  # Where content will be placed
         canvas_size=canvas_size
