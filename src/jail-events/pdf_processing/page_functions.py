@@ -11,13 +11,12 @@ import processing_functions
 
 """
 TO DO
-Tables - try psm 4 or 12?
 get start of table for Cook County, can find the end?
-Adjust margins based on report type
+Occurence Dictionary skipping boxes? - specifically not seeing checked boxes, resolution issue?
+Cook County Test --> Contour 146
 """
 
 pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
-
 
 image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "normal_test_more_text_p1.png"
 
@@ -28,7 +27,7 @@ cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
 class PageParsing:
 
     def __init__(self, cv2_image):
-
+        
         self.cv2_image = cv2_image
         self.coordinate_dict = {"Facility Type": "NA"}
         self.page_dict = {"Deceased Cause, Date, and Time": "N/A",
@@ -37,7 +36,7 @@ class PageParsing:
              "Deceased Examined by Physician": "N/A",
              "Deceased Signs of Illness": "N/A"
     } #initializing dictionary without conditional values at first
-
+        self.cook_county = False
 
     def get_form_type(self):
         """
@@ -69,22 +68,17 @@ class PageParsing:
             facility = self.get_facility_name()
             test_facility = re.search("Cook County", facility)
             if test_facility:
+                self.cook_county = True
                 new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
                                     "Facility Name": ((50, 675), (1625, 850)),
                                     "Phone Number": ((1650, 655), (2500, 850)),
-                                    "Address": ((50, 870), (2400, 950)),
+                                    "Address": ((50, 825), (2400, 925)),
                                     "Date": ((25, 950), (1250, 1100)),
-                                    "Time of Day": ((1225, 950), (2170, 1100)),
-                                    "AM or PM": ((2170, 1000), (2500, 1100)),
-                                    "Occurrence Dictionary": ((430, 1100), (2475, 1400)),
+                                    "Time of Day": ((1250, 1000), (2500, 1100)),
+                                    "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
+                                    "Occurrence Dictionary": ((430, 1100), (2475, 1400)), #up to here is standard
                                     "Table Contents": ((25, 1450), (2450, 2100)),
-                                    "Injuries?": ((50, 2100), (2550, 2200)),
-                                    "Resulting Death?": ((50, 2200), (2450, 2300)),
-                                    "Deceased Cause, Date, and Time": ((50, 2300), (2450, 2575)),
-                                    "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
-                                    "Deceased Reporter": ((50, 2675), (2500, 2775)),
-                                    "Deceased Examined by Physician": ((50, 2775), (2450, 2875)),
-                                    "Deceased Signs of Illness": ((150, 2875), (2500,2975))} #NEED TO REPLACE WITH COOK COUNTY PROCESSING
+                }
             else:
                 new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
                                     "Facility Name": ((50, 675), (1625, 850)),
@@ -109,7 +103,8 @@ class PageParsing:
         """
         Retrieves first three letters of facility type, to be processed later
         """
-        roi = processing_functions.get_roi(self.cv2_image, (1000, 300), (1950, 580)) #what do we need to do again once we have the box?
+        points = self.coordinate_dict["Facility Type"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1]) #what do we need to do again once we have the box?
         contours = processing_functions.blur_edge_contours(roi)
         text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=80)
 
@@ -119,7 +114,8 @@ class PageParsing:
         """
         Retrieves full name of the facility
         """
-        roi = processing_functions.get_roi(self.cv2_image, (50, 650), (1625, 850))
+        points = self.coordinate_dict["Facility Name"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         text = processing_functions.basic_text_line(roi)
 
         self.page_dict["Facility Name"] = text
@@ -128,7 +124,8 @@ class PageParsing:
         """
         Retrieves phone number to contact the facility
         """
-        roi = processing_functions.get_roi(self.cv2_image, (1625, 650), (2450, 850))
+        points = self.coordinate_dict["Phone Number"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         text = processing_functions.basic_text_line(roi)
 
         self.page_dict["Phone Number"] = text
@@ -137,14 +134,16 @@ class PageParsing:
         """
         Retrieves street address for facility.
         """
-        roi = processing_functions.get_roi(self.cv2_image, (50, 800), (2400, 950))
+        points = self.coordinate_dict["Address"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         text = processing_functions.basic_text_line(roi)
 
         self.page_dict["Address"] = text
 
     def get_date(self):
         """Retrieves date of incident. """
-        roi = processing_functions.get_roi(self.cv2_image, (25, 950), (1200, 1100))
+        points = self.coordinate_dict["Date"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         text = processing_functions.basic_text_line(roi)
 
         self.page_dict["Date"] = text
@@ -153,7 +152,8 @@ class PageParsing:
         """
         Retrieves the raw tine of the incident. May be in either military or standard time.
         """
-        roi = processing_functions.get_roi(self.cv2_image, (1650, 1000), (2160, 1100))
+        points = self.coordinate_dict["Time of Day"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         text = processing_functions.basic_text_line(roi)
 
         self.page_dict["Time of Day"] = text
@@ -162,7 +162,8 @@ class PageParsing:
         """
         For incidents not in military time, retrieves whether they occured in the AM or PM
         """
-        roi = processing_functions.get_roi(self.cv2_image, (2170, 1000), (2500, 1100)) 
+        points = self.coordinate_dict["AM or PM"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1]) 
         contours = processing_functions.blur_edge_contours(roi)
         text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.3, adjust_width=100)
 
@@ -172,9 +173,9 @@ class PageParsing:
         """
         Creates a dictionary of every possible occurence, text if applicable, and the fill ratio of its box for comparison.
         """
-
-        type_start_point = (430, 1075)
-        type_end_point = (2475, 1400)
+        
+        type_start_point = self.coordinate_dict["Occurence Dictionary"][0]
+        type_end_point = self.coordinate_dict["Occurence Dictionary"][0]
 
         x1 = min(type_start_point[0], type_end_point[0])
         x2 = max(type_start_point[0], type_end_point[0])
@@ -227,8 +228,8 @@ class PageParsing:
     def get_table(self):
 
         """Scans the prisoner table and returns of list of all elements. Needs to be cleaned by prisoner for the final data."""
-
-        roi = processing_functions.get_roi(self.cv2_image, (50, 1500), (2450, 2100)) 
+        points = self.coordinate_dict["Table Contents"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1]) 
         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
         _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
         text = pytesseract.image_to_string(thresh, config='--psm 12')
@@ -254,8 +255,8 @@ class PageParsing:
         """
         Retrieves recorded injuries
         """
-
-        roi = processing_functions.get_roi(self.cv2_image, (50, 1950), (2550, 2100))
+        points = self.coordinate_dict["Injuries?"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         contours = processing_functions.blur_edge_contours(roi)
         text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1800)
 
@@ -265,8 +266,8 @@ class PageParsing:
         """
         Retrieves if there was a death that occured, which may result in all below functions being called.
         """
-
-        roi = processing_functions.get_roi(self.cv2_image, (50, 2075), (2450, 2175)) 
+        points = self.coordinate_dict["Resulting Death?"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1]) 
         contours = processing_functions.blur_edge_contours(roi)
         text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.25, adjust_width=75)    
 
@@ -276,8 +277,8 @@ class PageParsing:
         """
         Retirves name of deceased, caused of death, and the date and time
         """
-
-        roi = processing_functions.get_roi(self.cv2_image, (50, 2200), (2450, 2475))
+        points = self.coordinate_dict["Deceased Cause, Date, and Time"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         text = processing_functions.basic_text_line(roi)
 
         self.page_dict["Deceased Cause, Date, and Time"] = text
@@ -286,8 +287,8 @@ class PageParsing:
         """
         Retrieves whether the deceased was on suicide watch
         """
-
-        roi = processing_functions.get_roi(self.cv2_image, (50, 2450), (2400, 2550)) 
+        points = self.coordinate_dict["Deceased on Suicide Watch"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1]) 
         contours = processing_functions.blur_edge_contours(roi)
         text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.5, adjust_width=60)
 
@@ -297,7 +298,8 @@ class PageParsing:
         """
         Retrieves the name of the individual who reported the deceased.
         """
-        roi = processing_functions.get_roi(self.cv2_image, (50, 2525), (2500, 2675))
+        points = self.coordinate_dict["Deceased Reporter"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         text = processing_functions.basic_text_line(roi)
 
         self.page_dict["Deceased Reporter"] = text
@@ -306,7 +308,8 @@ class PageParsing:
         """
         Returns whether the deceased was examined by a doctor and if so, when
         """
-        roi = processing_functions.get_roi(self.cv2_image, (50, 2625), (2450, 2750))
+        points = self.coordinate_dict["Deceased Examined by Physician"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         contours = processing_functions.blur_edge_contours(roi)
         text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1800)
 
@@ -316,15 +319,23 @@ class PageParsing:
         """
         Returns whether the deceased displayed signs of illness.
         """
-        roi = processing_functions.get_roi(self.cv2_image, (50, 2700), (2500, 2875))
+        points = self.coordinate_dict["Deceased Signs of Illness"]
+        roi = processing_functions.get_roi(self.cv2_image, points[0], points[1])
         contours = processing_functions.blur_edge_contours(roi)
         text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
         if text != "No":
-            new_roi = processing_functions.get_roi(cv2_image, (150,2960), (2500,3060))
+            new_roi = processing_functions.get_roi(cv2_image, (50,2875), (2500,3000))
             follow_up_text = processing_functions.basic_text_line(new_roi)
             text += follow_up_text
 
         self.page_dict["Deceased Signs of Illness"] = text
+    
+    def cook_county_parse(self):
+        """
+        Parses the table then does a full rip of injury and death information for Cook County Prison format
+        """
+        self.page_dict["Cook County Table"] = 1
+        self.page_dict["Cook County Rip"] = 2
 
 def main():#need to add image_path 
     #cv2_image = Image.open(image_path) to be done at end - may need to add this as input to other functions?
@@ -338,15 +349,18 @@ def main():#need to add image_path
     page_parser.get_time()
     page_parser.get_am_pm()
     page_parser.get_occurence_dict()
-    page_parser.get_table()
-    page_parser.get_injuries()
-    page_parser.get_resulting_death()
-    if page_parser.page_dict["Resulting Death?"] == "Yes":
-        page_parser.get_deceased_cause_date_time()
-        page_parser.get_suicide_watch()
-        page_parser.get_reported()
-        page_parser.get_deceased_examined()
-        page_parser.get_deceased_illness()
+    if page_parser.cook_county:
+        page_parser.cook_county_parse()
+    else:
+        page_parser.get_table()
+        page_parser.get_injuries()
+        page_parser.get_resulting_death()
+        if page_parser.page_dict["Resulting Death?"] == "Yes":
+            page_parser.get_deceased_cause_date_time()
+            page_parser.get_suicide_watch()
+            page_parser.get_reported()
+            page_parser.get_deceased_examined()
+            page_parser.get_deceased_illness()
     print (page_parser.page_dict)
 
 if __name__ == "__main__":
