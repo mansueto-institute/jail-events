@@ -6,9 +6,8 @@ from tqdm import tqdm
 import fitz, cv2, time
 from preprocess.cleaning import pre_process_page
 
-images_folder = Path("Add address here")
-
-def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300):
+def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300,
+                       title_key: str = "REPORT EXTRAORDINARY UNUSUAL"):
     """
     Process all the pages in a single pdf
     """
@@ -16,10 +15,14 @@ def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300):
     doc = fitz.open(pdf_path)
     pdf_stem = pdf_path.stem
     for i, page in enumerate(doc):
-        img = pre_process_page(page, dpi=dpi, aligned=True)
+        img = pre_process_page(page, dpi=dpi, aligned=False,
+                               title_keyword=title_key)
         out_path = out_dir / f"{pdf_stem}_p{i+1}.png"
         success = cv2.imwrite(str(out_path), img)
         print(f"saved {out_path.name}: {success}")
+    
+    doc.close()
+        
 
 def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
     """
