@@ -12,17 +12,9 @@ import processing_functions
 """
 TO DO
 get start of table for Cook County, can find the end?
-Occurence Dictionary skipping boxes? - specifically not seeing checked boxes, resolution issue?
-Cook County Test --> Contour 146
 """
 
 pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
-
-image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "normal_test_more_text_p1.png"
-
-cv2_image = cv2.imread(str(image_path))
-
-cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
 
 class PageParsing:
 
@@ -53,7 +45,7 @@ class PageParsing:
                                 "Phone Number": ((1625, 650), (2450, 850)),
                                 "Address": ((50, 800), (2400, 950)),
                                 "Date": ((25, 950), (1200, 1100)),
-                                "Time of Day": ((1225, 1000), (2160, 1100)),
+                                "Time of Day": ((1225, 950), (2200, 1100)),
                                 "AM or PM": ((2170, 1000), (2500, 1100)),
                                 "Occurrence Dictionary": ((430, 1075), (2475, 1400)),
                                 "Table Contents": ((25, 1500), (2375, 2025)),
@@ -65,22 +57,7 @@ class PageParsing:
                                 "Deceased Examined by Physician": ((50, 2625), (2450, 2750)),
                                 "Deceased Signs of Illness": ((50,2750), (2500,2850))}
         else:
-            facility = self.get_facility_name()
-            test_facility = re.search("Cook County", facility)
-            if test_facility:
-                self.cook_county = True
-                new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
-                                    "Facility Name": ((50, 675), (1625, 850)),
-                                    "Phone Number": ((1650, 655), (2500, 850)),
-                                    "Address": ((50, 825), (2400, 925)),
-                                    "Date": ((25, 950), (1250, 1100)),
-                                    "Time of Day": ((1250, 1000), (2500, 1100)),
-                                    "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
-                                    "Occurrence Dictionary": ((430, 1100), (2475, 1400)), #up to here is standard
-                                    "Table Contents": ((25, 1450), (2450, 2100)),
-                }
-            else:
-                new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
+            new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
                                     "Facility Name": ((50, 675), (1625, 850)),
                                     "Phone Number": ((1650, 655), (2500, 850)),
                                     "Address": ((50, 870), (2400, 950)),
@@ -96,7 +73,28 @@ class PageParsing:
                                     "Deceased Reporter": ((50, 2675), (2500, 2775)),
                                     "Deceased Examined by Physician": ((50, 2775), (2450, 2875)),
                                     "Deceased Signs of Illness": ((150, 2875), (2500,2975))}
-
+            
+            #Cook County Code
+            """
+            self.coordinate_dict["Facility Name"] = ((50, 675), (1625, 850))
+            facility = self.get_facility_name()
+            print (facility)
+            test_facility = re.search("Cook County", facility)
+            if test_facility:
+                self.cook_county = True
+                new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
+                                    "Facility Name": ((50, 675), (1625, 850)),
+                                    "Phone Number": ((1650, 655), (2500, 850)),
+                                    "Address": ((50, 825), (2400, 925)),
+                                    "Date": ((25, 950), (1250, 1100)),
+                                    "Time of Day": ((1250, 1000), (2500, 1100)),
+                                    "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
+                                    "Occurrence Dictionary": ((430, 1100), (2475, 1400)), #up to here is standard
+                                    "Table Contents": ((25, 1450), (2450, 2100)),
+                }
+            else:
+            """
+                
         self.coordinate_dict = new_coordinate_dict
 
     def get_facility_type(self):
@@ -169,13 +167,13 @@ class PageParsing:
 
         self.page_dict["AM or PM"] = text
 
-    def get_occurence_dict(self): #need to edit this down
+    def get_occurrence_dict(self): #need to edit this down
         """
         Creates a dictionary of every possible occurence, text if applicable, and the fill ratio of its box for comparison.
         """
         
-        type_start_point = self.coordinate_dict["Occurence Dictionary"][0]
-        type_end_point = self.coordinate_dict["Occurence Dictionary"][0]
+        type_start_point = self.coordinate_dict["Occurrence Dictionary"][0]
+        type_end_point = self.coordinate_dict["Occurrence Dictionary"][1]
 
         x1 = min(type_start_point[0], type_end_point[0])
         x2 = max(type_start_point[0], type_end_point[0])
@@ -188,16 +186,20 @@ class PageParsing:
         return_dict = {}
 
         text = None
-        roi = cv2_image[y1:y2, x1:x2]
-        height, width = roi.shape[:2]
+        roi = self.cv2_image[y1:y2, x1:x2]
         contours = processing_functions.blur_edge_contours(roi)
         for contour in contours:
             approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
-            if len(approx) == 4 and cv2.isContourConvex(approx):
+            if contour.ndim == 3:
+                contour = contour[:,0]
+            carea = ((np.max(contour[:,0]) - np.min(contour[:,0]))) * (np.max(contour[:,1]) - np.min(contour[:,1])) #gets comments from divij
+            s = ""
+            if (carea > 1000) and (carea < 2000):
+                s = "**"
+            if s == "**":
                 x, y, w, h = cv2.boundingRect(approx)
-                aspect_ratio = float(w) / h
                 area = cv2.contourArea(approx) 
-                if 0.85 <= aspect_ratio <= 1.15 and 250 <= area <= 5000: #check if its a box
+                if 500 <= area <= 5000: #check if its a box
                     if x >= 0 and y >= 0 and x + w <= roi_width and y + h <= roi_height:
                         cropped_rect = roi[y : (y + h), x : (x + w)]
                         gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
@@ -206,7 +208,7 @@ class PageParsing:
                         margin = int(min(w, h) * 0.1)
                         inner = binary[margin:h-margin, margin:w-margin]
                         fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
-                        if (x < roi_width*0.05 and y < roi_height*0.05) or (x < roi_width*0.6 and y < roi_height*0.05) or (x > roi_width*0.6 and y > roi_height*0.6):
+                        if y < roi_height*0.3 or (x > roi_width*0.6 and y > roi_height*0.6):
                             text_offset_x = 15  # pixels to skip after box
                             text_width = 600   # width of text region to extract
                             text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
@@ -223,7 +225,7 @@ class PageParsing:
                             text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
                             return_dict[(x,y)] = [text, fill_ratio]
 
-        self.page_dict["Occurence Dictionary"] = return_dict #returns dictionary of coordinate of the checkbox as keys then the text content and the fill ratio
+        self.page_dict["Occurrence Dictionary"] = return_dict #returns dictionary of coordinate of the checkbox as keys then the text content and the fill ratio
 
     def get_table(self):
 
@@ -269,7 +271,7 @@ class PageParsing:
         points = self.coordinate_dict["Resulting Death?"]
         roi = processing_functions.get_roi(self.cv2_image, points[0], points[1]) 
         contours = processing_functions.blur_edge_contours(roi)
-        text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.25, adjust_width=75)    
+        text = processing_functions.basic_box_check(roi, contours, adjust_fill_ratio=0.15, adjust_width=75)    
 
         self.page_dict["Resulting Death?"] = text
 
@@ -324,7 +326,7 @@ class PageParsing:
         contours = processing_functions.blur_edge_contours(roi)
         text = processing_functions.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
         if text != "No":
-            new_roi = processing_functions.get_roi(cv2_image, (50,2875), (2500,3000))
+            new_roi = processing_functions.get_roi(self.cv2_image, (50,2875), (2500,3000))
             follow_up_text = processing_functions.basic_text_line(new_roi)
             text += follow_up_text
 
@@ -337,8 +339,9 @@ class PageParsing:
         self.page_dict["Cook County Table"] = 1
         self.page_dict["Cook County Rip"] = 2
 
-def main():#need to add image_path 
-    #cv2_image = Image.open(image_path) to be done at end - may need to add this as input to other functions?
+def scrape_page(image_path):
+    cv2_image = cv2.imread(str(image_path))
+    cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
     page_parser.get_facility_type()
@@ -348,7 +351,7 @@ def main():#need to add image_path
     page_parser.get_date()
     page_parser.get_time()
     page_parser.get_am_pm()
-    page_parser.get_occurence_dict()
+    page_parser.get_occurrence_dict()
     if page_parser.cook_county:
         page_parser.cook_county_parse()
     else:
@@ -361,7 +364,9 @@ def main():#need to add image_path
             page_parser.get_reported()
             page_parser.get_deceased_examined()
             page_parser.get_deceased_illness()
-    print (page_parser.page_dict)
+
+    return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    main()
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "aligned" / "Clean 2016_p1.png"
+    print (scrape_page(image_path))
