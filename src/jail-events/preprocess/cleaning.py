@@ -87,7 +87,7 @@ def find_title_y_coordinate(
 def crop_above_keyword(image: np.ndarray,
                        keyword: str,
                        search_region_fr: float = 0.15,
-                       margin= 10, 
+                       margin= 5, 
                        oem: int =3,
                        psm: int=3, 
                        lang: str = "eng") -> np.ndarray:
@@ -110,7 +110,7 @@ def crop_above_keyword(image: np.ndarray,
 
 def crop_from_keyword_to_content(image: np.ndarray,
     title_keyword: str = "REPORT EXTRAORDINARY UNUSUAL",
-    vertical_content_frac: float = 0.9,
+    vertical_content_frac: float = 0.8,
     horizontal_margin: int = 30,
     scan_height: int = 120)-> np.ndarray:
     """
@@ -394,7 +394,7 @@ def pre_process_page(page: fitz.Page,
     content_roi = crop_from_keyword_to_content(
         img, 
         title_keyword=title_keyword,
-        vertical_content_frac=0.9, 
+        vertical_content_frac=0.8, 
         horizontal_margin=30
     )
 
