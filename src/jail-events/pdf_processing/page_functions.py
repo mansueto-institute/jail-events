@@ -15,6 +15,7 @@ import processing_functions as pf
 TO DO
 get start of table for Cook County, can find the end?
 increase contrast
+hook up json to to Box
 """
 
 pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
@@ -32,6 +33,7 @@ class PageParsing:
              "Deceased Signs of Illness": "N/A"
     } #initializing dictionary without conditional values at first
         self.cook_county = False
+        self.cook_county_running_y = 0
 
     def get_form_type(self):
         """
@@ -61,8 +63,8 @@ class PageParsing:
                                 "Deceased Signs of Illness": ((50,2750), (2500,2850))}
         else:
             self.coordinate_dict["Facility Name"] = ((50, 675), (1625, 850))
-            facility = self.get_facility_name()
-            print (facility)
+            self.get_facility_name()
+            facility = self.page_dict["Facility Name"]
             test_facility = re.search("Cook County", facility)
             if test_facility:
                 self.cook_county = True
@@ -74,6 +76,7 @@ class PageParsing:
                                     "Time of Day": ((1250, 1000), (2500, 1100)),
                                     "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
                                     "Occurrence Dictionary": ((430, 1100), (2475, 1400)), #up to here is standard
+                                    "Table Contents": ((0, 1450), (2550, 2700)),
                 }
 
             else:
@@ -112,7 +115,6 @@ class PageParsing:
         Retrieves full name of the facility
         """
         points = self.coordinate_dict["Facility Name"]
-        print (points)
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         text = pf.basic_text_line(roi)
 
@@ -344,9 +346,74 @@ class PageParsing:
         """
         Parses the table then does a full rip of injury and death information for Cook County Prison format
         """
-        #(25, 1450) table start 
-        self.page_dict["Table Contents"] = 1
-        self.page_dict["Cook County Rip"] = 2
+        self.cook_county_table()
+        self.cook_county_coordinates()
+        self.get_injuries()
+        self.get_resulting_death()
+        if self.page_dict["Resulting Death?"] == "Yes":
+            self.page_dict["Resulting Death"] == "Yes, check the report"
+    
+    def cook_county_table(self):
+
+        points = self.coordinate_dict["Table Contents"]
+        roi = pf.get_roi(self.cv2_image, points[0], points[1])
+        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+        binary = cv2.adaptiveThreshold(~gray, 255, 
+                                    cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                    cv2.THRESH_BINARY, 15, -2)
+        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1)) #getting lines
+        vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 40))
+        horizontal_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, horizontal_kernel, iterations=1)
+
+        contours, _ = cv2.findContours(horizontal_lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        max_y = 0
+        for cnt in contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if w > 50:  # Filter out noise: adjust threshold as needed
+                max_y = max(max_y, y + h)
+
+        roi_trimmed = roi[:max_y, :]
+
+        gray_trimmed = cv2.cvtColor(roi_trimmed, cv2.COLOR_BGR2GRAY)
+
+        binary_trimmed = cv2.adaptiveThreshold(~gray_trimmed, 255, 
+                                            cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                            cv2.THRESH_BINARY, 15, -2)
+
+        horizontal_lines_trimmed = cv2.morphologyEx(binary_trimmed, cv2.MORPH_OPEN, horizontal_kernel, iterations=1)
+        vertical_lines_trimmed = cv2.morphologyEx(binary_trimmed, cv2.MORPH_OPEN, vertical_kernel, iterations=1)
+
+        lines_trimmed = cv2.add(horizontal_lines_trimmed, vertical_lines_trimmed)
+        cleaned_trimmed = cv2.subtract(binary_trimmed, lines_trimmed)
+
+        text = pytesseract.image_to_string(cleaned_trimmed, config='--psm 12')
+
+        #read first row, read second and see if there's a name: if not, append
+        cells = []
+        stripped_text = text.strip().splitlines()
+        prohibited = ["Detainees Involved", "Name", "Date of Birth", "Date Confined", "Arresting Charge", "|"]
+        for element in stripped_text:
+            if element and element not in prohibited:
+                cells.append(element)
+
+        multiples = [4,8,12,16]
+        for row in multiples:
+            if len(cells) > row:
+                if "|" in cells[row]:
+                    for extra_charge in cells[row:]:
+                        cells[row-1] += extra_charge
+                    cells = cells[:row]
+
+        self.page_dict["Table Contents"] = cells
+        self.running_y = points[0][1] + max_y
+
+    def cook_county_coordinates(self):
+        self.coordinate_dict["Injuries?"] = ((50, self.running_y), (2550, self.running_y + 250))
+        self.running_y = self.coordinate_dict["Injuries?"][1][1]
+        self.coordinate_dict["Resulting Death?"] = ((50, self.running_y), (2450, self.running_y + 100))
+        self.running_y = self.coordinate_dict["Resulting Death?"][1][1]
+
 
 def scrape_page(image_path):
     cv2_image = cv2.imread(str(image_path))
@@ -377,5 +444,5 @@ def scrape_page(image_path):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "aligned" / "Cook County Test_p1.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Cook County 4 Prisoners_p1.png"
     print (scrape_page(image_path))
