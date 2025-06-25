@@ -15,8 +15,10 @@ def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300,
     doc = fitz.open(pdf_path)
     pdf_stem = pdf_path.stem
     for i, page in enumerate(doc):
-        img = pre_process_page(page, dpi=dpi, aligned=False,
+        img = pre_process_page(page, dpi=dpi,
                                title_keyword=title_key)
+        if img is None:
+            continue
         out_path = out_dir / f"{pdf_stem}_p{i+1}.png"
         success = cv2.imwrite(str(out_path), img)
         print(f"saved {out_path.name}: {success}")
