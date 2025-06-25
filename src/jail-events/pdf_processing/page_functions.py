@@ -7,9 +7,8 @@ from pathlib import Path
 import re
 import json
 import matplotlib.pyplot as plt
-import processing_functions as pf
+from . import processing_functions as pf
 
-#pdf_processing.
 
 """
 TO DO
@@ -18,7 +17,7 @@ increase contrast
 hook up json to to Box
 """
 
-pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
+#pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 class PageParsing:
 
@@ -419,9 +418,9 @@ class PageParsing:
         self.running_y = self.coordinate_dict["Resulting Death?"][1][1]
 
 
-def scrape_page(image_path):
-    cv2_image = cv2.imread(str(image_path))
-    cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
+def scrape_page(image):
+    #cv2_image = cv2.imread(str(image_path))
+    cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
     page_parser.get_facility_type()
