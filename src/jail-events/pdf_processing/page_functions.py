@@ -364,6 +364,7 @@ class PageParsing:
         horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1)) #getting lines
         vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 40))
         horizontal_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, horizontal_kernel, iterations=1)
+        vertical_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, vertical_kernel, iterations=1)
 
         contours, _ = cv2.findContours(horizontal_lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -371,7 +372,10 @@ class PageParsing:
         for cnt in contours:
             x, y, w, h = cv2.boundingRect(cnt)
             if w > 50:  # Filter out noise: adjust threshold as needed
-                max_y = max(max_y, y + h)
+                line_strip = vertical_lines[y:y+h, x:x+w]
+                vertical_intersections = cv2.countNonZero(line_strip)
+                if vertical_intersections > 0:
+                    max_y = max(max_y, y + h)
 
         roi_trimmed = roi[:max_y, :]
 
