@@ -43,8 +43,6 @@ def main():
     processed = Path(__file__).parent / "data/jails-data/processed"
     process_all_pdfs(samples, processed, dpi=300)
 
-    print ("HELLO WOWWWWWWWWWWWWWWWWWWW")
-
     dictionary_list = []
     id_number = 1
     images_folder = Path(__file__).parent / "data/jails-data/processed/aligned"
