@@ -43,15 +43,22 @@ def main():
     processed = Path(__file__).parent / "data/jails-data/processed"
     process_all_pdfs(samples, processed, dpi=300)
 
+    print ("HELLO WOWWWWWWWWWWWWWWWWWWW")
+
     dictionary_list = []
     id_number = 1
-    images_folder = None
-    for image_path in images_folder.glob("*.png"):
+    images_folder = Path(__file__).parent / "data/jails-data/processed/aligned"
+    for image_path in list(images_folder.glob("*.png")):
         uncleaned_report_dict = scrape_page(image_path)
-        cleaned_report_dict = dictionary_cleaning(uncleaned_report_dict)
-        cleaned_report_dict["Report ID"] = id_number
-        dictionary_list.append(cleaned_report_dict)
+        #cleaned_report_dict = dictionary_cleaning(uncleaned_report_dict)
+        uncleaned_report_dict["Report ID"] = id_number
+        dictionary_list.append(uncleaned_report_dict)
         id_number += 1
 
-    with open("output.json", "w") as json_file:
+    output_path = Path(__file__).resolve().parent / "output" / "output.json"
+
+    with open(output_path, "w") as json_file:
         json.dump(dictionary_list, json_file)
+
+if __name__ == "__main__":
+    main()

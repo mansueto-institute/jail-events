@@ -31,7 +31,7 @@ def basic_text_line(roi):
     '''
     Takes simple text image and extracts text.
     '''
-    text = None
+    #text = None
     text = pytesseract.image_to_string(roi, config='--psm 6')
 
     return text
