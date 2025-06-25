@@ -7,9 +7,8 @@ from pathlib import Path
 import re
 import json
 import matplotlib.pyplot as plt
-import processing_functions as pf
+from . import processing_functions as pf
 
-#pdf_processing.
 
 """
 TO DO
@@ -17,7 +16,7 @@ get start of table for Cook County, can find the end?
 increase contrast
 """
 
-pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
+#pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 class PageParsing:
 
@@ -348,9 +347,9 @@ class PageParsing:
         self.page_dict["Table Contents"] = 1
         self.page_dict["Cook County Rip"] = 2
 
-def scrape_page(image_path):
-    cv2_image = cv2.imread(str(image_path))
-    cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
+def scrape_page(image):
+    #cv2_image = cv2.imread(str(image_path))
+    cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
     page_parser.get_facility_type()
@@ -376,6 +375,6 @@ def scrape_page(image_path):
 
     return (page_parser.page_dict)
 
-if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "aligned" / "Cook County Test_p1.png"
-    print (scrape_page(image_path))
+#if __name__ == "__main__":
+    #image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "aligned" / "Cook County Test_p1.png"
+    #print (scrape_page(image_path))
