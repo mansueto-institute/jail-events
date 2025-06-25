@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from typing import Tuple
 from PIL import Image
 import pytesseract
+from .crop import resize_image
 
 # From pdf to image with PyMUPDF
 def pdf_page_to_image(page: fitz.Page, dpi: int = 300) -> np.ndarray:
@@ -13,8 +14,6 @@ def pdf_page_to_image(page: fitz.Page, dpi: int = 300) -> np.ndarray:
     """
     Render PDF page to a BGR OPENCV image (Numpy Arry)
     """
-    
-    #page = pdf_doc[page_num]
     
     # Render page to pix map
     mat = fitz.Matrix(dpi/72, dpi/72)
@@ -63,8 +62,8 @@ def crop_scanner_border(image: np.ndarray, border_threshold: int = 240) -> np.nd
 def find_title_y_coordinate(
     image: np.ndarray, 
     keyword: str, 
-    margin = 10,
-    search_region_frac: float = 0.15) -> int:
+    margin = 0,
+    search_region_frac: float = 0.3) -> int:
     """ Find Y coordiante of ttle keyword"""
     h, w = image.shape[:2]
     search_height = int(h * search_region_frac)
@@ -73,7 +72,13 @@ def find_title_y_coordinate(
     
     pil = Image.fromarray(cv2.cvtColor(top_region, cv2.COLOR_BGR2RGB))
     config = f"--oem 3 --psm 3 -l eng"
+    #pil.show()
     data = pytesseract.image_to_data(pil, config=config, output_type=pytesseract.Output.DICT)
+    
+    # DEBUG: Print what OCR actually sees
+    # print(f"DEBUG: OCR detected {len([t for t in data['text'] if t.strip()])} text elements")
+    # detected_texts = [text for text in data["text"] if text.strip()]
+    # print(f"DEBUG: First 20 detected texts: {detected_texts[:20]}")
     
     tops = []
     list_keywords = keyword.split()
@@ -86,7 +91,7 @@ def find_title_y_coordinate(
 
 def crop_above_keyword(image: np.ndarray,
                        keyword: str,
-                       search_region_fr: float = 0.15,
+                       search_region_fr: float = 0.3,
                        margin= 5, 
                        oem: int =3,
                        psm: int=3, 
@@ -103,15 +108,15 @@ def crop_above_keyword(image: np.ndarray,
     
     top_pixel_in_region = find_title_y_coordinate(image, keyword, margin,search_region_fr)
     actual_crop_line = max(0, top_pixel_in_region - margin)
-    print(f"Found '{keyword}' at y={top_pixel_in_region} in search region")
-    print(f"Cropping above y={actual_crop_line} in full image")
+    #print(f"Found '{keyword}' at y={top_pixel_in_region} in search region")
+    #print(f"Cropping above y={actual_crop_line} in full image")
 
     return image[actual_crop_line:]
 
 def crop_from_keyword_to_content(image: np.ndarray,
     title_keyword: str = "REPORT EXTRAORDINARY UNUSUAL",
     vertical_content_frac: float = 0.8,
-    horizontal_margin: int = 30,
+    horizontal_margin: int = 10,
     scan_height: int = 120)-> np.ndarray:
     """
     Cropping content based on title detection:
@@ -136,7 +141,7 @@ def crop_from_keyword_to_content(image: np.ndarray,
     
         # Convert to grayscale and threshold
     gray = cv2.cvtColor(title_area, cv2.COLOR_BGR2GRAY)
-    _, binary = cv2.threshold(gray, 240, 255, cv2.THRESH_BINARY_INV)
+    _, binary = cv2.threshold(gray, 237, 255, cv2.THRESH_BINARY_INV)
     
     # Project onto horizontal axis to find content edges
     h_projection = np.sum(binary, axis=0)
@@ -163,33 +168,8 @@ def crop_from_keyword_to_content(image: np.ndarray,
     print(f"Final content size: {final_content.shape}")
     return final_content
     
-    
 
-# Function to remove it
-def remove_header_footer(image: np.ndarray,
-                         header_frac: float = 0.15,
-                         footer_frac: int = 712) -> np.ndarray:
-    """
-    Crop out a fixed fraction of the top and bottom of the image,
-    to drop headers & footers that confuse auto-crop.
-    
-    Args:
-      image        – BGR or gray image
-      header_frac  – fraction of height to remove from top (0.15 = 15%)
-      footer_frac  – fraction of height to remove from bottom
-    Returns:
-      Cropped image without header/footer bands.
-    """
-    
-    h, w = image.shape[:2]
-    top_cut    = int(h * header_frac)
-    bottom_cut = int(h * (1 - footer_frac))
-    if top_cut >= bottom_cut:
-        print(f"W: Invalid crop coordinates (top={top_cut}, bottom={bottom_cut})")
-        return image
-    return image[top_cut:bottom_cut, :]
-
-# It need to be strengthed
+# Deskew the image
 def deskew_image(image: np.ndarray, limit: int = 45):
     """
     Detect and correct image skew: Hough line detection
@@ -358,8 +338,8 @@ def standardize_canvas(image: np.ndarray,
 # New approach using 90% of document croping after detection of title:
 
 def pre_process_page(page: fitz.Page,
-                     dpi: int = 300, aligned: bool = True,
-                    title_keyword: str = "ILLINOIS DEPARTMENT"):
+                     dpi: int = 300,
+                    title_keyword: str = "REPORT EXTRAORDINARY UNUSUAL"):
     """
     Full clean & standardize pipeline for one PDF page
     Out: a BGR OpenCV image to be saved
@@ -368,8 +348,6 @@ def pre_process_page(page: fitz.Page,
     # Specs of output
     canvas_size = (2550, 3300)  # Based on 21.59×27.94 cm at 300 DPI
     content_start = (20,50)
-    header_frac = 0
-    footer_frac = 0
     
     # 1) page to array
     img = pdf_page_to_image(page, dpi)
@@ -377,41 +355,27 @@ def pre_process_page(page: fitz.Page,
     # 2) deskew
     img = deskew_image(img)
 
-    # NEW: TODO
-    img = crop_scanner_border(img, border_threshold=140)
-    # 3) smart removal of header
-    # img = crop_above_keyword(
-    #     img, 
-    #     keyword=title_keyword,
-    #     search_region_fr=0.15,  # Search top 15%
-    #     margin=15
-    # )
-    # 4) run again deskew if needed
-    #img = deskew_image(img)
-    # 4) remove footer
-    #img = remove_header_footer(img, header_frac=header_frac, footer_frac=footer_frac)
-
-    content_roi = crop_from_keyword_to_content(
+    content_roi = crop_above_keyword(
         img, 
-        title_keyword=title_keyword,
-        vertical_content_frac=0.8, 
-        horizontal_margin=30
+        keyword=title_keyword,
+        search_region_fr=0.2,
+        margin=5
     )
-
-
-    # Aligned to position if aligned is set or Centered otherwise
-    if aligned:
-        # standard with start on specific location
-        out_img = extract_and_align_content(
-        content_roi,
-        threshold=140,        # Adjust based on the PDF background color
-        margin=10,            # Space around detected content
-        content_offset= content_start,  # Where content will be placed
-        canvas_size=canvas_size
-        )
-    else:
-        #Centered
-        img = auto_crop_margins(img, threshold=240, margin=10)
-        out_img = standardize_canvas(img, target_size=canvas_size)
     
+    # Aligned to position if aligned is set or Centered otherwise
+    #standard with start on specific location
+    img = extract_and_align_content(
+    content_roi,
+    threshold=237,        # Adjust based on the PDF background color
+    margin=10,            # Space around detected content
+    content_offset= content_start,  # Where content will be placed
+    canvas_size=canvas_size
+    )
+    
+    # 3) use the smart crop from statistical analyss
+    pil_image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    
+    _, _, cropped_pil = resize_image(pil_image)
+    out_img = cv2.cvtColor(np.array(cropped_pil), cv2.COLOR_BAYER_BG2BGR)
+
     return out_img
