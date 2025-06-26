@@ -1,0 +1,4 @@
+TO-DOs:
+- increase contrast (or check what Divij did in crop in preprocess)
+- Part 6, Page 25 ---> Extend out "facility type" check. Proof why AM/PM isn't showing up (might be due to fill? try contrast first)
+- trim table for length?
