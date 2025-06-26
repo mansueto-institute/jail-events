@@ -63,6 +63,7 @@ def main():
     samples = Path(__file__).parent / "data/jails-data/samples"
     processed = Path(__file__).parent / "data/jails-data/processed"
     out_data = Path(__file__).parent / "data/jails-data/output"
+    out_data.mkdir(parents=True, exist_ok=True)
     
     # First parse all the pdfs and parrse images
     all_dicts_list = process_all_pdfs(samples, processed, dpi=300)
