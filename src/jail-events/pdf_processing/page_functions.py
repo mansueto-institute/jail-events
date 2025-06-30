@@ -446,6 +446,6 @@ def scrape_page(image):
 
     return (page_parser.page_dict)
 
-if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Cook County 4 Prisoners_p1.png"
-    print (scrape_page(image_path))
+#if __name__ == "__main__":
+    #image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Cook County 4 Prisoners_p1.png"
+#    print (scrape_page(image_path))

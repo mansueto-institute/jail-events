@@ -107,6 +107,9 @@ def crop_above_keyword(image: np.ndarray,
     """
     
     top_pixel_in_region = find_title_y_coordinate(image, keyword, margin,search_region_fr)
+    #If doesnt find the title, return None
+    if not top_pixel_in_region:
+        return None
     actual_crop_line = max(0, top_pixel_in_region - margin)
     #print(f"Found '{keyword}' at y={top_pixel_in_region} in search region")
     #print(f"Cropping above y={actual_crop_line} in full image")
@@ -361,7 +364,8 @@ def pre_process_page(page: fitz.Page,
         search_region_fr=0.2,
         margin=5
     )
-    
+    if not content_roi:
+        return None
     # Aligned to position if aligned is set or Centered otherwise
     #standard with start on specific location
     img = extract_and_align_content(
