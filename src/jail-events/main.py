@@ -72,5 +72,6 @@ def main():
     with open(out_json, "w") as json_file:
         json.dump(all_dicts_list, json_file, indent=2)
     print(f"Saved {len(all_dicts_list)} records to {out_json}")
+    
 if __name__ == "__main__":
     main()

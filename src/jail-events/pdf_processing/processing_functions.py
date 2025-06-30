@@ -36,47 +36,70 @@ def basic_text_line(roi):
 
     return text
 
-def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width): #note to add variable for fill_ratio and text_width?
+def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_min_box_area): #note to add variable for fill_ratio and text_width?
     '''
     Takes roi and contours, checks if contours are boxes then checks if boxes are filled.
     '''
     text = "None"
-    roi_height, roi_width = roi.shape[:2]
+    box_list = []
     for contour in contours:
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
-        if len(approx) == 4 and cv2.isContourConvex(approx):
+        if contour.ndim == 3:
+            contour = contour[:,0]
+        carea = ((np.max(contour[:,0]) - np.min(contour[:,0]))) * (np.max(contour[:,1]) - np.min(contour[:,1])) #gets comments from divij
+        s = ""
+        if (carea > adjust_box_min_box_area) and (carea < 2500):
+            s = "**"
+        if s == "**":
             x, y, w, h = cv2.boundingRect(approx)
-            aspect_ratio = float(w) / h
-            area = cv2.contourArea(approx) 
-            if 0.85 <= aspect_ratio <= 1.15 and 500 <= area <= 5000: #check if its a box
-                if x >= 0 and y >= 0 and x + w <= roi_width and y + h <= roi_height:
-                    cropped_rect = roi[y : (y + h), x : (x + w)]
-                    gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
-                    _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
-                    # Crop inside to ignore border (e.g. 10% margin)
-                    margin = int(min(w, h) * 0.1)
-                    inner = binary[margin:h-margin, margin:w-margin]
-                    fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
-                    is_filled = fill_ratio > adjust_fill_ratio  # can adjust threashold
-                    if is_filled:
-                        text_offset_x = 10  # pixels to skip after box
-                        text_width = adjust_width    # width of text region to extract
-                        text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
-                        text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
-                        _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
-                        text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
-    return text
+            cropped_rect = roi[y : (y + h), x : (x + w)]
+            gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
+            _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
+            margin = int(min(w, h) * 0.1)
+            inner = binary[margin:h-margin, margin:w-margin]
+            fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
+            box_dict = {"x": x, "y": y, "w": w, "h": h, "fill_ratio": fill_ratio}
+            box_list.append(box_dict)
+    print (box_list)
+    box_list = sorted(box_list, key=lambda d: d["fill_ratio"], reverse=True)
+    if len(box_list) < 2:
+        return "Error: less than two boxes found"
+    max_box = box_list[0]
+    min_box = box_list[1]
+    if abs (max_box["fill_ratio"] - min_box["fill_ratio"]) > adjust_fill_ratio:
+        x = max_box["x"]
+        y = max_box["y"]
+        w = max_box["w"]
+        h = max_box["h"]
+        text_offset_x = 10  # pixels to skip after box
+        text_width = adjust_width    # width of text region to extract
+        if x == 0 or y == 0 or w == 0 or h == 0:
+            return "Error creating ROI"
+        text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
+        if text_roi.size == 0:
+            return "Error creating ROI"
+        text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
+        _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
+        text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
+        return text
+    else: 
+        return "No filled box found"
+
 
 def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
     text = "No"
     roi_height, roi_width = roi.shape[:2]
     for contour in contours:
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
-        if len(approx) == 4 and cv2.isContourConvex(approx):
+        if contour.ndim == 3:
+            contour = contour[:,0]
+        carea = ((np.max(contour[:,0]) - np.min(contour[:,0]))) * (np.max(contour[:,1]) - np.min(contour[:,1])) #gets comments from divij
+        s = ""
+        if (carea > 500) and (carea < 2000):
+            s = "**"
+        if s == "**":
             x, y, w, h = cv2.boundingRect(approx)
-            aspect_ratio = float(w) / h
-            area = cv2.contourArea(approx) 
-            if 0.85 <= aspect_ratio <= 1.15 and 500 <= area <= 5000: #check if its a box
+            if 500 <= carea <= 5000: #check if its a box
                 if x >= 0 and y >= 0 and x + w <= roi_width and y + h <= roi_height:
                     cropped_rect = roi[y : (y + h), x : (x + w)]
                     gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
@@ -90,11 +113,11 @@ def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
                     if is_filled:
                         if x < roi_width*0.02:
                             text = "No"
-                    if is_filled:
-                        text_offset_x = 10  # pixels to skip after box
-                        text_width = adjust_width    # width of text region to extract
-                        text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
-                        text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
-                        _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
-                        text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
+                        else:
+                            text_offset_x = 10  # pixels to skip after box
+                            text_width = adjust_width    # width of text region to extract
+                            text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
+                            text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
+                            _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
+                            text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
         return text

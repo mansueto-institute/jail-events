@@ -9,14 +9,6 @@ import json
 import matplotlib.pyplot as plt
 from . import processing_functions as pf
 
-
-"""
-TO DO
-get start of table for Cook County, can find the end?
-increase contrast
-hook up json to to Box
-"""
-
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 class PageParsing:
@@ -38,13 +30,13 @@ class PageParsing:
         """
         Performs an initial scan of the document to determine its years and if its Cook County, assigns dictionary of coordinates for points
         """
-        roi = pf.get_roi(self.cv2_image, (2100, 3000), (2500, 3300))
+        roi = pf.get_roi(self.cv2_image, (2100, 2900), (2550, 3300))
         text = pf.basic_text_line(roi)
 
         test_2002 = re.search("2002", text)
 
         if test_2002:
-            new_coordinate_dict = {"Facility Type": ((1000, 300), (1950, 580)),
+            new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                 "Facility Name": ((50, 650), (1625, 850)),
                                 "Phone Number": ((1625, 650), (2450, 850)),
                                 "Address": ((50, 800), (2400, 950)),
@@ -54,7 +46,7 @@ class PageParsing:
                                 "Occurrence Dictionary": ((430, 1075), (2475, 1400)),
                                 "Table Contents": ((25, 1500), (2375, 2025)),
                                 "Injuries?": ((50, 1950), (2550, 2100)),
-                                "Resulting Death?": ((50, 2075), (2450, 2175)),
+                                "Resulting Death?": ((50, 2000), (2450, 2100)),
                                 "Deceased Cause, Date, and Time": ((50, 2200), (2450, 2475)),
                                 "Deceased on Suicide Watch": ((50, 2450), (2400, 2550)),
                                 "Deceased Reporter": ((50, 2525), (2500, 2675)),
@@ -67,7 +59,7 @@ class PageParsing:
             test_facility = re.search("Cook County", facility)
             if test_facility:
                 self.cook_county = True
-                new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
+                new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                     "Facility Name": ((50, 675), (1625, 850)),
                                     "Phone Number": ((1650, 655), (2500, 850)),
                                     "Address": ((50, 825), (2400, 925)),
@@ -79,7 +71,7 @@ class PageParsing:
                 }
 
             else:
-                new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
+                new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                         "Facility Name": ((50, 675), (1625, 850)),
                                         "Phone Number": ((1650, 655), (2500, 850)),
                                         "Address": ((50, 870), (2400, 950)),
@@ -103,9 +95,9 @@ class PageParsing:
         Retrieves first three letters of facility type, to be processed later
         """
         points = self.coordinate_dict["Facility Type"]
-        roi = pf.get_roi(self.cv2_image, points[0], points[1]) #what do we need to do again once we have the box?
+        roi = pf.get_roi(self.cv2_image, points[0], points[1])
         contours = pf.blur_edge_contours(roi)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=80)
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=160, adjust_box_min_box_area=1000)
 
         self.page_dict["Facility Type"] = text
 
@@ -161,12 +153,16 @@ class PageParsing:
         """
         For incidents not in military time, retrieves whether they occured in the AM or PM
         """
-        points = self.coordinate_dict["AM or PM"]
-        roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
-        contours = pf.blur_edge_contours(roi)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.3, adjust_width=100)
 
-        self.page_dict["AM or PM"] = text
+        if self.cook_county:
+            self.page_dict["AM or PM"] = "Check time, no AM or PM for Cook County"
+        else:
+            points = self.coordinate_dict["AM or PM"]
+            roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
+            contours = pf.blur_edge_contours(roi)
+            text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=700)
+
+            self.page_dict["AM or PM"] = text
 
     def get_occurrence_dict(self): #need to edit this down
         """
@@ -249,7 +245,7 @@ class PageParsing:
         stripped_text = text.strip().splitlines()
         prohibited = ["|"]
         for element in stripped_text:
-            if element and element not in prohibited:
+            if element and element not in prohibited and len(element) > 4:
                 cells.append(element)
 
         multiples = [4,8,12,16]
@@ -280,7 +276,7 @@ class PageParsing:
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
         contours = pf.blur_edge_contours(roi)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.15, adjust_width=75)    
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=75, adjust_box_min_box_area=1000)    
 
         self.page_dict["Resulting Death?"] = text
 
@@ -301,7 +297,7 @@ class PageParsing:
         points = self.coordinate_dict["Deceased on Suicide Watch"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
         contours = pf.blur_edge_contours(roi)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.5, adjust_width=60)
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=60, adjust_box_min_box_area=1500)
 
         self.page_dict["Deceased on Suicide Watch"] = text
 
