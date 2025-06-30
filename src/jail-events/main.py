@@ -5,6 +5,7 @@ import json
 from tqdm import tqdm
 import fitz, cv2, time
 from preprocess.cleaning import pre_process_page
+from analysis.analysis_handwritten import extract_ocr_confidence, generate_handwritten_report
 
 def parse_image_dict(cleaned_img, key_id):
     """
@@ -12,14 +13,21 @@ def parse_image_dict(cleaned_img, key_id):
     """
     cleaned_rep_dict = scrape_page(cleaned_img)
     cleaned_rep_dict["Report ID"] = key_id
+    # Adding OCR analysis 
+    confidence_data = extract_ocr_confidence(cleaned_img)
+    cleaned_rep_dict.update({
+        "OCR_Confidence": confidence_data['avg_confidence'],
+        "OCR_Word_Count": confidence_data['word_count'],
+        "OCR_Text_Detected": confidence_data['text_detected']
+    })
+
     return cleaned_rep_dict
 
 def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300,
                        title_key: str = "REPORT EXTRAORDINARY UNUSUAL"):
     """
-    Process of all the pages in a single pdf and return list dicrionaries
+    Process of all the pages in a single pdf and return list dictionaries
     """
-    
     doc = fitz.open(pdf_path)
     pdf_stem = pdf_path.stem
     list_dicts = []
@@ -60,9 +68,11 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
 
 def main():
     # project paths
+    #To run on all the pdfs:
     samples = Path(__file__).parent / "data/jails-data/samples"
     processed = Path(__file__).parent / "data/jails-data/processed"
     out_data = Path(__file__).parent / "data/jails-data/output"
+    out_analysis = Path(__file__).parent / "analysis"
     out_data.mkdir(parents=True, exist_ok=True)
     
     # First parse all the pdfs and parrse images
@@ -72,5 +82,9 @@ def main():
     with open(out_json, "w") as json_file:
         json.dump(all_dicts_list, json_file, indent=2)
     print(f"Saved {len(all_dicts_list)} records to {out_json}")
+    
+    #Confidence analysis
+    generate_handwritten_report(all_dicts_list, out_data)
+
 if __name__ == "__main__":
     main()
