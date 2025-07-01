@@ -363,7 +363,7 @@ def pre_process_page(page: fitz.Page,
         search_region_fr=0.2,
         margin=5
     )
-    if content_roi is None:
+    if content_roi.size == 0:
         return None
     # Aligned to position if aligned is set or Centered otherwise
     #standard with start on specific location

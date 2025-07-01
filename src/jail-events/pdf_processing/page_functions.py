@@ -9,14 +9,6 @@ import json
 import matplotlib.pyplot as plt
 from . import processing_functions as pf
 
-
-"""
-TO DO
-get start of table for Cook County, can find the end?
-increase contrast
-hook up json to to Box
-"""
-
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
 class PageParsing:
@@ -38,13 +30,13 @@ class PageParsing:
         """
         Performs an initial scan of the document to determine its years and if its Cook County, assigns dictionary of coordinates for points
         """
-        roi = pf.get_roi(self.cv2_image, (2100, 3000), (2500, 3300))
+        roi = pf.get_roi(self.cv2_image, (2100, 2900), (2550, 3300))
         text = pf.basic_text_line(roi)
 
         test_2002 = re.search("2002", text)
 
         if test_2002:
-            new_coordinate_dict = {"Facility Type": ((1000, 300), (1950, 580)),
+            new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                 "Facility Name": ((50, 650), (1625, 850)),
                                 "Phone Number": ((1625, 650), (2450, 850)),
                                 "Address": ((50, 800), (2400, 950)),
@@ -54,7 +46,7 @@ class PageParsing:
                                 "Occurrence Dictionary": ((430, 1075), (2475, 1400)),
                                 "Table Contents": ((25, 1500), (2375, 2025)),
                                 "Injuries?": ((50, 1950), (2550, 2100)),
-                                "Resulting Death?": ((50, 2075), (2450, 2175)),
+                                "Resulting Death?": ((50, 2150), (2450, 2300)),
                                 "Deceased Cause, Date, and Time": ((50, 2200), (2450, 2475)),
                                 "Deceased on Suicide Watch": ((50, 2450), (2400, 2550)),
                                 "Deceased Reporter": ((50, 2525), (2500, 2675)),
@@ -67,7 +59,7 @@ class PageParsing:
             test_facility = re.search("Cook County", facility)
             if test_facility:
                 self.cook_county = True
-                new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
+                new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                     "Facility Name": ((50, 675), (1625, 850)),
                                     "Phone Number": ((1650, 655), (2500, 850)),
                                     "Address": ((50, 825), (2400, 925)),
@@ -79,7 +71,7 @@ class PageParsing:
                 }
 
             else:
-                new_coordinate_dict = {"Facility Type": ((1050, 300), (1950, 580)),
+                new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                         "Facility Name": ((50, 675), (1625, 850)),
                                         "Phone Number": ((1650, 655), (2500, 850)),
                                         "Address": ((50, 870), (2400, 950)),
@@ -89,7 +81,7 @@ class PageParsing:
                                         "Occurrence Dictionary": ((430, 1100), (2475, 1400)),
                                         "Table Contents": ((25, 1450), (2450, 2100)),
                                         "Injuries?": ((50, 2100), (2550, 2200)),
-                                        "Resulting Death?": ((50, 2200), (2450, 2300)),
+                                        "Resulting Death?": ((50, 2150), (2450, 2300)),
                                         "Deceased Cause, Date, and Time": ((50, 2300), (2450, 2575)),
                                         "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
                                         "Deceased Reporter": ((50, 2675), (2500, 2775)),
@@ -103,9 +95,9 @@ class PageParsing:
         Retrieves first three letters of facility type, to be processed later
         """
         points = self.coordinate_dict["Facility Type"]
-        roi = pf.get_roi(self.cv2_image, points[0], points[1]) #what do we need to do again once we have the box?
-        contours = pf.blur_edge_contours(roi)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=80)
+        roi = pf.get_roi(self.cv2_image, points[0], points[1])
+        contours = pf.blur_edge_contours(roi, 5)
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=160, adjust_box_min_box_area=1500)
 
         self.page_dict["Facility Type"] = text
 
@@ -161,12 +153,16 @@ class PageParsing:
         """
         For incidents not in military time, retrieves whether they occured in the AM or PM
         """
-        points = self.coordinate_dict["AM or PM"]
-        roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
-        contours = pf.blur_edge_contours(roi)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.3, adjust_width=100)
 
-        self.page_dict["AM or PM"] = text
+        if self.cook_county:
+            self.page_dict["AM or PM"] = "Check time, no AM or PM for Cook County"
+        else:
+            points = self.coordinate_dict["AM or PM"]
+            roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
+            contours = pf.blur_edge_contours(roi, 1.5)
+            text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=500)
+
+            self.page_dict["AM or PM"] = text
 
     def get_occurrence_dict(self): #need to edit this down
         """
@@ -188,7 +184,7 @@ class PageParsing:
 
         text = None
         roi = self.cv2_image[y1:y2, x1:x2]
-        contours = pf.blur_edge_contours(roi)
+        contours = pf.blur_edge_contours(roi, 1.5)
         for contour in contours:
             approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
             if contour.ndim == 3:
@@ -237,19 +233,59 @@ class PageParsing:
         binary = cv2.adaptiveThreshold(~gray, 255, 
                                     cv2.ADAPTIVE_THRESH_MEAN_C, 
                                     cv2.THRESH_BINARY, 15, -2)
-        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1))
+        
+        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1)) #getting lines
         vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 40))
         horizontal_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, horizontal_kernel, iterations=1)
         vertical_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, vertical_kernel, iterations=1)
-        lines = cv2.add(horizontal_lines, vertical_lines)
-        cleaned = cv2.subtract(binary, lines)
-        text = pytesseract.image_to_string(cleaned, config='--psm 12')
+
+        contours, _ = cv2.findContours(horizontal_lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        max_y = 0
+        for cnt in contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if w > 50:  # Filter out noise: adjust threshold as needed
+                line_strip = vertical_lines[y:y+h, x:x+w]
+                vertical_intersections = cv2.countNonZero(line_strip)
+                if vertical_intersections > 0:
+                    max_y = max(max_y, y + h)
+
+        roi_trimmed = roi[:max_y, :]
+
+        if roi_trimmed.size == 0:
+            self.page_dict["Table Contents"] = "Bad parse"
+            return
+
+        gray_trimmed = cv2.cvtColor(roi_trimmed, cv2.COLOR_BGR2GRAY)
+
+        binary_trimmed = cv2.adaptiveThreshold(~gray_trimmed, 255, 
+                                            cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                            cv2.THRESH_BINARY, 15, -2)
+
+        horizontal_lines_trimmed = cv2.morphologyEx(binary_trimmed, cv2.MORPH_OPEN, horizontal_kernel, iterations=1)
+        vertical_lines_trimmed = cv2.morphologyEx(binary_trimmed, cv2.MORPH_OPEN, vertical_kernel, iterations=1)
+
+
+        #ensuring small vertical lines (letters) aren't cut out
+        vertical_contours, _ = cv2.findContours(vertical_lines_trimmed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        min_height = 50  
+
+        for cnt in vertical_contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if h < min_height:
+                cv2.drawContours(vertical_lines_trimmed, [cnt], -1, 0, -1)
+
+        lines_trimmed = cv2.add(horizontal_lines_trimmed, vertical_lines_trimmed)
+        cleaned_trimmed = cv2.subtract(binary_trimmed, lines_trimmed)
+
+        text = pytesseract.image_to_string(cleaned_trimmed, config='--psm 12')
 
         cells = []
         stripped_text = text.strip().splitlines()
         prohibited = ["|"]
         for element in stripped_text:
-            if element and element not in prohibited:
+            if element and element not in prohibited and len(element) > 4:
                 cells.append(element)
 
         multiples = [4,8,12,16]
@@ -268,7 +304,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Injuries?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        contours = pf.blur_edge_contours(roi)
+        contours = pf.blur_edge_contours(roi, 1.5)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1800)
 
         self.page_dict["Injuries?"] = text
@@ -279,8 +315,8 @@ class PageParsing:
         """
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
-        contours = pf.blur_edge_contours(roi)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.15, adjust_width=75)    
+        contours = pf.blur_edge_contours(roi, 5)
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=75, adjust_box_min_box_area=1500)    
 
         self.page_dict["Resulting Death?"] = text
 
@@ -300,8 +336,8 @@ class PageParsing:
         """
         points = self.coordinate_dict["Deceased on Suicide Watch"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
-        contours = pf.blur_edge_contours(roi)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.5, adjust_width=60)
+        contours = pf.blur_edge_contours(roi, 1.5)
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=60, adjust_box_min_box_area=1500)
 
         self.page_dict["Deceased on Suicide Watch"] = text
 
@@ -321,7 +357,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Deceased Examined by Physician"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        contours = pf.blur_edge_contours(roi)
+        contours = pf.blur_edge_contours(roi, 1.5)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1800)
 
         self.page_dict["Deceased Examined by Physician"] = text
@@ -332,7 +368,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Deceased Signs of Illness"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        contours = pf.blur_edge_contours(roi)
+        contours = pf.blur_edge_contours(roi, 1.5)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
         if text != "No":
             new_roi = pf.get_roi(self.cv2_image, (50,2875), (2500,3000))
@@ -446,6 +482,6 @@ def scrape_page(image):
 
     return (page_parser.page_dict)
 
-#if __name__ == "__main__":
-    #image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Cook County 4 Prisoners_p1.png"
-#    print (scrape_page(image_path))
+if __name__ == "__main__":
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA January 2023_p270.png"
+    print (scrape_page(image_path))
