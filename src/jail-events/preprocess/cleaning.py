@@ -10,7 +10,6 @@ from .crop import resize_image
 
 # From pdf to image with PyMUPDF
 def pdf_page_to_image(page: fitz.Page, dpi: int = 300) -> np.ndarray:
-    
     """
     Render PDF page to a BGR OPENCV image (Numpy Arry)
     """
