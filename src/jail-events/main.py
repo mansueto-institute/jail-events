@@ -5,6 +5,8 @@ import json
 from tqdm import tqdm
 import fitz, cv2, time
 from preprocess.cleaning import pre_process_page
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import multiprocessing as mp
 from analysis.analysis_handwritten import extract_ocr_confidence, generate_handwritten_report
 
 def parse_image_dict(cleaned_img, key_id):
@@ -13,6 +15,11 @@ def parse_image_dict(cleaned_img, key_id):
     """
     cleaned_rep_dict = scrape_page(cleaned_img)
     cleaned_rep_dict["Report ID"] = key_id
+    
+    # Remove the problematic nested dictionary field
+    if "Occurrence Dictionary" in cleaned_rep_dict:
+        del cleaned_rep_dict["Occurrence Dictionary"]
+    
     # Adding OCR analysis 
     confidence_data = extract_ocr_confidence(cleaned_img)
     cleaned_rep_dict.update({
@@ -75,6 +82,10 @@ def main():
     out_analysis = Path(__file__).parent / "analysis"
     out_data.mkdir(parents=True, exist_ok=True)
     
+    # Time cloking
+    start_time = time.time()
+    #all_dicts_list = process_all_pdfs(samples, processed, dpi=300, parallel=True)
+   
     # First parse all the pdfs and parrse images
     all_dicts_list = process_all_pdfs(samples, processed, dpi=300)
     out_json = out_data / "jails_pdfs.json"
@@ -85,6 +96,10 @@ def main():
     
     #Confidence analysis
     generate_handwritten_report(all_dicts_list, out_data)
-
+    
+    processing_time = time.time() - start_time
+    
+    print(f"Processed {len(all_dicts_list)} records in {processing_time:.1f}s")
+    
 if __name__ == "__main__":
     main()

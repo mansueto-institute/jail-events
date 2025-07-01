@@ -4,6 +4,7 @@ from typing import Dict, List
 from pathlib import Path
 import polars as pl
 import altair as alt
+import pandas as pd
 
 def extract_ocr_confidence(cleanned_image) -> Dict:
     """
@@ -41,7 +42,7 @@ def generate_handwritten_report(data_list: List[Dict],
     Report about handtwrittern results
     """
 
-    df = pl.Data(data_list)
+    df = pl.DataFrame(data_list)
     text_df = df.filter(pl.col('OCR_Text_Detected') == True)
     
     if text_df.height == 0:
@@ -78,7 +79,7 @@ def generate_handwritten_report(data_list: List[Dict],
     print(f"Range: {stats['min_confidence']:.1f} - {stats['max_confidence']:.1f}")
     
     # Create histogram
-    histogram = alt.Chart(classified_df.to_dicts()).mark_bar(
+    histogram = alt.Chart(classified_df).mark_bar(
         opacity=0.7,
         stroke='white',
         strokeWidth=1
@@ -105,11 +106,8 @@ def generate_handwritten_report(data_list: List[Dict],
     )
     
     # Add threshold line
-    threshold_line = alt.Chart(pl.DataFrame({'threshold': [threshold]}).to_dicts()).mark_rule(
-        color='red',
-        strokeDash=[5, 5],
-        size=2
-    ).encode(x='threshold:Q')
+    threshold_line = alt.Chart(pl.DataFrame({'threshold':[threshold]})).mark_rule(
+    color='red', strokeDash=[5, 5], size=2).encode(x='threshold:Q')
     
     # Combine chart
     chart = (histogram + threshold_line).properties(
@@ -122,21 +120,3 @@ def generate_handwritten_report(data_list: List[Dict],
     chart_path = output / "confidence_histogram.html"
     chart.save(str(chart_path))
     print(f"Histogram saved to: {chart_path}")
-
-def parse_image_dict(cleaned_img, key_id):
-    """
-    Parse a cleaned image into a dictionary + OCR confidence
-    """
-    # Original data extraction
-    cleaned_rep_dict = scrape_page(cleaned_img)
-    cleaned_rep_dict["Report ID"] = key_id
-    
-    # Add OCR confidence analysis
-    confidence_data = extract_ocr_confidence(cleaned_img)
-    cleaned_rep_dict.update({
-        "OCR_Confidence": confidence_data['avg_confidence'],
-        "OCR_Word_Count": confidence_data['word_count'],
-        "OCR_Text_Detected": confidence_data['text_detected']
-    })
-    
-    return cleaned_rep_dict

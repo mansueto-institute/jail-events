@@ -10,7 +10,6 @@ from .crop import resize_image
 
 # From pdf to image with PyMUPDF
 def pdf_page_to_image(page: fitz.Page, dpi: int = 300) -> np.ndarray:
-    
     """
     Render PDF page to a BGR OPENCV image (Numpy Arry)
     """
@@ -364,7 +363,7 @@ def pre_process_page(page: fitz.Page,
         search_region_fr=0.2,
         margin=5
     )
-    if not content_roi:
+    if content_roi is None:
         return None
     # Aligned to position if aligned is set or Centered otherwise
     #standard with start on specific location
