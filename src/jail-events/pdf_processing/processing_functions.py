@@ -1,7 +1,7 @@
 import pytesseract
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageEnhance
 from pathlib import Path
 import re
 import json
@@ -20,10 +20,23 @@ def get_roi(cv2_image, type_start_point, type_end_point):
 
     return roi
 
-def blur_edge_contours(roi):
-    blurred_image = cv2.GaussianBlur(roi, (5, 5), 0)
-    edges = cv2.Canny(blurred_image, 50, 150) #get contoured polygons
-    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+def blur_edge_contours(roi, alpha):
+    # cv2.imshow("roi",roi)
+    # contrast_img = cv2.convertScaleAbs(roi, alpha=alpha, beta=0.5)
+    #contrast_img = np.array(ImageEnhance.Contrast(Image.fromarray(roi)).enhance(2.0))
+    # cv2.imshow("ci",contrast_img)
+    #blurred_image = cv2.GaussianBlur(contrast_img, (5, 5), 0)
+    # cv2.imshow("bi",blurred_image)
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+    # ERODE to break text up
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
+    eroded = cv2.erode(binary, kernel, iterations=1) #breaking apart text itself
+
+    # (optional) then dilate to re-strengthen box edges
+    dilated = cv2.dilate(eroded, kernel, iterations=1)
+    #edges = cv2.Canny(roi, 50, 150) #get contoured polygons
+    contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     return contours
 
@@ -51,6 +64,7 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
         if (carea > adjust_box_min_box_area) and (carea < 2500):
             s = "**"
         if s == "**":
+            # cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
             x, y, w, h = cv2.boundingRect(approx)
             cropped_rect = roi[y : (y + h), x : (x + w)]
             gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
@@ -58,10 +72,13 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
             margin = int(min(w, h) * 0.1)
             inner = binary[margin:h-margin, margin:w-margin]
             fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
-            box_dict = {"x": x, "y": y, "w": w, "h": h, "fill_ratio": fill_ratio}
+            box_dict = {"x": x, "y": y, "w": w, "h": h, "fill_ratio": fill_ratio, "area": carea}
             box_list.append(box_dict)
-    print (box_list)
+    # cv2.imshow("Contours Visualization", roi)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     box_list = sorted(box_list, key=lambda d: d["fill_ratio"], reverse=True)
+    print (box_list)
     if len(box_list) < 2:
         return "Error: less than two boxes found"
     max_box = box_list[0]
@@ -109,7 +126,6 @@ def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
                     inner = binary[margin:h-margin, margin:w-margin]
                     fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
                     is_filled = fill_ratio > adjust_fill_ratio  # can adjust threashold
-                    print(f"Checkbox at ({x},{y}) - Filled: {is_filled}, Fill Ratio: {fill_ratio:.2f}")
                     if is_filled:
                         if x < roi_width*0.02:
                             text = "No"
