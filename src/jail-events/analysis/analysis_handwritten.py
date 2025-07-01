@@ -37,7 +37,7 @@ def extract_ocr_confidence(cleanned_image) -> Dict:
 # Analysis
 def generate_handwritten_report(data_list: List[Dict],
                                 output: Path, 
-                                threshold: float=60.0):
+                                threshold: float=70.0):
     """
     Report about handtwrittern results
     """
@@ -120,3 +120,16 @@ def generate_handwritten_report(data_list: List[Dict],
     chart_path = output / "confidence_histogram.html"
     chart.save(str(chart_path))
     print(f"Histogram saved to: {chart_path}")
+    
+    handwritten_df = classified_df.filter(pl.col('page_type') == 'handwritten')
+    if handwritten_df.height > 0:
+        print("\n--- Handwritten Pages Detected (Sorted by Confidence) ---")
+        # Select and sort the handwritten pages for review
+        handwritten_list = handwritten_df.select([
+            'Report ID', 'OCR_Confidence'
+        ]).sort('OCR_Confidence')
+        
+        # Print each handwritten report and its score
+        for row in handwritten_list.iter_rows(named=True):
+            print(f"  - Report: {row['Report ID']}, Confidence: {row['OCR_Confidence']:.1f}")
+
