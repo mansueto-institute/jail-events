@@ -56,7 +56,7 @@ class PageParsing:
             self.coordinate_dict["Facility Name"] = ((50, 675), (1625, 850))
             self.get_facility_name()
             facility = self.page_dict["Facility Name"]
-            test_facility = re.search("Cook County", facility)
+            test_facility = re.search("Cook County", facility, re.IGNORECASE)
             if test_facility:
                 self.cook_county = True
                 new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
@@ -253,7 +253,7 @@ class PageParsing:
         roi_trimmed = roi[:max_y, :]
 
         if roi_trimmed.size == 0:
-            self.page_dict["Table Contents"] = "Bad parse"
+            self.page_dict["Table Contents"] = ["Bad parse"]
             return
 
         gray_trimmed = cv2.cvtColor(roi_trimmed, cv2.COLOR_BGR2GRAY)
@@ -483,5 +483,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA January 2023_p270.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Part 3_p21.png"
     print (scrape_page(image_path))
