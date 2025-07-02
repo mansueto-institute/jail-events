@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import json
 import matplotlib.pyplot as plt
+import jellyfish
 from . import processing_functions as pf
 
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
@@ -59,6 +60,7 @@ class PageParsing:
             test_facility = re.search("Cook County", facility, re.IGNORECASE)
             if test_facility:
                 self.cook_county = True
+                self.page_dict["Cook County?"] = "Cook County" #delete this for final product?
                 new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                     "Facility Name": ((50, 675), (1625, 850)),
                                     "Phone Number": ((1650, 655), (2500, 850)),
@@ -66,7 +68,7 @@ class PageParsing:
                                     "Date": ((25, 950), (1250, 1100)),
                                     "Time of Day": ((1250, 1000), (2500, 1100)),
                                     "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
-                                    "Occurrence Dictionary": ((430, 1100), (2475, 1400)), #up to here is standard
+                                    "Occurrence Dictionary": ((50, 1050), (2500, 1450)), #up to here is standard
                                     "Table Contents": ((0, 1450), (2550, 2700)),
                 }
 
@@ -206,17 +208,17 @@ class PageParsing:
                         inner = binary[margin:h-margin, margin:w-margin]
                         fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
                         if y < roi_height*0.3 or (x > roi_width*0.6 and y > roi_height*0.6):
-                            text_offset_x = 15  # pixels to skip after box
+                            text_offset_x = 20  # pixels to skip after box
                             text_width = 600   # width of text region to extract
-                            text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
+                            text_roi = roi[y-15:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
                             text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                             _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
                             text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
                             return_dict[str((x,y))] = [text, fill_ratio]
                         else:
-                            text_offset_x = 15  # pixels to skip after box
-                            text_width = 120    # width of text region to extract
-                            text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
+                            text_offset_x = 20  # pixels to skip after box
+                            text_width = 300    # width of text region to extract
+                            text_roi = roi[y-10:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
                             text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                             _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
                             text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
@@ -281,11 +283,19 @@ class PageParsing:
 
         text = pytesseract.image_to_string(cleaned_trimmed, config='--psm 12')
 
+        prohibited = ["Detainees Involved", "Name", "Date of Birth", "Date Confined", "Arresting Charge"]
+
         cells = []
         stripped_text = text.strip().splitlines()
-        prohibited = ["|"]
+        pattern_punctuation = r"[.,!_|-]"
         for element in stripped_text:
-            if element and element not in prohibited and len(element) > 4:
+            cleaned_element = re.sub(pattern_punctuation, '', element)
+            highest_jw = 0
+            for test in prohibited:
+                jw = jellyfish.jaro_similarity(test, cleaned_element)
+                if jw > highest_jw:
+                    highest_jw = jw
+            if cleaned_element and len(cleaned_element) > 4 and highest_jw < 0.8: #can adjust jw
                 cells.append(element)
 
         multiples = [4,8,12,16]
@@ -316,7 +326,10 @@ class PageParsing:
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
         contours = pf.blur_edge_contours(roi, 5)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=75, adjust_box_min_box_area=1500)    
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=75, adjust_box_min_box_area=1250)  
+        test_if_yes = jellyfish.jaro_similarity(text, "Yes")
+        if test_if_yes > 0.8:
+            text = "Yes"  
 
         self.page_dict["Resulting Death?"] = text
 
@@ -428,21 +441,20 @@ class PageParsing:
 
         text = pytesseract.image_to_string(cleaned_trimmed, config='--psm 12')
 
-        #read first row, read second and see if there's a name: if not, append
+        prohibited = ["Detainees Involved", "Name", "Date of Birth", "Date Confined", "Arresting Charge"]
+
         cells = []
         stripped_text = text.strip().splitlines()
-        prohibited = ["Detainees Involved", "Name", "Date of Birth", "Date Confined", "Arresting Charge", "|"]
+        pattern_punctuation = r"[.,!_|-]"
         for element in stripped_text:
-            if element and element not in prohibited:
+            cleaned_element = re.sub(pattern_punctuation, '', element)
+            highest_jw = 0
+            for test in prohibited:
+                jw = jellyfish.jaro_similarity(test, cleaned_element)
+                if jw > highest_jw:
+                    highest_jw = jw
+            if cleaned_element and len(cleaned_element) > 4 and highest_jw < 0.8: #can adjust jw
                 cells.append(element)
-
-        multiples = [4,8,12,16]
-        for row in multiples:
-            if len(cells) > row:
-                if "|" in cells[row]:
-                    for extra_charge in cells[row:]:
-                        cells[row-1] += extra_charge
-                    cells = cells[:row]
 
         self.page_dict["Table Contents"] = cells
         self.running_y = points[0][1] + max_y
@@ -453,6 +465,18 @@ class PageParsing:
         self.coordinate_dict["Resulting Death?"] = ((50, self.running_y), (2450, self.running_y + 100))
         self.running_y = self.coordinate_dict["Resulting Death?"][1][1]
 
+    def clean_occurrences(self):
+        #get average, then see what boxes are filled like 0.1 above that average?
+        final_list = []
+        sorting_dict = {}
+        occurrence_dict = self.page_dict["Occurrence Dictionary"]
+        for coordinates, box_list in occurrence_dict.items():
+            sorting_dict[box_list[0]] = box_list[1]
+        average_fill = np.mean(list(sorting_dict.values()))
+        for occurrence, fill_ratio in sorting_dict.items():
+            if fill_ratio > (average_fill + 0.2):
+                final_list.append(occurrence)
+        self.page_dict["Occurrence"] = final_list
 
 def scrape_page(image):
     #cv2_image = cv2.imread(str(image_path))
@@ -467,6 +491,7 @@ def scrape_page(image):
     page_parser.get_time()
     page_parser.get_am_pm()
     page_parser.get_occurrence_dict()
+    page_parser.clean_occurrences()
     if page_parser.cook_county:
         page_parser.cook_county_parse()
     else:
@@ -483,5 +508,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Part 3_p21.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "1FOIA UO Jan 2022_p6.png"
     print (scrape_page(image_path))
