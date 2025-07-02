@@ -24,13 +24,13 @@ def resize_image(img:  Image.Image) -> Image.Image:
     x_df = pl.DataFrame(imgarr.transpose()).select(
         pl.col("*") / 255
     ).select(
-        pl.sum_horizontal(pl.col("*")).rolling_median(window_size=50, center=True, min_samples=1)
+        pl.sum_horizontal(pl.col("*")).rolling_median(window_size=43, center=True, min_samples=1)
     ).with_row_index().drop_nulls().with_columns(
         pl.col("column_0") / img.height
     )
     
     x_vals = x_df.with_columns(
-        pl.when(pl.col("column_0") > (0.98 * (np.mean(imgarr) / 237)))
+        pl.when(pl.col("column_0") > (0.98 * (np.mean(imgarr) / 238)))
         .then(0.0).otherwise(pl.col("column_0")).alias("column_0")
     ).with_columns(
         pl.col("column_0").diff().alias("diff"),
@@ -43,7 +43,7 @@ def resize_image(img:  Image.Image) -> Image.Image:
     ).to_dicts()[0]
 
     y_vals = y_df.with_columns(
-        pl.when(pl.col("column_0") > (0.98 * (np.mean(imgarr) / 237)))
+        pl.when(pl.col("column_0") > (0.975))
         .then(0.0).otherwise(pl.col("column_0")).alias("column_0")
     ).with_columns(
         pl.col("column_0").diff().alias("diff"),
