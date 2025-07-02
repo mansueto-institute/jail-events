@@ -150,9 +150,9 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
 def main():
     # project paths
     #To run on all the pdfs:
-    samples = Path(__file__).parent / "data/jails-data/samples/"
-    processed = Path(__file__).parent / "data/jails-data/processed/"
-    out_data = Path(__file__).parent / "data/jails-data/output/"
+    samples = Path(__file__).parent / "data/jails-data/samples"
+    processed = Path(__file__).parent / "data/jails-data/processed"
+    out_data = Path(__file__).parent / "data/jails-data/output"
     out_analysis = Path(__file__).parent / "analysis"
     out_data.mkdir(parents=True, exist_ok=True)
     
@@ -180,6 +180,7 @@ def main():
     log_df.write_parquet(log_parquet)
     
     print("\n=== PROCESSING SUMMARY ===")
+    print(f"Total pages attempted: {len(processing_logs)}")
     summary = log_df.group_by("status").agg(pl.len().alias("count"))
     for row in summary.iter_rows(named=True):
         print(f"{row['status'].title()}: {row['count']} pages")
