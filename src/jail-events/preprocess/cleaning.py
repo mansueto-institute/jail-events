@@ -337,7 +337,6 @@ def standardize_canvas(image: np.ndarray,
            x_off:x_off+new_w] = resized
     return canvas
 
-# New approach using 90% of document croping after detection of title:
 
 def pre_process_page(page: fitz.Page,
                      dpi: int = 300,
@@ -363,6 +362,8 @@ def pre_process_page(page: fitz.Page,
         search_region_fr=0.2,
         margin=5
     )
+    if content_roi is None:
+        return None
     if content_roi.size == 0:
         return None
     # Aligned to position if aligned is set or Centered otherwise

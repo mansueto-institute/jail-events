@@ -150,11 +150,15 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
 def main():
     # project paths
     #To run on all the pdfs:
-    samples = Path(__file__).parent / "data/jails-data/raw"
-    processed = Path(__file__).parent / "data/jails-data/processed"
+    samples = Path(__file__).parent / "data/jails-data/samples/500 detailed"
+    processed = Path(__file__).parent / "data/jails-data/processed/500_processed"
     out_data = Path(__file__).parent / "data/jails-data/output"
-    out_analysis = Path(__file__).parent / "analysis"
+    out_analysis = Path(__file__).parent / "analysis/500 an"
     out_data.mkdir(parents=True, exist_ok=True)
+    out_parquet = out_data / "jails_pdfs_500.parquet"
+    #out_parquet = out_data / "jails_pdfs.parquet"
+    log_parquet = out_data / "processing_logs_500.parquet"
+    #log_parquet = out_data / "processing_logs.parquet"
     
     # Time cloking
     start_time = time.time()
@@ -170,12 +174,12 @@ def main():
         pickle.dump(all_dicts_list, f)
     print(f"Saved backup to {backup_file}")
     
-    out_parquet = out_data / "jails_pdfs.parquet"
+
     df = pl.DataFrame(all_dicts_list)
     df.write_parquet(out_parquet)
     
     #log of errors
-    log_parquet = out_data / "processing_logs.parquet"
+
     log_df = pl.DataFrame(processing_logs)
     log_df.write_parquet(log_parquet)
     

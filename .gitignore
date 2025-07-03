@@ -201,3 +201,4 @@ src/jail-events/data
 
 # Any .ipynb noteook
 #*.ipynb
+*.html
