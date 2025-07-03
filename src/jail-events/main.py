@@ -150,9 +150,9 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
 def main():
     # project paths
     #To run on all the pdfs:
-    samples = Path(__file__).parent / "data/jails-data/samples"
-    processed = Path(__file__).parent / "data/jails-data/processed"
-    out_data = Path(__file__).parent / "data/jails-data/output"
+    samples = Path(__file__).parent / "data/jails-data/samples/debug"
+    processed = Path(__file__).parent / "data/jails-data/processed/debug_processed"
+    out_data = Path(__file__).parent / "data/jails-data/output/debug_output"
     out_analysis = Path(__file__).parent / "analysis"
     out_data.mkdir(parents=True, exist_ok=True)
     

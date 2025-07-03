@@ -472,6 +472,9 @@ class PageParsing:
         occurrence_dict = self.page_dict["Occurrence Dictionary"]
         for coordinates, box_list in occurrence_dict.items():
             sorting_dict[box_list[0]] = box_list[1]
+        if not sorting_dict:
+            self.page_dict["Occurrence"] = final_list
+            return
         average_fill = np.mean(list(sorting_dict.values()))
         for occurrence, fill_ratio in sorting_dict.items():
             if fill_ratio > (average_fill + 0.2):
@@ -508,5 +511,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "1FOIA UO Jan 2022_p6.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Huff, Anthony 1-15_p1.png"
     print (scrape_page(image_path))
