@@ -46,7 +46,7 @@ class PageParsing:
                                 "AM or PM": ((2170, 1000), (2500, 1100)),
                                 "Occurrence Dictionary": ((430, 1075), (2475, 1400)),
                                 "Table Contents": ((25, 1500), (2375, 2025)),
-                                "Injuries?": ((50, 1950), (2550, 2100)),
+                                "Injuries?": ((50, 2050), (2550, 2200)),
                                 "Resulting Death?": ((50, 2150), (2450, 2300)),
                                 "Deceased Cause, Date, and Time": ((50, 2200), (2450, 2475)),
                                 "Deceased on Suicide Watch": ((50, 2450), (2400, 2550)),
@@ -82,7 +82,7 @@ class PageParsing:
                                         "AM or PM": ((2170, 1000), (2500, 1100)),
                                         "Occurrence Dictionary": ((430, 1100), (2475, 1400)),
                                         "Table Contents": ((25, 1450), (2450, 2100)),
-                                        "Injuries?": ((50, 2100), (2550, 2200)),
+                                        "Injuries?": ((50, 2050), (2550, 2200)),
                                         "Resulting Death?": ((50, 2150), (2450, 2300)),
                                         "Deceased Cause, Date, and Time": ((50, 2300), (2450, 2575)),
                                         "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
@@ -315,7 +315,7 @@ class PageParsing:
         points = self.coordinate_dict["Injuries?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         contours = pf.blur_edge_contours(roi, 1.5)
-        text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1800)
+        text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=2000)
 
         self.page_dict["Injuries?"] = text
 
