@@ -64,7 +64,7 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
         if (carea > adjust_box_min_box_area) and (carea < 2500):
             s = "**"
         if s == "**":
-            # cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
+            #cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
             x, y, w, h = cv2.boundingRect(approx)
             cropped_rect = roi[y : (y + h), x : (x + w)]
             gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
@@ -90,10 +90,10 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
         text_offset_x = 10  # pixels to skip after box
         text_width = adjust_width    # width of text region to extract
         if x == 0 or y == 0 or w == 0 or h == 0:
-            return "Error creating ROI"
+            return "Error creating ROI: zero-length box side"
         text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
         if text_roi.size == 0:
-            return "Error creating ROI"
+            return "Error creating ROI: text ROI is size 0"
         text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
         _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
         text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
@@ -103,8 +103,8 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
 
 
 def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
+    # cv2.imshow("Injuries", roi)
     text = "No"
-    roi_height, roi_width = roi.shape[:2]
     for contour in contours:
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
         if contour.ndim == 3:
@@ -124,7 +124,7 @@ def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
             fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
             is_filled = fill_ratio > adjust_fill_ratio  # can adjust threashold
             if is_filled:
-                text_offset_x = 10  # pixels to skip after box
+                text_offset_x = 5  # pixels to skip after box
                 text_width = adjust_width    # width of text region to extract
                 text_roi = roi[y:y+h, x+w+text_offset_x:x+w+text_offset_x+text_width]
                 text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)

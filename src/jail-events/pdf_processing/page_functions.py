@@ -8,7 +8,8 @@ import re
 import json
 import matplotlib.pyplot as plt
 import jellyfish
-from . import processing_functions as pf
+import processing_functions as pf
+#from .
 
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
@@ -69,7 +70,7 @@ class PageParsing:
                                     "Time of Day": ((1250, 1000), (2500, 1100)),
                                     "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
                                     "Occurrence Dictionary": ((50, 1050), (2500, 1450)), #up to here is standard
-                                    "Table Contents": ((0, 1450), (2550, 2700)),
+                                    "Table Contents": ((0, 1450), (7550, 2700)),
                 }
 
             else:
@@ -197,32 +198,45 @@ class PageParsing:
                 s = "**"
             if s == "**":
                 x, y, w, h = cv2.boundingRect(approx)
-                area = cv2.contourArea(approx) 
-                if 500 <= area <= 5000: #check if its a box
-                    if x >= 0 and y >= 0 and x + w <= roi_width and y + h <= roi_height:
-                        cropped_rect = roi[y : (y + h), x : (x + w)]
-                        gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
-                        _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
-                        # Crop inside to ignore border (e.g. 10% margin)
-                        margin = int(min(w, h) * 0.1)
-                        inner = binary[margin:h-margin, margin:w-margin]
-                        fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
-                        if y < roi_height*0.3 or (x > roi_width*0.6 and y > roi_height*0.6):
-                            text_offset_x = 20  # pixels to skip after box
-                            text_width = 600   # width of text region to extract
-                            text_roi = roi[y-15:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
-                            text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
-                            _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
-                            text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
-                            return_dict[str((x,y))] = [text, fill_ratio]
-                        else:
-                            text_offset_x = 20  # pixels to skip after box
-                            text_width = 300    # width of text region to extract
-                            text_roi = roi[y-10:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
-                            text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
-                            _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
-                            text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
-                            return_dict[str((x,y))] = [text, fill_ratio]
+                cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
+                cropped_rect = roi[y : (y + h), x : (x + w)]
+                gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
+                _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
+                # Crop inside to ignore border (e.g. 10% margin)
+                margin = int(min(w, h) * 0.1)
+                inner = binary[margin:h-margin, margin:w-margin]
+                fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
+                if x == 0 or y == 0 or w == 0 or h == 0:
+                    print ("Error creating ROI")
+                    break
+                if y < roi_height*0.3 or (x > roi_width*0.6 and y > roi_height*0.6):
+                    text_offset_x = 20  # pixels to skip after box
+                    text_width = 600   # width of text region to extract
+                    text_roi = roi[y-15:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
+                    if text_roi.size == 0:
+                        print ("Error creating ROI")
+                        break
+                    text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
+                    _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
+                    text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
+                    return_dict[str((x,y))] = [text, fill_ratio]
+                else:
+                    text_offset_x = 20  # pixels to skip after box
+                    text_width = 300    # width of text region to extract
+                    text_roi = roi[y-10:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
+                    if text_roi.size == 0:
+                        print ("Error creating ROI")
+                        break
+                    text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
+                    _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
+                    text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
+                    return_dict[str((x,y))] = [text, fill_ratio]
+
+        scale = 0.5  # or any factor that ensures it fits on your screen
+        resized_roi = cv2.resize(roi, (0, 0), fx=scale, fy=scale)
+        cv2.imshow("Contours Visualization", resized_roi)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
         self.page_dict["Occurrence Dictionary"] = return_dict #returns dictionary of coordinate of the checkbox as keys then the text content and the fill ratio
 
@@ -326,9 +340,10 @@ class PageParsing:
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
         contours = pf.blur_edge_contours(roi, 5)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=75, adjust_box_min_box_area=1250)  
-        test_if_yes = jellyfish.jaro_similarity(text, "Yes")
-        if test_if_yes > 0.8:
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.075, adjust_width=300, adjust_box_min_box_area=1250)  
+        pattern = r"yes"
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
             text = "Yes"  
 
         self.page_dict["Resulting Death?"] = text
@@ -399,12 +414,14 @@ class PageParsing:
         self.get_injuries()
         self.get_resulting_death()
         if self.page_dict["Resulting Death?"] == "Yes":
-            self.page_dict["Resulting Death"] == "Yes, check the report"
+            self.page_dict["Resulting Death?"] = "Yes, check the report, Cook County"
     
     def cook_county_table(self):
 
         points = self.coordinate_dict["Table Contents"]
+        # cv2.imshow("Tableraw", self.cv2_image)
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
+
         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
         binary = cv2.adaptiveThreshold(~gray, 255, 
                                     cv2.ADAPTIVE_THRESH_MEAN_C, 
@@ -436,8 +453,25 @@ class PageParsing:
         horizontal_lines_trimmed = cv2.morphologyEx(binary_trimmed, cv2.MORPH_OPEN, horizontal_kernel, iterations=1)
         vertical_lines_trimmed = cv2.morphologyEx(binary_trimmed, cv2.MORPH_OPEN, vertical_kernel, iterations=1)
 
+        vertical_contours, _ = cv2.findContours(vertical_lines_trimmed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        min_height = 50  
+
+        for cnt in vertical_contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if h < min_height:
+                cv2.drawContours(vertical_lines_trimmed, [cnt], -1, 0, -1)
+
         lines_trimmed = cv2.add(horizontal_lines_trimmed, vertical_lines_trimmed)
         cleaned_trimmed = cv2.subtract(binary_trimmed, lines_trimmed)
+
+
+        # plt.figure(figsize=(12, 8))
+        # plt.imshow(roi_trimmed)
+        # plt.title("Scroll and Zoom Enabled Image")
+        # plt.axis("off")
+        # plt.tight_layout()
+        # plt.show()
 
         text = pytesseract.image_to_string(cleaned_trimmed, config='--psm 12')
 
@@ -445,7 +479,7 @@ class PageParsing:
 
         cells = []
         stripped_text = text.strip().splitlines()
-        pattern_punctuation = r"[.,!_|-]"
+        pattern_punctuation = r"[^a-zA-Z0-9/]"
         for element in stripped_text:
             cleaned_element = re.sub(pattern_punctuation, '', element)
             highest_jw = 0
@@ -460,7 +494,7 @@ class PageParsing:
         self.running_y = points[0][1] + max_y
 
     def cook_county_coordinates(self):
-        self.coordinate_dict["Injuries?"] = ((50, self.running_y), (2550, self.running_y + 250))
+        self.coordinate_dict["Injuries?"] = ((50, self.running_y), (2550, self.running_y + 150))
         self.running_y = self.coordinate_dict["Injuries?"][1][1]
         self.coordinate_dict["Resulting Death?"] = ((50, self.running_y), (2450, self.running_y + 100))
         self.running_y = self.coordinate_dict["Resulting Death?"][1][1]
@@ -477,7 +511,7 @@ class PageParsing:
             return
         average_fill = np.mean(list(sorting_dict.values()))
         for occurrence, fill_ratio in sorting_dict.items():
-            if fill_ratio > (average_fill + 0.2):
+            if fill_ratio > (average_fill + (average_fill*0.5)):
                 final_list.append(occurrence)
         self.page_dict["Occurrence"] = final_list
 
@@ -495,6 +529,7 @@ def scrape_page(image):
     page_parser.get_am_pm()
     page_parser.get_occurrence_dict()
     page_parser.clean_occurrences()
+    #page_parser.page_dict.del delete the occurrence dict key after getting it clean
     if page_parser.cook_county:
         page_parser.cook_county_parse()
     else:
@@ -511,5 +546,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Huff, Anthony 1-15_p1.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "debug_processed" / "Overdose Death_p1.png"
     print (scrape_page(image_path))

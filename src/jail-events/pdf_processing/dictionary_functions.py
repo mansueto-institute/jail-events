@@ -1,4 +1,5 @@
 import re
+import jellyfish
 
 #function to proofread address
 
@@ -51,9 +52,34 @@ class DictionaryCleaner:
         print ("tbd")
 
     def clean_occurrence_dict(self):
-        print ("tbd")
+        #need to do something differently for Suicide (method) Suicide (attempt) or Other (specify)
+        actual_occurences = ["Suicide (method)", "Suicide (attempt)", "Homicide", "Homicide Attempt", "Escape", "Escape Attempt",
+                        "Fire", "Serious Injury", "Battery", "Riot of Rebellion", "Sex Offense", "Assault on Staff",
+                        "Assault among Detainees", "Fighting among Detainees", "Restraints Used", "OC Spray Used", "Other (specify)"]
+        cleaned_list = []
+        entries = self.original_dictionary["Occurrence"]
+        if len(entries) == 0:
+            self.clean_dict["Occurrence"] = "Error, no occurrence found"
+        else:
+            for term in entries:
+                compare_jaro = 0
+                best_choice = None
+                for compare_term in actual_occurences:
+                    current_jaro = jellyfish.jaro_similarity(term, compare_term)
+                    if current_jaro > compare_jaro:
+                        best_choice = compare_term
+                        compare_jaro = current_jaro
+                if best_choice in ["Suicide (method)", "Suicide (attempt)", "Other (specify)"]: #need to account for what is after the colon
+                    cleaned_list.append(term)
+                else:
+                    cleaned_list.append(best_choice)
+            self.clean_dict["Occurrence"] = cleaned_list
+    
 
     def clean_table(self):
+        table_list = self.original_dictionary["Table Contents"]
+        #pattern: string, date, date, string...
+        #['Steven J. Jackson' '_|o 03/15/1976' '03/03/2021.' '7 Criminal Damage''Bryan D, Watkins' '! 09/17/1985.' '01/16/2021' '__ Burglary']
         print ("tbd")
     
     def clean_injuries(self):
