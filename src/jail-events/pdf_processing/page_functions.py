@@ -8,8 +8,7 @@ import re
 import json
 import matplotlib.pyplot as plt
 import jellyfish
-import processing_functions as pf
-#from .
+from . import processing_functions as pf
 
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
@@ -234,9 +233,9 @@ class PageParsing:
 
         scale = 0.5  # or any factor that ensures it fits on your screen
         resized_roi = cv2.resize(roi, (0, 0), fx=scale, fy=scale)
-        cv2.imshow("Contours Visualization", resized_roi)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow("Contours Visualization", resized_roi)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
         self.page_dict["Occurrence Dictionary"] = return_dict #returns dictionary of coordinate of the checkbox as keys then the text content and the fill ratio
 
