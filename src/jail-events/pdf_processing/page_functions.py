@@ -48,8 +48,8 @@ class PageParsing:
                                 "Table Contents": ((25, 1500), (2375, 2025)),
                                 "Injuries?": ((50, 2050), (2550, 2200)),
                                 "Resulting Death?": ((50, 2150), (2450, 2300)),
-                                "Deceased Cause, Date, and Time": ((50, 2200), (2450, 2475)),
-                                "Deceased on Suicide Watch": ((50, 2450), (2400, 2550)),
+                                "Deceased Cause, Date, and Time": ((50, 2200), (2450, 2400)),
+                                "Deceased on Suicide Watch": ((50, 2350), (2400, 2450)),
                                 "Deceased Reporter": ((50, 2525), (2500, 2675)),
                                 "Deceased Examined by Physician": ((50, 2625), (2450, 2750)),
                                 "Deceased Signs of Illness": ((50,2750), (2500,2850))}
@@ -206,14 +206,14 @@ class PageParsing:
                 inner = binary[margin:h-margin, margin:w-margin]
                 fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
                 if x == 0 or y == 0 or w == 0 or h == 0:
-                    print ("Error creating ROI")
+                    #print ("Error creating ROI ")
                     break
                 if y < roi_height*0.3 or (x > roi_width*0.6 and y > roi_height*0.6):
                     text_offset_x = 20  # pixels to skip after box
                     text_width = 600   # width of text region to extract
                     text_roi = roi[y-15:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
                     if text_roi.size == 0:
-                        print ("Error creating ROI")
+                        #print ("Error creating ROI")
                         break
                     text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                     _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
@@ -224,7 +224,7 @@ class PageParsing:
                     text_width = 300    # width of text region to extract
                     text_roi = roi[y-10:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
                     if text_roi.size == 0:
-                        print ("Error creating ROI")
+                        #print ("Error creating ROI")
                         break
                     text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                     _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
@@ -339,7 +339,7 @@ class PageParsing:
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
         contours = pf.blur_edge_contours(roi, 5)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.075, adjust_width=300, adjust_box_min_box_area=1250)  
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.075, adjust_width=100, adjust_box_min_box_area=1250)  
         pattern = r"yes"
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
@@ -545,5 +545,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "debug_processed" / "Overdose Death_p1.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "debug_processed" / "Clean 2002_p1.png"
     print (scrape_page(image_path))

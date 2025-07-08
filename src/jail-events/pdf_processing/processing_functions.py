@@ -64,7 +64,7 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
         if (carea > adjust_box_min_box_area) and (carea < 2500):
             s = "**"
         if s == "**":
-            #cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
+            # cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
             x, y, w, h = cv2.boundingRect(approx)
             cropped_rect = roi[y : (y + h), x : (x + w)]
             gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
@@ -103,7 +103,6 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
 
 
 def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
-    # cv2.imshow("Injuries", roi)
     text = "No"
     for contour in contours:
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
@@ -130,4 +129,5 @@ def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
                 text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                 _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
                 text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
+                break
     return text
