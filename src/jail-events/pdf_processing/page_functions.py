@@ -45,7 +45,7 @@ class PageParsing:
                                 "Time of Day": ((1225, 950), (2200, 1100)),
                                 "AM or PM": ((2170, 1000), (2500, 1100)),
                                 "Occurrence Dictionary": ((430, 1075), (2475, 1400)),
-                                "Table Contents": ((25, 1500), (2375, 2025)),
+                                "Table Contents": ((0, 1450), (2550, 2025)),
                                 "Injuries?": ((50, 2050), (2550, 2200)),
                                 "Resulting Death?": ((50, 2150), (2450, 2300)),
                                 "Deceased Cause, Date, and Time": ((50, 2200), (2450, 2400)),
@@ -69,19 +69,19 @@ class PageParsing:
                                     "Time of Day": ((1250, 1000), (2500, 1100)),
                                     "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
                                     "Occurrence Dictionary": ((50, 1050), (2500, 1450)), #up to here is standard
-                                    "Table Contents": ((0, 1450), (7550, 2700)),
+                                    "Table Contents": ((0, 1400), (2550, 2700)),
                 }
 
             else:
                 new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                         "Facility Name": ((50, 675), (1625, 850)),
                                         "Phone Number": ((1650, 655), (2500, 850)),
-                                        "Address": ((50, 870), (2400, 950)),
+                                        "Address": ((50, 800), (2500, 950)),
                                         "Date": ((25, 950), (1250, 1100)),
                                         "Time of Day": ((1225, 950), (2170, 1100)),
                                         "AM or PM": ((2170, 1000), (2500, 1100)),
                                         "Occurrence Dictionary": ((430, 1100), (2475, 1400)),
-                                        "Table Contents": ((25, 1450), (2450, 2100)),
+                                        "Table Contents": ((0, 1450), (2550, 2100)),
                                         "Injuries?": ((50, 2050), (2550, 2200)),
                                         "Resulting Death?": ((50, 2150), (2450, 2300)),
                                         "Deceased Cause, Date, and Time": ((50, 2300), (2450, 2575)),
@@ -193,49 +193,45 @@ class PageParsing:
                 contour = contour[:,0]
             carea = ((np.max(contour[:,0]) - np.min(contour[:,0]))) * (np.max(contour[:,1]) - np.min(contour[:,1])) #gets comments from divij
             s = ""
-            if (carea > 1000) and (carea < 2000):
+            if (carea > 800) and (carea < 2000):
                 s = "**"
             if s == "**":
                 x, y, w, h = cv2.boundingRect(approx)
-                cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
-                cropped_rect = roi[y : (y + h), x : (x + w)]
-                gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
-                _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
-                # Crop inside to ignore border (e.g. 10% margin)
-                margin = int(min(w, h) * 0.1)
-                inner = binary[margin:h-margin, margin:w-margin]
-                fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
-                if x == 0 or y == 0 or w == 0 or h == 0:
-                    #print ("Error creating ROI ")
-                    break
-                if y < roi_height*0.3 or (x > roi_width*0.6 and y > roi_height*0.6):
-                    text_offset_x = 20  # pixels to skip after box
-                    text_width = 600   # width of text region to extract
-                    text_roi = roi[y-15:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
-                    if text_roi.size == 0:
-                        #print ("Error creating ROI")
+                aspect_ratio = w / float(h)
+                if 0.5 < aspect_ratio < 2.0:
+                    # cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
+                    cropped_rect = roi[y : (y + h), x : (x + w)]
+                    gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
+                    _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
+                    # Crop inside to ignore border (e.g. 10% margin)
+                    margin = int(min(w, h) * 0.1)
+                    inner = binary[margin:h-margin, margin:w-margin]
+                    fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
+                    if x == 0 or y == 0 or w == 0 or h == 0:
+                        #print ("Error creating ROI ")
                         break
-                    text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
-                    _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
-                    text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
-                    return_dict[str((x,y))] = [text, fill_ratio]
-                else:
-                    text_offset_x = 20  # pixels to skip after box
-                    text_width = 300    # width of text region to extract
-                    text_roi = roi[y-10:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
-                    if text_roi.size == 0:
-                        #print ("Error creating ROI")
-                        break
-                    text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
-                    _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
-                    text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
-                    return_dict[str((x,y))] = [text, fill_ratio]
-
-        scale = 0.5  # or any factor that ensures it fits on your screen
-        resized_roi = cv2.resize(roi, (0, 0), fx=scale, fy=scale)
-        # cv2.imshow("Contours Visualization", resized_roi)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+                    if y < roi_height*0.3 or (x > roi_width*0.6 and y > roi_height*0.6):
+                        text_offset_x = 20  # pixels to skip after box
+                        text_width = 600   # width of text region to extract
+                        text_roi = roi[y-15:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
+                        if text_roi.size == 0:
+                            #print ("Error creating ROI")
+                            break
+                        text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
+                        _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
+                        text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
+                        return_dict[str((x,y))] = [text, fill_ratio]
+                    else:
+                        text_offset_x = 20  # pixels to skip after box
+                        text_width = 300    # width of text region to extract
+                        text_roi = roi[y-10:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
+                        if text_roi.size == 0:
+                            #print ("Error creating ROI")
+                            break
+                        text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
+                        _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
+                        text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
+                        return_dict[str((x,y))] = [text, fill_ratio]
 
         self.page_dict["Occurrence Dictionary"] = return_dict #returns dictionary of coordinate of the checkbox as keys then the text content and the fill ratio
 
@@ -329,6 +325,11 @@ class PageParsing:
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         contours = pf.blur_edge_contours(roi, 1.5)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=2000)
+        pattern = r"\bno\b"
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            text = "No injuries"  
+
 
         self.page_dict["Injuries?"] = text
 
@@ -464,14 +465,6 @@ class PageParsing:
         lines_trimmed = cv2.add(horizontal_lines_trimmed, vertical_lines_trimmed)
         cleaned_trimmed = cv2.subtract(binary_trimmed, lines_trimmed)
 
-
-        # plt.figure(figsize=(12, 8))
-        # plt.imshow(roi_trimmed)
-        # plt.title("Scroll and Zoom Enabled Image")
-        # plt.axis("off")
-        # plt.tight_layout()
-        # plt.show()
-
         text = pytesseract.image_to_string(cleaned_trimmed, config='--psm 12')
 
         prohibited = ["Detainees Involved", "Name", "Date of Birth", "Date Confined", "Arresting Charge"]
@@ -545,5 +538,9 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "debug_processed" / "Clean 2002_p1.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Clean 2002_p1.png"
     print (scrape_page(image_path))
+
+#"Webster, Tiffany 1-9_p1.png" --> cross not being recognized, handwritten
+#"UO - FOIA January 2023_p611.png" --> Area wrong, recognizing a line (non-Cook County, page stretched)
+#"UO - FOIA January 2023_p615.png" --> Area wrong, recognizing a line
