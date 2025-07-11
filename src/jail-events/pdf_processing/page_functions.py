@@ -137,6 +137,9 @@ class PageParsing:
         """Retrieves date of incident. """
         points = self.coordinate_dict["Date"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
+        # cv2.imshow("Contours Visualization", roi)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         text = pf.basic_text_line(roi)
 
         self.page_dict["Date"] = text
@@ -194,7 +197,9 @@ class PageParsing:
             carea = ((np.max(contour[:,0]) - np.min(contour[:,0]))) * (np.max(contour[:,1]) - np.min(contour[:,1])) #gets comments from divij
             s = ""
             if (carea > 800) and (carea < 2000):
-                s = "**"
+                extent = cv2.contourArea(contour) / carea #rules out letters being selected
+                if extent > 0.9:
+                    s = "**"
             if s == "**":
                 x, y, w, h = cv2.boundingRect(approx)
                 aspect_ratio = w / float(h)
@@ -233,6 +238,9 @@ class PageParsing:
                         text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
                         return_dict[str((x,y))] = [text, fill_ratio]
 
+        # cv2.imshow("Contours Visualization", roi)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         self.page_dict["Occurrence Dictionary"] = return_dict #returns dictionary of coordinate of the checkbox as keys then the text content and the fill ratio
 
     def get_table(self):
@@ -538,7 +546,7 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Clean 2002_p1.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA February 2018_p169.png"
     print (scrape_page(image_path))
 
 #"Webster, Tiffany 1-9_p1.png" --> cross not being recognized, handwritten
