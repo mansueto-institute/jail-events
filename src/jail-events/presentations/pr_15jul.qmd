@@ -1,0 +1,247 @@
+---
+title: "Illinois Jail Event Reports Extraction"
+author: "Mansueto Institute for Urban Innovation"
+date: "15 July 2025"
+format:
+  revealjs:
+    theme: default
+    incremental: true
+    slide-number: c/t
+    scrollable: false
+    self-contained: true
+editor:
+  render-on-save: true
+---
+```{python}
+#| echo: false
+#| include: false
+#| warning: false
+import polars as pl
+import altair as alt
+from pathlib import Path
+import matplotlib.pyplot as plt
+from PIL import Image
+import json
+alt.data_transformers.enable("vegafusion")
+root = Path('..')
+parquet_path = root / 'data/jails-data/output/jails_pdfs.parquet'
+df = pl.read_parquet(parquet_path)
+
+def clean_facility_name(df):
+    """Clean facility names using Polars expressions"""
+    return df.with_columns(
+        pl.col('Facility Name')
+        # First, clean OCR artifacts
+        .str.replace_all(r'\\n|\\\\|\\/', ' ') 
+        .str.replace_all(r'\n', ' ')
+        .str.replace_all(r'[\\\/]+', ' ')
+        .str.replace_all(r'\s+', ' ') 
+        .str.strip_chars()
+        # Extract facility name after any variation of "Name:"
+        .str.extract(r'cility Name:\s*(.+)', 1)
+        # Additional cleanup of extracted names
+        .str.replace_all(r'[^a-zA-Z\s\'-]', ' ')  # Keep only letters, spaces, apostrophes, hyphens
+        .str.replace_all(r'\s+', ' ')  # Clean multiple spaces again
+        .str.strip_chars()  # Final trim
+        # Stop at any word ending in "ddres" and remove that word + everything after
+        .str.replace_all(r'\s+(ddress|ddrace).*$', '')
+        .str.replace_all(r"(?i)\bSheriff's\b", "Sheriffs")
+        .str.to_titlecase()
+        .alias('Cleaned Facility Name')
+    )
+
+# Apply the cleaning
+df_cleaned = clean_facility_name(df)
+
+def clean_date_occurrence(df):
+    return df.with_columns(
+        pl.col("Date")
+          # OCR cleanup (keep forward slashes)
+          .str.replace_all(r"\\n|\\\\", " ")
+          .str.replace_all(r"\n", " ")
+          .str.replace_all(r"\s+", " ")
+          .str.strip_chars()
+          # Extract the MM/DD/YYYY text
+          .str.extract(r"Date of Occurrence:\s*([0-9]{1,2}/[0-9]{1,2}/(20[0-9]{2}))", 1)
+          # Parse & re‐format to zero‐padded MM/DD/YYYY
+          .str.strptime(pl.Date, "%m/%d/%Y", strict=False)
+          .alias("temp_date")
+    ).with_columns(
+        # Only keep dates between 2000 and 2025, otherwise set to null
+        pl.when(pl.col("temp_date").dt.year().is_between(2000, 2025))
+        .then(pl.col("temp_date").dt.strftime("%m/%d/%Y"))
+        .otherwise(None)
+        .alias("Cleaned Date")
+    ).drop("temp_date")
+
+df_cleaned = clean_date_occurrence(df_cleaned)
+```
+
+## Outline: {.smaller}
+
+1. **Summary**
+2. **Improvements**
+3. **Occurrences summary**
+4. **Breakdown** 
+   - Facilities and occurrences
+5. **Case Study**
+6. **Next steps and feedback**
+
+---
+
+## Summary {.smaller}
+
+
+- Total pages: 27,892
+- Automated processing pipeline
+- Handwritten analysis: 857
+- Extraction OCR and cleaning
+- Resulting deaths: 137
+
+::: {.columns .fragment}
+::: {.column width="70%"} 
+![Data pipeline](images/MansuetoFlow.png){width=100%}
+:::
+
+::: {.column width="30%"}
+![OCR distribution](images/ocr_distribution.png){width=100%}
+:::
+:::
+
+
+---
+
+## Improvements {.smaller}
+
+```{python}
+#| echo: false
+#| include: false
+#| warning: false
+
+```
+
+- Adjusted OCR regions to table of occurences
+
+:::{.incremental}
+| Field                 | Total | Missing |     % |
+|-----------------------|-------|---------|-----------------|
+| Cleaned Facility Name | 27,333 | 2,239    | 8.19       |
+| Cleaned Date | 27,333 | 5,431    | 19.86      |
+| Occurrences  | 27,333 | 3,418    | 12.5     |
+:::
+
+---
+
+
+## Statistics {.smaller}
+
+Most common by facility name
+
+```{python}
+#| echo: false
+#| code-fold: true
+#| code-summary: "Show Python code"
+top_facilities = (
+    df_cleaned
+    .filter(pl.col('Cleaned Facility Name').is_not_null())  # Remove null facility names
+    .group_by('Cleaned Facility Name')
+    .len()
+    .sort('len', descending=True)
+    .head(20)
+    .rename({'len': 'Case Count'})
+)
+
+# Create the Altair chart
+facilities_chart = alt.Chart(top_facilities).mark_bar().encode(
+    x=alt.X('Case Count:Q', title='Number of Cases'),
+    y=alt.Y('Cleaned Facility Name:N', sort='-x', title='Facility Name'),
+    color=alt.value("#da746d"), 
+    tooltip=[
+        'Cleaned Facility Name:N', 
+        alt.Tooltip('Case Count:Q', format=',d')
+    ]
+).properties(
+    width=600,
+    height=400,
+    title='Top 20 Facilities by Number of Cases'
+)
+
+facilities_chart
+```
+
+
+---
+
+## Occurrences summary{.smaller}
+
+
+![](images/topocurrences.png){width=100%}
+
+
+---
+
+## Occurrences summary{.smaller}
+
+![](images/commonother.png){width=100%}
+
+--- 
+
+## Breakdown{.smaller}
+
+Cook county
+
+![](images/cook.png){width=100%}
+
+---
+
+## Breakdown{.smaller}
+
+Kane county
+
+![](images/kane.png){width=100%}
+
+---
+
+## Breakdown{.smaller}
+
+Madison
+
+![](images/madison.png){width=100%}
+
+---
+
+## Breakdown{.smaller}
+
+Restrains usage among jails
+
+::: {.columns .fragment}
+::: {.column width="50%"} 
+![](images/ganon/restrains_face.png)
+:::
+::: {.column width="50%"} 
+![](images/ganon/restrain_percent.png)
+:::
+:::
+
+---
+
+## Breakdown{.smaller}
+
+Fighting
+
+![](images/ganon/fights_tot.png)
+
+---
+
+## Case Study
+
+Case study with Robert Ordonez. Here's some facts:
+
+:::{.incremental}
+- Subject to 50 Occurrence Reports from March 12th, 2021 to August 7th, 2022
+- Imprisoned in Kane County
+- Was placed in a restraints or a restraint chair 41 times, making up 6% of all of Kane County's restraints usage
+- OC Spray used 4 times, "Taser Display" 3 times
+- "Charges Filed" 4 times
+- Injured once in restraints with "Abrasions right arm & fingers"
+:::
