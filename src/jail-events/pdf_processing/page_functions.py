@@ -18,7 +18,9 @@ class PageParsing:
         
         self.cv2_image = cv2_image
         self.coordinate_dict = {"Facility Type": "NA"}
-        self.page_dict = {"Deceased Cause, Date, and Time": "N/A",
+        self.page_dict = {"Deceased Name": "N/A",
+             "Deceased Cause": "N/A",
+             "Deceased Date and Time": "N/A",
              "Deceased on Suicide Watch": "N/A",
              "Deceased Reporter": "N/A",
              "Deceased Examined by Physician": "N/A",
@@ -38,6 +40,7 @@ class PageParsing:
 
         if test_2002:
             new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
+                                "RD Number": ((1300,540),(2550,700)),
                                 "Facility Name": ((50, 650), (1625, 850)),
                                 "Phone Number": ((1625, 650), (2450, 850)),
                                 "Address": ((50, 800), (2400, 950)),
@@ -47,12 +50,14 @@ class PageParsing:
                                 "Occurrence Dictionary": ((430, 1075), (2475, 1400)),
                                 "Table Contents": ((0, 1450), (2550, 2025)),
                                 "Injuries?": ((50, 2050), (2550, 2200)),
-                                "Resulting Death?": ((50, 2150), (2450, 2300)),
-                                "Deceased Cause, Date, and Time": ((50, 2200), (2450, 2400)),
+                                "Resulting Death?": ((50, 2100), (2450, 2250)),
+                                "Deceased Name": ((50,2175),(2450,2300)),
+                                "Deceased Cause": ((50,2275),(2450,2400)),
+                                "Deceased Date and Time": ((50,2375),(2450,2500)),
                                 "Deceased on Suicide Watch": ((50, 2350), (2400, 2450)),
                                 "Deceased Reporter": ((50, 2525), (2500, 2675)),
-                                "Deceased Examined by Physician": ((50, 2625), (2450, 2750)),
-                                "Deceased Signs of Illness": ((50,2750), (2500,2850))}
+                                "Deceased Examined by Physician": ((1200, 2625), (2450, 2750)),
+                                "Deceased Signs of Illness": ((1000,2750), (2500,2800))}
         else:
             self.coordinate_dict["Facility Name"] = ((50, 675), (1625, 850))
             self.get_facility_name()
@@ -62,6 +67,7 @@ class PageParsing:
                 self.cook_county = True
                 self.page_dict["Cook County?"] = "Cook County" #delete this for final product?
                 new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
+                                    "RD Number": ((1300,550),(2500,700)),
                                     "Facility Name": ((50, 675), (1625, 850)),
                                     "Phone Number": ((1650, 655), (2500, 850)),
                                     "Address": ((50, 825), (2400, 925)),
@@ -74,6 +80,7 @@ class PageParsing:
 
             else:
                 new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
+                                        "RD Number": ((1300,525),(2550,700)),
                                         "Facility Name": ((50, 675), (1625, 850)),
                                         "Phone Number": ((1650, 655), (2500, 850)),
                                         "Address": ((50, 800), (2500, 950)),
@@ -83,11 +90,14 @@ class PageParsing:
                                         "Occurrence Dictionary": ((430, 1100), (2475, 1400)),
                                         "Table Contents": ((0, 1450), (2550, 2100)),
                                         "Injuries?": ((50, 2050), (2550, 2200)),
-                                        "Resulting Death?": ((50, 2150), (2450, 2300)),
+                                        "Resulting Death?": ((50, 2100), (2450, 2300)),
+                                        "Deceased Name": ((50,2250),(2450,2350)),
+                                        "Deceased Cause": ((50,2350),(2450,2450)),
+                                        "Deceased Date and Time": ((50,2450),(2450,2550)),
                                         "Deceased Cause, Date, and Time": ((50, 2300), (2450, 2575)),
                                         "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
-                                        "Deceased Reporter": ((50, 2675), (2500, 2775)),
-                                        "Deceased Examined by Physician": ((50, 2775), (2450, 2875)),
+                                        "Deceased Reporter": ((50, 2625), (2500, 2775)),
+                                        "Deceased Examined by Physician": ((1200, 2775), (2500, 2875)),
                                         "Deceased Signs of Illness": ((150, 2875), (2500,2975))}
                 
         self.coordinate_dict = new_coordinate_dict
@@ -102,6 +112,16 @@ class PageParsing:
         text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=160, adjust_box_min_box_area=1500)
 
         self.page_dict["Facility Type"] = text
+
+    def get_rd_number(self):
+        points = self.coordinate_dict["RD Number"]
+        roi = pf.get_roi(self.cv2_image, points[0], points[1])
+        # cv2.imshow("Contours Visualization", roi)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        text = pf.basic_text_line(roi)
+
+        self.page_dict["RD Number"] = text
 
     def get_facility_name(self):
         """
@@ -346,7 +366,7 @@ class PageParsing:
         Retrieves if there was a death that occured, which may result in all below functions being called.
         """
         points = self.coordinate_dict["Resulting Death?"]
-        roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
+        roi = pf.get_roi(self.cv2_image, points[0], points[1])
         contours = pf.blur_edge_contours(roi, 5)
         text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.075, adjust_width=100, adjust_box_min_box_area=1250)  
         pattern = r"yes"
@@ -356,15 +376,26 @@ class PageParsing:
 
         self.page_dict["Resulting Death?"] = text
 
-    def get_deceased_cause_date_time(self):
-        """
-        Retirves name of deceased, caused of death, and the date and time
-        """
-        points = self.coordinate_dict["Deceased Cause, Date, and Time"]
+    def get_deceased_name(self):
+        points = self.coordinate_dict["Deceased Name"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         text = pf.basic_text_line(roi)
 
-        self.page_dict["Deceased Cause, Date, and Time"] = text
+        self.page_dict["Deceased Name"] = text
+
+    def get_deceased_cause(self):
+        points = self.coordinate_dict["Deceased Cause"]
+        roi = pf.get_roi(self.cv2_image, points[0], points[1])
+        text = pf.basic_text_line(roi)
+
+        self.page_dict["Deceased Cause"] = text
+
+    def get_deceased_date_time(self):
+        points = self.coordinate_dict["Deceased Date and Time"]
+        roi = pf.get_roi(self.cv2_image, points[0], points[1])
+        text = pf.basic_text_line(roi)
+
+        self.page_dict["Deceased Date and Time"] = text
 
     def get_suicide_watch(self):
         """
@@ -384,6 +415,9 @@ class PageParsing:
         points = self.coordinate_dict["Deceased Reporter"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         text = pf.basic_text_line(roi)
+        # cv2.imshow("Contours Visualization", roi)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
         self.page_dict["Deceased Reporter"] = text
 
@@ -407,7 +441,7 @@ class PageParsing:
         contours = pf.blur_edge_contours(roi, 1.5)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
         if text != "No":
-            new_roi = pf.get_roi(self.cv2_image, (50,2875), (2500,3000))
+            new_roi = pf.get_roi(self.cv2_image, (50,2850), (2500,3000))
             follow_up_text = pf.basic_text_line(new_roi)
             text += follow_up_text
 
@@ -521,6 +555,7 @@ def scrape_page(image):
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
     page_parser.get_facility_type()
+    page_parser.get_rd_number()
     page_parser.get_facility_name()
     page_parser.get_facility_phone()
     page_parser.get_address()
@@ -537,7 +572,9 @@ def scrape_page(image):
         page_parser.get_injuries()
         page_parser.get_resulting_death()
         if page_parser.page_dict["Resulting Death?"] == "Yes":
-            page_parser.get_deceased_cause_date_time()
+            page_parser.get_deceased_name()
+            page_parser.get_deceased_cause()
+            page_parser.get_deceased_date_time()
             page_parser.get_suicide_watch()
             page_parser.get_reported()
             page_parser.get_deceased_examined()
@@ -546,7 +583,7 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA February 2018_p169.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Cook County Test_p1.png"
     print (scrape_page(image_path))
 
 #"Webster, Tiffany 1-9_p1.png" --> cross not being recognized, handwritten
