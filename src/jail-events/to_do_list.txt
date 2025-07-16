@@ -1,9 +1,10 @@
 TO-DOs:
-- Part 6, Page 25 ---> Extend out "facility type" check. Proof why AM/PM isn't showing up (might be due to fill? try contrast first)
-- trim table for length?
-- Change out yes/no box check for something else?
-- fix facility type stuff
-- P6, 16 final address turning out very different than just a notebook
-- Binder1P911_p1 --> Bottom footer is off, leading to bad results
-- narrowing down contours to squares
-- Contrast --> Play around with usage
+
+- Full file this weekend -> whole parquet
+- Cleaning analysis
+- Occurences statistics
+    - individual-ones
+
+- Restrains by county
+- Death count 
+- Date cleanning
