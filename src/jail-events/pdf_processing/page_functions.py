@@ -579,7 +579,7 @@ def scrape_page(image):
             page_parser.get_reported()
             page_parser.get_deceased_examined()
             page_parser.get_deceased_illness()
-
+    #test
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
