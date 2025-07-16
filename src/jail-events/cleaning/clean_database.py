@@ -1,26 +1,20 @@
 
 import polars as pl
-import altair as alt
 from pathlib import Path
-import matplotlib.pyplot as plt
-from PIL import Image
-import json
-import jellyfish
-alt.data_transformers.enable("vegafusion")
 
-
-
-root = Path('..')
-parquet_path = root / 'data/jails-data/output/jails_pdfs.parquet'
-df = pl.read_parquet(parquet_path)
-
-
-# 1. Divide the dataset with not handwritten
-
+# 1. Divide the dataset with not handwritten and handwritten stuff
+def divide_dataset(path_parquet):
+    """
+    Divide the dataset into handwritten and 
+    """
+    df = (pl.scan_parquet(path_parquet)
+    .filter(pl.col("OCR_Confidence") > 80)
+    .collect()
+    )
+    return df
 
 
 # 2. Cleaning of Facility names 
-
 def clean_facility_name(df):
     """Clean facility names using Polars expressions"""
     return df.with_columns(
@@ -44,9 +38,6 @@ def clean_facility_name(df):
         .alias('Cleaned Facility Name')
     )
 
-# Apply the cleaning
-df_cleaned = clean_facility_name(df)
-df_cleaned['Facility Name', 'Cleaned Facility Name']
 
 
 # Cleaning date of occurrence
@@ -72,8 +63,27 @@ def clean_date_occurrence(df):
         .alias("Cleaned Date")
     ).drop("temp_date")
 
-df_cleaned = clean_date_occurrence(df_cleaned)
-df_cleaned.select(["Date","Cleaned Date"]).head(10)
 
 
-# Extraction 
+
+# Extraction of names
+
+
+
+
+
+
+# Main assemble cleaning
+def main():
+    # Apply the cleaning
+    out_path = Path(__file__).parent / 'data/jails-data/output'
+    in_parquet = out_path / 'jails_pdfs.parquet'
+    out_parquet = out_path / 'jails_pds_cleanned.parquet'
+    # Cleanning
+    df = divide_dataset(in_parquet)
+    df_cleaned = clean_facility_name(df)
+    df_cleaned = clean_date_occurrence(df_cleaned)
+    df.write_parquet(out_parquet)
+
+if __name__== "__main__":
+    main()
