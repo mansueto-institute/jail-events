@@ -8,7 +8,8 @@ import re
 import json
 import matplotlib.pyplot as plt
 import jellyfish
-from . import processing_functions as pf
+import processing_functions as pf
+#from .
 
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
@@ -34,7 +35,15 @@ class PageParsing:
         Performs an initial scan of the document to determine its years and if its Cook County, assigns dictionary of coordinates for points
         """
         roi = pf.get_roi(self.cv2_image, (2100, 2900), (2550, 3300))
+        # cv2.imshow("Contours Visualization", roi)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         text = pf.basic_text_line(roi)
+
+        format_test = re.search(r"\d+", text)
+        if not format_test:
+            self.coordinate_dict = "No year found"
+            return
 
         test_2002 = re.search("2002", text)
 
@@ -104,7 +113,7 @@ class PageParsing:
 
     def get_facility_type(self):
         """
-        Retrieves first three letters of facility type, to be processed later
+        Retrieves first few letters of facility type, to be processed later
         """
         points = self.coordinate_dict["Facility Type"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
@@ -114,11 +123,11 @@ class PageParsing:
         self.page_dict["Facility Type"] = text
 
     def get_rd_number(self):
+        """
+        Retrieves case number. May be inconsistent due to stamps.
+        """
         points = self.coordinate_dict["RD Number"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        # cv2.imshow("Contours Visualization", roi)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         text = pf.basic_text_line(roi)
 
         self.page_dict["RD Number"] = text
@@ -154,7 +163,9 @@ class PageParsing:
         self.page_dict["Address"] = text
 
     def get_date(self):
-        """Retrieves date of incident. """
+        """
+        Retrieves date of incident. 
+        """
         points = self.coordinate_dict["Date"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         # cv2.imshow("Contours Visualization", roi)
@@ -273,7 +284,7 @@ class PageParsing:
                                     cv2.ADAPTIVE_THRESH_MEAN_C, 
                                     cv2.THRESH_BINARY, 15, -2)
         
-        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1)) #getting lines
+        horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (40, 1)) #getting lines of the table
         vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, 40))
         horizontal_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, horizontal_kernel, iterations=1)
         vertical_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, vertical_kernel, iterations=1)
@@ -281,7 +292,7 @@ class PageParsing:
         contours, _ = cv2.findContours(horizontal_lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         max_y = 0
-        for cnt in contours:
+        for cnt in contours: #finding the lowest horiztonal line of the table
             x, y, w, h = cv2.boundingRect(cnt)
             if w > 50:  # Filter out noise: adjust threshold as needed
                 line_strip = vertical_lines[y:y+h, x:x+w]
@@ -295,6 +306,7 @@ class PageParsing:
             self.page_dict["Table Contents"] = ["Bad parse"]
             return
 
+        #redoing the steps with the trimmed table
         gray_trimmed = cv2.cvtColor(roi_trimmed, cv2.COLOR_BGR2GRAY)
 
         binary_trimmed = cv2.adaptiveThreshold(~gray_trimmed, 255, 
@@ -303,7 +315,6 @@ class PageParsing:
 
         horizontal_lines_trimmed = cv2.morphologyEx(binary_trimmed, cv2.MORPH_OPEN, horizontal_kernel, iterations=1)
         vertical_lines_trimmed = cv2.morphologyEx(binary_trimmed, cv2.MORPH_OPEN, vertical_kernel, iterations=1)
-
 
         #ensuring small vertical lines (letters) aren't cut out
         vertical_contours, _ = cv2.findContours(vertical_lines_trimmed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -323,8 +334,9 @@ class PageParsing:
         prohibited = ["Detainees Involved", "Name", "Date of Birth", "Date Confined", "Arresting Charge"]
 
         cells = []
+
         stripped_text = text.strip().splitlines()
-        pattern_punctuation = r"[.,!_|-]"
+        pattern_punctuation = r"[.,!_|-]" #takes each element of the text, filters, turns into list
         for element in stripped_text:
             cleaned_element = re.sub(pattern_punctuation, '', element)
             highest_jw = 0
@@ -334,14 +346,6 @@ class PageParsing:
                     highest_jw = jw
             if cleaned_element and len(cleaned_element) > 4 and highest_jw < 0.8: #can adjust jw
                 cells.append(element)
-
-        multiples = [4,8,12,16]
-        for row in multiples:
-            if len(cells) > row:
-                if "|" in cells[row]:
-                    for extra_charge in cells[row:]:
-                        cells[row-1] += extra_charge
-                    cells = cells[:row]
 
         self.page_dict["Table Contents"] = cells
 
@@ -357,7 +361,6 @@ class PageParsing:
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
             text = "No injuries"  
-
 
         self.page_dict["Injuries?"] = text
 
@@ -459,6 +462,9 @@ class PageParsing:
             self.page_dict["Resulting Death?"] = "Yes, check the report, Cook County"
     
     def cook_county_table(self):
+        """
+        Gets table with unique considerations to how Cook County tables are formatted
+        """
 
         points = self.coordinate_dict["Table Contents"]
         # cv2.imshow("Tableraw", self.cv2_image)
@@ -528,32 +534,39 @@ class PageParsing:
         self.running_y = points[0][1] + max_y
 
     def cook_county_coordinates(self):
+        """
+        Gets the last consistent coordinates for a Cook County report.
+        """
         self.coordinate_dict["Injuries?"] = ((50, self.running_y), (2550, self.running_y + 150))
         self.running_y = self.coordinate_dict["Injuries?"][1][1]
         self.coordinate_dict["Resulting Death?"] = ((50, self.running_y), (2450, self.running_y + 100))
         self.running_y = self.coordinate_dict["Resulting Death?"][1][1]
 
     def clean_occurrences(self):
-        #get average, then see what boxes are filled like 0.1 above that average?
+        """
+        Takes dictionary of occurrences and finds which boxes are filled.
+        """
         final_list = []
         sorting_dict = {}
         occurrence_dict = self.page_dict["Occurrence Dictionary"]
-        for coordinates, box_list in occurrence_dict.items():
+        for coordinates, box_list in occurrence_dict.items(): #turn list of coordinates into a simpler dictionary
             sorting_dict[box_list[0]] = box_list[1]
-        if not sorting_dict:
+        if not sorting_dict: #what to return if nothing found/bad parse
             self.page_dict["Occurrence"] = final_list
             return
-        average_fill = np.mean(list(sorting_dict.values()))
+        average_fill = np.mean(list(sorting_dict.values())) #get mean fill ratios 
         for occurrence, fill_ratio in sorting_dict.items():
             if fill_ratio > (average_fill + (average_fill*0.5)):
                 final_list.append(occurrence)
         self.page_dict["Occurrence"] = final_list
 
-def scrape_page(image):
-    #cv2_image = cv2.imread(str(image_path))
-    cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+def scrape_page(image_path):
+    cv2_image = cv2.imread(str(image_path))
+    cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
+    if page_parser.coordinate_dict == "No year found":
+        return "No year found at bottom of page, try resizing"
     page_parser.get_facility_type()
     page_parser.get_rd_number()
     page_parser.get_facility_name()
@@ -583,7 +596,7 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Cook County Test_p1.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Part 2_p5.png"
     print (scrape_page(image_path))
 
 #"Webster, Tiffany 1-9_p1.png" --> cross not being recognized, handwritten
