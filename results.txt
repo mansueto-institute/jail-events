@@ -1,34 +1,41 @@
-Running in <built-in method upper of str object at 0x100a15da0> mode
-Processing PDFs:   0%|          | 0/9 [00:00<?, ?it/s]Processing PDFs:  11%|█         | 1/9 [00:05<00:41,  5.16s/it]Processing PDFs:  22%|██▏       | 2/9 [00:08<00:26,  3.85s/it]Processing PDFs:  33%|███▎      | 3/9 [00:09<00:17,  2.85s/it]Processing PDFs:  56%|█████▌    | 5/9 [00:09<00:05,  1.27s/it]Processing PDFs:  67%|██████▋   | 6/9 [00:10<00:02,  1.05it/s]Processing PDFs:  78%|███████▊  | 7/9 [00:11<00:02,  1.05s/it]Processing PDFs:  89%|████████▉ | 8/9 [00:13<00:01,  1.52s/it]Processing PDFs: 100%|██████████| 9/9 [00:15<00:00,  1.57s/it]Processing PDFs: 100%|██████████| 9/9 [00:15<00:00,  1.74s/it]
-Successfully processed Huff, Anthony 1-15_p1
+Running in DEBUG mode
+Processing PDFs:   0%|          | 0/9 [00:00<?, ?it/s]Processing PDFs:  11%|█         | 1/9 [00:07<00:56,  7.12s/it]Processing PDFs:  22%|██▏       | 2/9 [00:08<00:27,  3.93s/it]Processing PDFs:  33%|███▎      | 3/9 [00:09<00:13,  2.26s/it]Processing PDFs:  67%|██████▋   | 6/9 [00:10<00:02,  1.03it/s]Processing PDFs:  78%|███████▊  | 7/9 [00:10<00:01,  1.15it/s]Processing PDFs:  89%|████████▉ | 8/9 [00:14<00:01,  1.69s/it]Processing PDFs: 100%|██████████| 9/9 [00:33<00:00,  6.21s/it]Processing PDFs: 100%|██████████| 9/9 [00:33<00:00,  3.70s/it]
+Successfully processed FOIA - UO December 2023 P433_p1
 Successfully processed Page 6, Page 25_p1
 Successfully processed Part 3 P8_p1
+Successfully processed Huff, Anthony 1-15_p1
 Successfully processed Part 6, Page 16_p1
-page /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/processed/debug_processed/UO - JDSU (August 2022) 187 Cutoff_p1.png not correct, no cropping
-Successfully processed FOIA - UO December 2023 P433_p1
+page UO - JDSU (August 2022) 187 Cutoff_p1 not correct, no cropping
+Successfully processed UO - JDSU (August 2022) 187 Cutoff_p1
+page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p1 not correct, no cropping
+Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p1
+page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p2 not correct, no cropping
+Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p2
+page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p3 not correct, no cropping
+Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p3
+page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p4 not correct, no cropping
+Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p4
+page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p5 not correct, no cropping
+Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p5
+page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p6 not correct, no cropping
+Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p6
 Successfully processed UO - FOIA January 2023 385-386_p1
-page /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/processed/debug_processed/FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p1.png not correct, no cropping
-page /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/processed/debug_processed/FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p2.png not correct, no cropping
-page /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/processed/debug_processed/FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p3.png not correct, no cropping
-page /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/processed/debug_processed/FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p4.png not correct, no cropping
-page /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/processed/debug_processed/FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p5.png not correct, no cropping
-page /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/processed/debug_processed/FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p6.png not correct, no cropping
 Successfully processed Binder1P9P11_p1
 Successfully processed Binder1P9P11_p2
-Completed UO - JDSU (August 2022) 187 Cutoff.pdf - 0 pages
 Completed FOIA - UO December 2023 P433.pdf - 1 pages
-Completed Huff, Anthony 1-15.pdf - 1 pages
 Completed Page 6, Page 25.pdf - 1 pages
 Completed Part 3 P8.pdf - 1 pages
+Completed Huff, Anthony 1-15.pdf - 1 pages
 Completed Part 6, Page 16.pdf - 1 pages
+Completed UO - JDSU (August 2022) 187 Cutoff.pdf - 1 pages
 Completed UO - FOIA January 2023 385-386.pdf - 1 pages
-Completed FOIA Feb 2022 UO Part 2 15-20 (cutoff page).pdf - 0 pages
 Completed Binder1P9P11.pdf - 2 pages
-  Typed: 8 pages (100.0%)
-Total pages with text: 8
-Mean confidence: 88.2
-Median confidence: 88.2
-Range: 86.2 - 90.2
+Completed FOIA Feb 2022 UO Part 2 15-20 (cutoff page).pdf - 6 pages
+  Typed: 15 pages (100.0%)
+Total pages with text: 15
+Mean confidence: 87.7
+Median confidence: 87.2
+Range: 85.9 - 90.2
 Histogram saved to: /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/analysis/confidence_histogram.html
 Saved backup to /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/output/jails_pdfs_backup_debug.pkl
 
@@ -37,6 +44,6 @@ PROCESSING SUMMARY
 ==================================================
 Mode: DEBUG
 Total pages attempted: 16
-Success: 8 pages
-Failed: 8 pages
-Processing time: 16.6s (0.3 min)
+Failed: 1 pages
+Success: 15 pages
+Processing time: 33.9s (0.6 min)

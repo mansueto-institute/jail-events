@@ -19,7 +19,7 @@ def parse_image_dict(cleaned_img, key_id, image_path, origin_page, dpi, title_ke
     cleaned_rep_dict = scrape_page(cleaned_img)
     # If return the no year found, del and process again
     if cleaned_rep_dict == "No year found":
-        print(f"page {image_path} not correct, no cropping")
+        print(f"page {key_id} not correct, no cropping")
         #delete image file
         image_path.unlink()
         img = pre_process_page(page = origin_page, reprocess= True)
@@ -82,7 +82,7 @@ def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300,
                 processing_log.append(log_entry)
                 #print(f"Page {i+1} in {pdf_stem} not preprocessed correctly")
                 continue
-            image_path = out_dir / page_id
+            image_path = out_dir / f"{page_id}.png"
             cv2.imwrite(str(image_path), img)
             #print(f"saved {out_path.name}: {success}")
             
@@ -175,7 +175,7 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
 def main(mode):
     """ Processing jail PDFs """
     
-    click.echo(f"Running in {mode.upper} mode")
+    click.echo(f"Running in {mode.upper()} mode")
     
     # project paths
     out_data = Path(__file__).parent / "data/jails-data/output"
