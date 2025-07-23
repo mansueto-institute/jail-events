@@ -67,8 +67,8 @@ def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300,
             "page_number": i+1,
             "page_id": page_id,
             "status": "unknown",
-            "error_stage": None,
-            "error_message": None
+            "error_stage": "",
+            "error_message": ""
         }
         try:
             img = pre_process_page(page, dpi=dpi,
@@ -92,8 +92,8 @@ def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300,
                 list_dicts.append(page_dict)
                 log_entry.update({
                     "status": "success",
-                    "error_stage": None,
-                    "error_message": None
+                    "error_stage": "",
+                    "error_message": ""
                 })
                 processing_log.append(log_entry)
                 print(f"Successfully processed {page_id}")
@@ -151,7 +151,7 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
                 #PDF - level error
                 all_processing_logs.append({
                     "pdf_name": pdf_path.stem,
-                    "page_number": None,
+                    "page_number": 0,
                     "page_id": f"{pdf_path.stem}_PDF_LEVEL_ERROR",
                     "status": "failed",
                     "error_stage": "pdf_level",

@@ -1,49 +1,419 @@
-Running in DEBUG mode
-Processing PDFs:   0%|          | 0/9 [00:00<?, ?it/s]Processing PDFs:  11%|█         | 1/9 [00:07<00:56,  7.12s/it]Processing PDFs:  22%|██▏       | 2/9 [00:08<00:27,  3.93s/it]Processing PDFs:  33%|███▎      | 3/9 [00:09<00:13,  2.26s/it]Processing PDFs:  67%|██████▋   | 6/9 [00:10<00:02,  1.03it/s]Processing PDFs:  78%|███████▊  | 7/9 [00:10<00:01,  1.15it/s]Processing PDFs:  89%|████████▉ | 8/9 [00:14<00:01,  1.69s/it]Processing PDFs: 100%|██████████| 9/9 [00:33<00:00,  6.21s/it]Processing PDFs: 100%|██████████| 9/9 [00:33<00:00,  3.70s/it]
-Successfully processed FOIA - UO December 2023 P433_p1
-Successfully processed Page 6, Page 25_p1
-Successfully processed Part 3 P8_p1
-Successfully processed Huff, Anthony 1-15_p1
-Successfully processed Part 6, Page 16_p1
-page UO - JDSU (August 2022) 187 Cutoff_p1 not correct, no cropping
-Successfully processed UO - JDSU (August 2022) 187 Cutoff_p1
-page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p1 not correct, no cropping
-Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p1
-page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p2 not correct, no cropping
-Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p2
-page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p3 not correct, no cropping
-Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p3
-page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p4 not correct, no cropping
-Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p4
-page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p5 not correct, no cropping
-Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p5
-page FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p6 not correct, no cropping
-Successfully processed FOIA Feb 2022 UO Part 2 15-20 (cutoff page)_p6
-Successfully processed UO - FOIA January 2023 385-386_p1
-Successfully processed Binder1P9P11_p1
-Successfully processed Binder1P9P11_p2
-Completed FOIA - UO December 2023 P433.pdf - 1 pages
-Completed Page 6, Page 25.pdf - 1 pages
-Completed Part 3 P8.pdf - 1 pages
-Completed Huff, Anthony 1-15.pdf - 1 pages
-Completed Part 6, Page 16.pdf - 1 pages
-Completed UO - JDSU (August 2022) 187 Cutoff.pdf - 1 pages
-Completed UO - FOIA January 2023 385-386.pdf - 1 pages
-Completed Binder1P9P11.pdf - 2 pages
-Completed FOIA Feb 2022 UO Part 2 15-20 (cutoff page).pdf - 6 pages
-  Typed: 15 pages (100.0%)
-Total pages with text: 15
-Mean confidence: 87.7
-Median confidence: 87.2
-Range: 85.9 - 90.2
+Running in SAMPLE mode
+Processing PDFs:   0%|          | 0/25 [00:00<?, ?it/s]Processing PDFs:   4%|▍         | 1/25 [00:09<03:52,  9.67s/it]Processing PDFs:  12%|█▏        | 3/25 [00:09<00:56,  2.55s/it]Processing PDFs:  20%|██        | 5/25 [00:10<00:30,  1.52s/it]Processing PDFs:  24%|██▍       | 6/25 [00:11<00:22,  1.16s/it]Processing PDFs:  28%|██▊       | 7/25 [00:16<00:40,  2.25s/it]Processing PDFs:  32%|███▏      | 8/25 [00:16<00:29,  1.76s/it]Processing PDFs:  36%|███▌      | 9/25 [00:17<00:22,  1.38s/it]Processing PDFs:  40%|████      | 10/25 [00:18<00:18,  1.24s/it]Processing PDFs:  44%|████▍     | 11/25 [00:18<00:12,  1.08it/s]Processing PDFs:  48%|████▊     | 12/25 [00:19<00:11,  1.09it/s]Processing PDFs:  52%|█████▏    | 13/25 [00:21<00:15,  1.32s/it]Processing PDFs:  56%|█████▌    | 14/25 [00:21<00:10,  1.01it/s]Processing PDFs:  60%|██████    | 15/25 [00:23<00:13,  1.38s/it]Processing PDFs:  64%|██████▍   | 16/25 [00:25<00:14,  1.59s/it]Processing PDFs:  68%|██████▊   | 17/25 [00:26<00:10,  1.34s/it]Processing PDFs:  72%|███████▏  | 18/25 [00:28<00:09,  1.41s/it]Processing PDFs:  80%|████████  | 20/25 [00:28<00:04,  1.21it/s]Processing PDFs:  84%|████████▍ | 21/25 [00:31<00:04,  1.24s/it]Processing PDFs:  88%|████████▊ | 22/25 [00:31<00:02,  1.03it/s]Processing PDFs:  92%|█████████▏| 23/25 [04:22<02:07, 63.57s/it]Processing PDFs:  96%|█████████▌| 24/25 [05:09<00:58, 58.86s/it]Successfully processed Death Example_p1
+Successfully processed Example of full EU reports and additional records_p3
+page Example of full EU reports and additional records_p5 not correct, no cropping
+page Example of full EU reports and additional records_p6 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p8
+page Example of full EU reports and additional records_p11 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p13
+page Example of full EU reports and additional records_p15 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p17
+page Example of full EU reports and additional records_p19 not correct, no cropping
+page Example of full EU reports and additional records_p20 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p22
+page Example of full EU reports and additional records_p24 not correct, no cropping
+page Example of full EU reports and additional records_p25 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p27
+Successfully processed Example of full EU reports and additional records_p29
+Error processing page 30 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+Successfully processed Example of full EU reports and additional records_p32
+page Example of full EU reports and additional records_p35 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p37
+page Example of full EU reports and additional records_p41 not correct, no cropping
+page Example of full EU reports and additional records_p42 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p43
+Successfully processed Example of full EU reports and additional records_p45
+Successfully processed Example of full EU reports and additional records_p47
+Successfully processed Example of full EU reports and additional records_p50
+Successfully processed Example of full EU reports and additional records_p51
+Error processing page 53 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+Successfully processed Example of full EU reports and additional records_p56
+page Example of full EU reports and additional records_p58 not correct, no cropping
+page Example of full EU reports and additional records_p59 not correct, no cropping
+page Example of full EU reports and additional records_p60 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p61
+page Example of full EU reports and additional records_p63 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p65
+page Example of full EU reports and additional records_p68 not correct, no cropping
+page Example of full EU reports and additional records_p69 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p70
+Successfully processed Example of full EU reports and additional records_p74
+Successfully processed Example of full EU reports and additional records_p76
+page Example of full EU reports and additional records_p77 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p79
+page Example of full EU reports and additional records_p81 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p83
+Successfully processed Example of full EU reports and additional records_p85
+Successfully processed Example of full EU reports and additional records_p87
+page Example of full EU reports and additional records_p90 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p91
+Successfully processed Example of full EU reports and additional records_p93
+Successfully processed Example of full EU reports and additional records_p95
+page Example of full EU reports and additional records_p98 not correct, no cropping
+Error processing page 99 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+Successfully processed Example of full EU reports and additional records_p100
+Successfully processed Example of full EU reports and additional records_p102
+page Example of full EU reports and additional records_p103 not correct, no cropping
+page Example of full EU reports and additional records_p104 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p106
+Successfully processed Example of full EU reports and additional records_p109
+Error processing page 110 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+Successfully processed Example of full EU reports and additional records_p112
+page Example of full EU reports and additional records_p114 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p116
+Successfully processed Example of full EU reports and additional records_p120
+page Example of full EU reports and additional records_p127 not correct, no cropping
+page Example of full EU reports and additional records_p128 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p130
+Successfully processed Example of full EU reports and additional records_p133
+page Example of full EU reports and additional records_p134 not correct, no cropping
+page Example of full EU reports and additional records_p135 not correct, no cropping
+page Example of full EU reports and additional records_p136 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p137
+page Example of full EU reports and additional records_p140 not correct, no cropping
+Error processing page 141 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+page Example of full EU reports and additional records_p142 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p143
+page Example of full EU reports and additional records_p145 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p147
+page Example of full EU reports and additional records_p150 not correct, no cropping
+page Example of full EU reports and additional records_p151 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p152
+page Example of full EU reports and additional records_p155 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p156
+page Example of full EU reports and additional records_p159 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p160
+Successfully processed Example of full EU reports and additional records_p164
+page Example of full EU reports and additional records_p167 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p168
+Successfully processed Example of full EU reports and additional records_p172
+Successfully processed Example of full EU reports and additional records_p176
+page Example of full EU reports and additional records_p179 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p180
+page Example of full EU reports and additional records_p182 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p182
+Successfully processed Example of full EU reports and additional records_p184
+page Example of full EU reports and additional records_p187 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p189
+page Example of full EU reports and additional records_p192 not correct, no cropping
+Error processing page 193 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'Processing PDFs: 100%|██████████| 25/25 [16:15<00:00, 232.18s/it]Processing PDFs: 100%|██████████| 25/25 [16:15<00:00, 39.00s/it] 
+Successfully processed FOIA - December 2024 UO Part 1P51_p1
+Successfully processed Cook County 10 Prisoners_p1
+Successfully processed normal_test_more_text_p1
+Successfully processed Cook County Cermak Injuries_p1
+Successfully processed Death - Incorrect Filing_p1
+Successfully processed Cook County Single Prisoner_p1
+Successfully processed FOIA - December 2024 UO Part 1P68_p1
+Successfully processed FOIA - December 2024 UO Part 1P63_p1
+Successfully processed 2016 Bad Quality Slight Tilt_p1
+Successfully processed Word, Keith 1-12_p1
+Successfully processed Clean 2002_p1
+Successfully processed Cook County Two Prisoners_p1
+Successfully processed FOIA - December 2024 UO Part 1P58_p1
+Successfully processed Clean 2016_p1
+
+page Example of full EU reports and additional records_p194 not correct, no cropping
+page Example of full EU reports and additional records_p195 not correct, no cropping
+page Example of full EU reports and additional records_p196 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p197
+page Example of full EU reports and additional records_p200 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p201
+page Example of full EU reports and additional records_p203 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p205
+Successfully processed Example of full EU reports and additional records_p209
+Successfully processed Example of full EU reports and additional records_p213
+page Example of full EU reports and additional records_p215 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p217
+page Example of full EU reports and additional records_p220 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p221
+page Example of full EU reports and additional records_p224 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p225
+Successfully processed Example of full EU reports and additional records_p227
+page Example of full EU reports and additional records_p228 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p230
+page Example of full EU reports and additional records_p233 not correct, no cropping
+page Example of full EU reports and additional records_p234 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p235
+page Example of full EU reports and additional records_p236 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p237
+page Example of full EU reports and additional records_p241 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p242
+page Example of full EU reports and additional records_p245 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p246
+Successfully processed Example of full EU reports and additional records_p248
+Successfully processed Example of full EU reports and additional records_p250
+page Example of full EU reports and additional records_p254 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p256
+page Example of full EU reports and additional records_p260 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p263
+page Example of full EU reports and additional records_p267 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p268
+page Example of full EU reports and additional records_p271 not correct, no cropping
+page Example of full EU reports and additional records_p272 not correct, no cropping
+page Example of full EU reports and additional records_p273 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p274
+page Example of full EU reports and additional records_p276 not correct, no cropping
+page Example of full EU reports and additional records_p277 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p279
+Successfully processed Example of full EU reports and additional records_p283
+Successfully processed Example of full EU reports and additional records_p287
+page Example of full EU reports and additional records_p289 not correct, no cropping
+page Example of full EU reports and additional records_p290 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p292
+page Example of full EU reports and additional records_p295 not correct, no cropping
+page Example of full EU reports and additional records_p296 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p297
+page Example of full EU reports and additional records_p299 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p301
+page Example of full EU reports and additional records_p304 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p305
+Successfully processed Example of full EU reports and additional records_p309
+Successfully processed Example of full EU reports and additional records_p315
+Successfully processed Example of full EU reports and additional records_p319
+page Example of full EU reports and additional records_p321 not correct, no cropping
+page Example of full EU reports and additional records_p322 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p324
+page Example of full EU reports and additional records_p326 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p328
+page Example of full EU reports and additional records_p330 not correct, no cropping
+page Example of full EU reports and additional records_p331 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p333
+page Example of full EU reports and additional records_p336 not correct, no cropping
+page Example of full EU reports and additional records_p337 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p340
+Successfully processed Example of full EU reports and additional records_p342
+Successfully processed Example of full EU reports and additional records_p344
+Successfully processed Example of full EU reports and additional records_p347
+page Example of full EU reports and additional records_p348 not correct, no cropping
+Error processing page 349 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+Successfully processed Example of full EU reports and additional records_p352
+Successfully processed Example of full EU reports and additional records_p354
+page Example of full EU reports and additional records_p355 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p357
+Successfully processed Example of full EU reports and additional records_p362
+page Example of full EU reports and additional records_p365 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p367
+Successfully processed Example of full EU reports and additional records_p369
+Successfully processed Example of full EU reports and additional records_p370
+Successfully processed Example of full EU reports and additional records_p372
+Successfully processed Example of full EU reports and additional records_p378
+page Example of full EU reports and additional records_p379 not correct, no cropping
+page Example of full EU reports and additional records_p383 not correct, no cropping
+page Example of full EU reports and additional records_p384 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p386
+page Example of full EU reports and additional records_p389 not correct, no cropping
+page Example of full EU reports and additional records_p390 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p391
+page Example of full EU reports and additional records_p393 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p395
+Successfully processed Example of full EU reports and additional records_p398
+page Example of full EU reports and additional records_p399 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p401
+page Example of full EU reports and additional records_p404 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p405
+page Example of full EU reports and additional records_p407 not correct, no cropping
+page Example of full EU reports and additional records_p409 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p410
+Successfully processed Example of full EU reports and additional records_p414
+Successfully processed Example of full EU reports and additional records_p418
+Successfully processed Example of full EU reports and additional records_p422
+page Example of full EU reports and additional records_p424 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p426
+Successfully processed Example of full EU reports and additional records_p430
+page Example of full EU reports and additional records_p432 not correct, no cropping
+Error processing page 433 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+Successfully processed Example of full EU reports and additional records_p435
+Successfully processed Example of full EU reports and additional records_p437
+Successfully processed Example of full EU reports and additional records_p438
+Successfully processed Example of full EU reports and additional records_p440
+Successfully processed Example of full EU reports and additional records_p444
+Successfully processed Example of full EU reports and additional records_p449
+page Example of full EU reports and additional records_p451 not correct, no cropping
+page Example of full EU reports and additional records_p452 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p454
+page Example of full EU reports and additional records_p457 not correct, no cropping
+Error processing page 458 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+Successfully processed Example of full EU reports and additional records_p459
+page Example of full EU reports and additional records_p461 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p463
+page Example of full EU reports and additional records_p466 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p467
+Successfully processed Example of full EU reports and additional records_p472
+Successfully processed Example of full EU reports and additional records_p476
+Successfully processed Example of full EU reports and additional records_p480
+page Example of full EU reports and additional records_p482 not correct, no cropping
+page Example of full EU reports and additional records_p484 not correct, no cropping
+page Example of full EU reports and additional records_p485 not correct, no cropping
+page Example of full EU reports and additional records_p486 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p488
+page Example of full EU reports and additional records_p491 not correct, no cropping
+Error processing page 492 in Example of full EU reports and additional records: unsupported operand type(s) for -: 'NoneType' and 'float'
+page Example of full EU reports and additional records_p493 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p494
+page Example of full EU reports and additional records_p496 not correct, no cropping
+page Example of full EU reports and additional records_p497 not correct, no cropping
+page Example of full EU reports and additional records_p498 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p500
+page Example of full EU reports and additional records_p502 not correct, no cropping
+page Example of full EU reports and additional records_p503 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p505
+page Example of full EU reports and additional records_p509 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p515
+Successfully processed Example of full EU reports and additional records_p516
+page Example of full EU reports and additional records_p518 not correct, no cropping
+page Example of full EU reports and additional records_p519 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p521
+page Example of full EU reports and additional records_p524 not correct, no cropping
+Successfully processed Example of full EU reports and additional records_p525
+page Example of full EU reports and additional records_p527 not correct, no cropping
+page Example of full EU reports and additional records_p528 not correct, no cropping
+Successfully processed handwritten_test_p1
+Successfully processed 2002 Other_p1
+Successfully processed Overdose Death_p1
+Successfully processed Cook County Test_p1
+Successfully processed Lewis, Stoney 1-25_p1
+Successfully processed Cook County 4 Prisoners_p1
+Successfully processed normal_test_p1
+Successfully processed Part 6_p1
+Successfully processed Part 6_p2
+Successfully processed Part 6_p3
+Successfully processed Part 6_p4
+Successfully processed Part 6_p5
+Successfully processed Part 6_p6
+Successfully processed Part 6_p7
+Successfully processed Part 6_p8
+Successfully processed Part 6_p9
+Successfully processed Part 6_p10
+Successfully processed Part 6_p11
+Successfully processed Part 6_p12
+Successfully processed Part 6_p13
+Successfully processed Part 6_p14
+Successfully processed Part 6_p15
+Successfully processed Part 6_p16
+Successfully processed Part 6_p17
+Successfully processed Part 6_p18
+Successfully processed Part 6_p19
+Successfully processed Part 6_p20
+Successfully processed Part 6_p21
+Successfully processed Part 6_p22
+Successfully processed Part 6_p23
+Successfully processed Part 6_p24
+Successfully processed Part 6_p25
+Successfully processed Part 6_p26
+Successfully processed Part 6_p27
+Successfully processed Part 6_p28
+Successfully processed Part 6_p29
+Successfully processed Part 6_p30
+Successfully processed Part 6_p31
+Successfully processed Part 6_p32
+Successfully processed Part 6_p33
+Successfully processed Part 6_p34
+Successfully processed Part 6_p35
+Successfully processed Part 6_p36
+Successfully processed Part 6_p37
+Successfully processed Part 6_p38
+Successfully processed Part 6_p39
+Successfully processed Part 6_p40
+Successfully processed Part 6_p41
+Successfully processed Part 6_p42
+Successfully processed Part 3_p1
+Successfully processed Part 3_p2
+Successfully processed Part 3_p3
+Successfully processed Part 3_p4
+Successfully processed Part 3_p5
+Successfully processed Part 3_p6
+Successfully processed Part 3_p7
+Successfully processed Part 3_p8
+Successfully processed Part 3_p9
+Successfully processed Part 3_p10
+Successfully processed Part 3_p11
+Successfully processed Part 3_p12
+Successfully processed Part 3_p13
+Successfully processed Part 3_p14
+Successfully processed Part 3_p15
+Successfully processed Part 3_p16
+Successfully processed Part 3_p17
+Successfully processed Part 3_p18
+page Part 3_p19 not correct, no cropping
+Successfully processed Part 3_p19
+Successfully processed Part 3_p20
+Successfully processed Part 3_p21
+Successfully processed Part 3_p22
+Successfully processed Part 3_p23
+Successfully processed Part 3_p24
+Successfully processed Part 3_p25
+Successfully processed Part 3_p26
+Successfully processed Part 3_p27
+page Part 3_p28 not correct, no cropping
+Successfully processed Part 3_p28
+Successfully processed Part 3_p29
+Successfully processed Part 3_p30
+Successfully processed Part 3_p31
+Successfully processed Part 3_p32
+Successfully processed Part 3_p33
+Successfully processed Part 3_p34
+Successfully processed Part 3_p35
+Successfully processed Part 3_p36
+Successfully processed Part 3_p37
+Successfully processed Part 3_p38
+Successfully processed Part 3_p39
+Successfully processed Part 3_p40
+Successfully processed Part 3_p41
+Successfully processed Part 3_p42
+Successfully processed Part 3_p43
+Successfully processed Part 3_p44
+Successfully processed Part 3_p45
+Successfully processed Part 3_p46
+Successfully processed Part 3_p47
+Successfully processed Part 3_p48
+Successfully processed Part 3_p49
+Completed handwritten_test.pdf - 1 pages
+Completed Cook County Single Prisoner.pdf - 1 pages
+Completed Cook County Test.pdf - 1 pages
+Completed Cook County Two Prisoners.pdf - 1 pages
+Completed normal_test_more_text.pdf - 1 pages
+Completed 2016 Bad Quality Slight Tilt.pdf - 1 pages
+Completed FOIA - December 2024 UO Part 1P68.pdf - 1 pages
+Completed Lewis, Stoney 1-25.pdf - 1 pages
+Completed Death Example.pdf - 1 pages
+Completed Cook County Cermak Injuries.pdf - 1 pages
+Completed 2002 Other.pdf - 1 pages
+Completed FOIA - December 2024 UO Part 1P51.pdf - 1 pages
+Completed FOIA - December 2024 UO Part 1P58.pdf - 1 pages
+Completed Word, Keith 1-12.pdf - 1 pages
+Completed Cook County 4 Prisoners.pdf - 1 pages
+Completed Death - Incorrect Filing.pdf - 1 pages
+Completed Cook County 10 Prisoners.pdf - 1 pages
+Completed FOIA - December 2024 UO Part 1P63.pdf - 1 pages
+Completed Clean 2002.pdf - 1 pages
+Completed Clean 2016.pdf - 1 pages
+Completed Overdose Death.pdf - 1 pages
+Completed normal_test.pdf - 1 pages
+Completed Part 6.pdf - 42 pages
+Completed Part 3.pdf - 49 pages
+Completed Example of full EU reports and additional records.pdf - 129 pages
+  Handwritten: 6 pages (2.5%)
+  Typed: 236 pages (97.5%)
+Total pages with text: 242
+Mean confidence: 87.2
+Median confidence: 87.9
+Range: 57.1 - 94.6
 Histogram saved to: /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/analysis/confidence_histogram.html
-Saved backup to /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/output/jails_pdfs_backup_debug.pkl
+
+--- Handwritten Pages Detected (Sorted by Confidence) ---
+  - Report: Example of full EU reports and additional records_p405, Confidence: 57.1
+  - Report: Part 6_p1, Confidence: 65.0
+  - Report: Part 6_p8, Confidence: 65.2
+  - Report: Part 6_p29, Confidence: 67.1
+  - Report: Part 6_p11, Confidence: 67.5
+  - Report: Part 6_p2, Confidence: 67.8
+Saved backup to /Users/anfelipecb/GitHub/Mansueto/jail-events/src/jail-events/data/jails-data/output/jails_pdfs_backup_sample.pkl
 
 ==================================================
 PROCESSING SUMMARY
 ==================================================
-Mode: DEBUG
-Total pages attempted: 16
-Failed: 1 pages
-Success: 15 pages
-Processing time: 33.9s (0.6 min)
+Mode: SAMPLE
+Total pages attempted: 642
+Success: 242 pages
+Failed: 400 pages
+Processing time: 978.4s (16.3 min)
