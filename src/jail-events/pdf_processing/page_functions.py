@@ -58,14 +58,14 @@ class PageParsing:
                                 "Occurrence Dictionary": ((430, 1075), (2475, 1400)),
                                 "Table Contents": ((0, 1450), (2550, 2025)),
                                 "Injuries?": ((50, 2050), (2550, 2200)),
-                                "Resulting Death?": ((50, 2100), (2450, 2250)),
-                                "Deceased Name": ((50,2175),(2450,2300)),
-                                "Deceased Cause": ((50,2275),(2450,2400)),
-                                "Deceased Date and Time": ((50,2375),(2450,2500)),
-                                "Deceased on Suicide Watch": ((50, 2350), (2400, 2450)),
-                                "Deceased Reporter": ((50, 2525), (2500, 2675)),
-                                "Deceased Examined by Physician": ((1200, 2625), (2450, 2750)),
-                                "Deceased Signs of Illness": ((1000,2750), (2500,2800))}
+                                "Resulting Death?": ((50, 2200), (2450, 2300)),
+                                "Deceased Name": ((50,2265),(2450,2375)),
+                                "Deceased Cause": ((50,2375),(2450,2475)),
+                                "Deceased Date and Time": ((50,2475),(2550,2575)),
+                                "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
+                                "Deceased Reporter": ((50, 2675), (2500, 2775)),
+                                "Deceased Examined by Physician": ((50, 2765), (2550, 2875)),
+                                "Deceased Signs of Illness": ((50,2865), (2500,2975))}
         else:
             self.coordinate_dict["Facility Name"] = ((50, 675), (1625, 850))
             self.get_facility_name()
@@ -98,15 +98,15 @@ class PageParsing:
                                         "Occurrence Dictionary": ((430, 1100), (2475, 1400)),
                                         "Table Contents": ((0, 1450), (2550, 2100)),
                                         "Injuries?": ((50, 2050), (2550, 2200)),
-                                        "Resulting Death?": ((50, 2100), (2450, 2300)),
+                                        "Resulting Death?": ((50, 2150), (2450, 2250)),
                                         "Deceased Name": ((50,2250),(2450,2350)),
                                         "Deceased Cause": ((50,2350),(2450,2450)),
                                         "Deceased Date and Time": ((50,2450),(2450,2550)),
                                         "Deceased Cause, Date, and Time": ((50, 2300), (2450, 2575)),
-                                        "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
+                                        "Deceased on Suicide Watch": ((50, 2550), (2400, 2675)),
                                         "Deceased Reporter": ((50, 2625), (2500, 2775)),
-                                        "Deceased Examined by Physician": ((1200, 2775), (2500, 2875)),
-                                        "Deceased Signs of Illness": ((150, 2875), (2500,2975))}
+                                        "Deceased Examined by Physician": ((50, 2740), (2550, 2860)),
+                                        "Deceased Signs of Illness": ((150, 2860), (2550,2960))}
                 
         self.coordinate_dict = new_coordinate_dict
 
@@ -252,6 +252,9 @@ class PageParsing:
                         if text_roi.size == 0:
                             #print ("Error creating ROI")
                             break
+                        # cv2.imshow("Contours Visualization", text_roi)
+                        # cv2.waitKey(0)
+                        # cv2.destroyAllWindows()
                         text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                         _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
                         text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
@@ -417,9 +420,6 @@ class PageParsing:
         points = self.coordinate_dict["Deceased Reporter"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         text = pf.basic_text_line(roi)
-        # cv2.imshow("Contours Visualization", roi)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
 
         self.page_dict["Deceased Reporter"] = text
 
@@ -443,7 +443,7 @@ class PageParsing:
         contours = pf.blur_edge_contours(roi, 1.5)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
         if text != "No":
-            new_roi = pf.get_roi(self.cv2_image, (50,2850), (2500,3000))
+            new_roi = pf.get_roi(self.cv2_image, (50,points[0][1]+100), (2500,points[1][1]+100))
             follow_up_text = pf.basic_text_line(new_roi)
             text += follow_up_text
 
@@ -595,9 +595,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "Part 2_p5.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA July 2018_p203.png"
     print (scrape_page(image_path))
-
-#"Webster, Tiffany 1-9_p1.png" --> cross not being recognized, handwritten
-#"UO - FOIA January 2023_p611.png" --> Area wrong, recognizing a line (non-Cook County, page stretched)
-#"UO - FOIA January 2023_p615.png" --> Area wrong, recognizing a line
