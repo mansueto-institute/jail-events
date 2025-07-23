@@ -23,8 +23,10 @@ def parse_image_dict(cleaned_img, key_id, image_path, origin_page, dpi, title_ke
         #delete image file
         image_path.unlink()
         img = pre_process_page(page = origin_page, reprocess= True)
-        cleaned_rep_dict = scrape_page(cleaned_img)
+        cv2.imwrite(str(image_path), img)
+        cleaned_rep_dict = scrape_page(img)
         cleaned_rep_dict["process"] = "reprocess"
+
     else: 
         cleaned_rep_dict["process"] = "normal"
         
@@ -35,7 +37,12 @@ def parse_image_dict(cleaned_img, key_id, image_path, origin_page, dpi, title_ke
         del cleaned_rep_dict["Occurrence Dictionary"]
     
     # Adding OCR analysis 
-    confidence_data = extract_ocr_confidence(cleaned_img)
+    if cleaned_rep_dict.get("process") == "reprocess":
+        # For reprocessed images, analyze the new image
+        confidence_data = extract_ocr_confidence(img)
+    else:
+        # For normal processing, use the original cleaned_img
+        confidence_data = extract_ocr_confidence(cleaned_img)
     cleaned_rep_dict.update({
         "OCR_Confidence": confidence_data['avg_confidence'],
         "OCR_Word_Count": confidence_data['word_count'],
@@ -75,12 +82,12 @@ def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300,
                 processing_log.append(log_entry)
                 #print(f"Page {i+1} in {pdf_stem} not preprocessed correctly")
                 continue
-            out_path = out_dir / f"{pdf_stem}_p{i+1}.png"
-            cv2.imwrite(str(out_path), img)
+            image_path = out_dir / page_id
+            cv2.imwrite(str(image_path), img)
             #print(f"saved {out_path.name}: {success}")
             
             try:
-                page_dict = parse_image_dict(img, page_id, out_path, page,
+                page_dict = parse_image_dict(img, page_id, image_path, page,
                                              dpi, title_key)
                 list_dicts.append(page_dict)
                 log_entry.update({
