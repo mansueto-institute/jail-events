@@ -19,7 +19,7 @@ def parse_image_dict(cleaned_img, key_id, image_path, origin_page, dpi, title_ke
     cleaned_rep_dict = scrape_page(cleaned_img)
     # If return the no year found, del and process again
     if cleaned_rep_dict == "No year found":
-        print(f"page {cleaned_img} not correct, no cropping")
+        print(f"page {image_path} not correct, no cropping")
         #delete image file
         image_path.unlink()
         img = pre_process_page(page = origin_page, reprocess= True)
@@ -181,7 +181,7 @@ def main(mode):
         suffix = "_full"
     elif mode == "sample":
         samples = Path(__file__).parent / "data/jails-data/samples"
-        processed = Path(__file__).parent / "data/jails-data/processed"
+        processed = Path(__file__).parent / "data/jails-data/processed/big_samples"
         suffix = "_sample"
     elif mode == "debug":
         samples = Path(__file__).parent / "data/jails-data/samples/debug"
