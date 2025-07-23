@@ -8,8 +8,7 @@ import re
 import json
 import matplotlib.pyplot as plt
 import jellyfish
-import processing_functions as pf
-#from .
+from . import processing_functions as pf
 
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
@@ -560,13 +559,13 @@ class PageParsing:
                 final_list.append(occurrence)
         self.page_dict["Occurrence"] = final_list
 
-def scrape_page(image_path):
-    cv2_image = cv2.imread(str(image_path))
-    cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
+def scrape_page(image):
+    #cv2_image = cv2.imread(str(image_path))
+    cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
     if page_parser.coordinate_dict == "No year found":
-        return "No year found at bottom of page, try resizing"
+        return "No year found"
     page_parser.get_facility_type()
     page_parser.get_rd_number()
     page_parser.get_facility_name()
