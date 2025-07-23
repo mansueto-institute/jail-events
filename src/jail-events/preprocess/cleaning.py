@@ -279,11 +279,9 @@ def extract_and_align_content(
     
     available_width = canvas_width - x_offset
     available_height = canvas_height -y_offset
-    
     crop_height, crop_width = cropped.shape[:2]
 
     # 3: Scale content
-    
     scale_x = available_width / crop_width
     scale_y = available_height / crop_height
     scale = min(scale_x, scale_y)
@@ -296,8 +294,8 @@ def extract_and_align_content(
 
     # Step 4: Create canvas and place content
     canvas = np.full((canvas_height, canvas_width, 3), bgcolor, dtype=image.dtype)
-    
     canvas[y_offset:y_offset+new_height, x_offset:x_offset+new_width] = cropped
+
     return canvas
 
 
@@ -340,7 +338,8 @@ def standardize_canvas(image: np.ndarray,
 
 def pre_process_page(page: fitz.Page,
                      dpi: int = 300,
-                    title_keyword: str = "REPORT EXTRAORDINARY UNUSUAL"):
+                    title_keyword: str = "REPORT EXTRAORDINARY UNUSUAL", 
+                    reprocess = False):
     """
     Full clean & standardize pipeline for one PDF page
     Out: a BGR OpenCV image to be saved
@@ -377,8 +376,9 @@ def pre_process_page(page: fitz.Page,
     )
     
     # 3) use the smart crop from statistical analyss
+    if reprocess == True:
+        return img
     pil_image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    
     _, _, cropped_pil = resize_image(pil_image)
     out_img = cv2.cvtColor(np.array(cropped_pil), cv2.COLOR_BAYER_BG2BGR)
 
