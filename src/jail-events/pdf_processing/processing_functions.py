@@ -119,9 +119,6 @@ def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
                 break
             if w / h > 20 or h / w > 20:
                 break
-            cv2.imshow("Contours Visualization", cropped_rect)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
             gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
             _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
             # Crop inside to ignore border (e.g. 10% margin)

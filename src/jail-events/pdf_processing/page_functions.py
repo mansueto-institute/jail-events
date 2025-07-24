@@ -65,7 +65,7 @@ class PageParsing:
                                 "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
                                 "Deceased Reporter": ((50, 2675), (2500, 2775)),
                                 "Deceased Examined by Physician": ((50, 2765), (2550, 2875)),
-                                "Deceased Signs of Illness": ((50,2865), (2500,2975))}
+                                "Deceased Signs of Illness": ((50,2865), (2500,2975)),
                                 "Resulting Death?": ((50, 2200), (2450, 2300)),
                                 "Deceased Name": ((50,2265),(2450,2375)),
                                 "Deceased Cause": ((50,2375),(2450,2475)),
@@ -116,7 +116,7 @@ class PageParsing:
                                         "Deceased on Suicide Watch": ((50, 2550), (2400, 2675)),
                                         "Deceased Reporter": ((50, 2625), (2500, 2775)),
                                         "Deceased Examined by Physician": ((50, 2740), (2550, 2860)),
-                                        "Deceased Signs of Illness": ((150, 2860), (2550,2960))}
+                                        "Deceased Signs of Illness": ((150, 2860), (2550,2960)),
                                         "Deceased Examined by Physician": ((50, 2740), (2550, 2860)),
                                         "Deceased Signs of Illness": ((150, 2860), (2550,2960))}
                 
