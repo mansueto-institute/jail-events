@@ -21,7 +21,7 @@ def parse_image_dict(cleaned_img, key_id, image_path, origin_page, dpi, title_ke
     if cleaned_rep_dict == "No year found":
         print(f"page {key_id} not correct, no cropping")
         #delete image file
-        image_path.unlink()
+        image_path.unlink(missing_ok = True)
         img = pre_process_page(page = origin_page, reprocess= True)
         cv2.imwrite(str(image_path), img)
         cleaned_rep_dict = scrape_page(img)
@@ -71,6 +71,8 @@ def process_single_pdf(pdf_path: Path, out_dir: Path, dpi: int=300,
             "error_message": ""
         }
         try:
+            if page_id == 'UO - FOIA June 2020 p116_p1':
+                print(page_id)
             img = pre_process_page(page, dpi=dpi,
                                 title_keyword=title_key)
             if img is None:
@@ -191,7 +193,7 @@ def main(mode):
         processed = Path(__file__).parent / "data/jails-data/processed/big_samples"
         suffix = "_sample"
     elif mode == "debug":
-        samples = Path(__file__).parent / "data/jails-data/samples/debug"
+        samples = Path(__file__).parent / "data/jails-data/samples/operand_debug"
         processed = Path(__file__).parent / "data/jails-data/processed/debug_processed"
         suffix = "_debug"
         

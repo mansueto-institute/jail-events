@@ -59,6 +59,11 @@ def resize_image(img:  Image.Image) -> Image.Image:
     # print(f"x_vals: {x_vals}, y_vals: {y_vals}")
     # print(f"x_margin: {x_margin}, y_margin: {y_margin}")
     # print(np.mean(imgarr))
+    x_vals["min_x"] = 0 if x_vals["min_x"] is None else x_vals["min_x"]
+    x_vals["max_x"] = _img.width if x_vals["max_x"] is None else x_vals["max_x"]
+    y_vals["max_y"] = _img.height if y_vals["max_y"] is None else y_vals["max_y"]
+    y_vals["min_y"] = 0 if y_vals["min_y"] is None else y_vals["min_y"]
+    
     new_img = img.crop((x_vals["min_x"] - x_margin, y_vals["min_y"] - y_margin, x_vals["max_x"] + x_margin, y_vals["max_y"] + y_margin))
     new_img = new_img.resize((2550, 3300), Image.Resampling.LANCZOS)
     # print(f"new_img size: {new_img.size}")
