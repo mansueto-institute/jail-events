@@ -115,6 +115,13 @@ def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
         if s == "**":
             x, y, w, h = cv2.boundingRect(approx)
             cropped_rect = roi[y : (y + h), x : (x + w)]
+            if cropped_rect.size == 0 or x == 0 or y == 0 or w == 0 or h == 0: #Check for bad parse/proportions
+                break
+            if w / h > 20 or h / w > 20:
+                break
+            cv2.imshow("Contours Visualization", cropped_rect)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
             gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
             _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
             # Crop inside to ignore border (e.g. 10% margin)

@@ -234,7 +234,6 @@ class PageParsing:
                 x, y, w, h = cv2.boundingRect(approx)
                 aspect_ratio = w / float(h)
                 if 0.5 < aspect_ratio < 2.0:
-                    # cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
                     cropped_rect = roi[y : (y + h), x : (x + w)]
                     gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
                     _, binary = cv2.threshold(gray_box, 150, 255, cv2.THRESH_BINARY_INV)
@@ -243,18 +242,13 @@ class PageParsing:
                     inner = binary[margin:h-margin, margin:w-margin]
                     fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
                     if x == 0 or y == 0 or w == 0 or h == 0:
-                        #print ("Error creating ROI ")
                         break
                     if y < roi_height*0.3 or (x > roi_width*0.6 and y > roi_height*0.6):
                         text_offset_x = 20  # pixels to skip after box
                         text_width = 600   # width of text region to extract
                         text_roi = roi[y-15:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
                         if text_roi.size == 0:
-                            #print ("Error creating ROI")
                             break
-                        # cv2.imshow("Contours Visualization", text_roi)
-                        # cv2.waitKey(0)
-                        # cv2.destroyAllWindows()
                         text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                         _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
                         text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
@@ -373,7 +367,7 @@ class PageParsing:
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         contours = pf.blur_edge_contours(roi, 5)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.075, adjust_width=100, adjust_box_min_box_area=1250)  
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=1250)
         pattern = r"yes"
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
@@ -595,7 +589,7 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA July 2018_p203.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "FOIA - Feb 2024 UOs_p145.png"
     print (scrape_page(image_path))
 
 #"Webster, Tiffany 1-9_p1.png" --> cross not being recognized, handwritten
