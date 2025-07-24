@@ -11,6 +11,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing as mp
 import polars as pl
 from analysis.analysis_handwritten import extract_ocr_confidence, generate_handwritten_report
+import random
 
 def parse_image_dict(cleaned_img, key_id, image_path, origin_page, dpi, title_key):
     """
@@ -127,6 +128,7 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
     """
     dst_folder.mkdir(parents=True, exist_ok=True)
     pdf_files = list(src_folder.glob("*.pdf"))
+    random.shuffle(pdf_files)
     if not pdf_files:
         print(f"No PDF files in folder")
         return [], []
