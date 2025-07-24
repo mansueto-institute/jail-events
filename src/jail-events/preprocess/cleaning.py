@@ -169,7 +169,19 @@ def crop_from_keyword_to_content(image: np.ndarray,
     
     print(f"Final content size: {final_content.shape}")
     return final_content
-    
+
+# Correct orientation
+def correct_orientation(image: np.ndarray) -> np.ndarray:
+    """
+    Checks if an image is in landscape orientation and rotates it to portrait.
+    This is a simple approach assuming sideways scans are rotated 90 degrees.
+    """
+    h, w = image.shape[:2]
+    if w > h:
+        # This is a landscape image, assume it's rotated 90 degrees
+        #print("Landscape image detected. Rotating 90 degrees counter-clockwise.")
+        return cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    return image
 
 # Deskew the image
 def deskew_image(image: np.ndarray, limit: int = 45):
@@ -351,6 +363,9 @@ def pre_process_page(page: fitz.Page,
     
     # 1) page to array
     img = pdf_page_to_image(page, dpi)
+    
+    # 1.5) Fix orientation:
+    img = correct_orientation(img)
 
     # 2) deskew
     img = deskew_image(img)
@@ -380,6 +395,6 @@ def pre_process_page(page: fitz.Page,
         return img
     pil_image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     _, _, cropped_pil = resize_image(pil_image)
-    out_img = cv2.cvtColor(np.array(cropped_pil), cv2.COLOR_BAYER_BG2BGR)
+    out_img = cv2.cvtColor(np.array(cropped_pil), cv2.COLOR_RGB2BGR)
 
     return out_img

@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug - Debug Mode",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/jail-events/main.py",
+            "args": ["--mode", "debug"],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src/jail-events",
+            "env": {},
+            "justMyCode": false
+        }
+    ]
+}
