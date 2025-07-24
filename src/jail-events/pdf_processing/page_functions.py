@@ -606,5 +606,4 @@ def scrape_page(image):
 
 if __name__ == "__main__":
     image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA July 2018_p203.png"
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "FOIA - Feb 2024 UOs_p145.png"
     print (scrape_page(image_path))
