@@ -1,6 +1,7 @@
 
 import polars as pl
 from pathlib import Path
+import jellyfish
 
 # 1. Divide the dataset with not handwritten and handwritten stuff
 def divide_dataset(path_parquet):
@@ -38,9 +39,27 @@ def clean_facility_name(df):
         .alias('Cleaned Facility Name')
     )
 
+#3. Cleaning address and grabbing the zipcode
 
+def clean_address(df):
+    pattern = r"ss:"
+    df = df.with_columns(
+    pl.when(pl.col("Address").str.contains(pattern))
+    .then(pl.col("Address").str.extract(r"s:\s*(\S.*)"))
+    .otherwise(pl.col("Address"))
+    .alias("Cleaned Address")
+    )
 
-# Cleaning date of occurrence
+    return df
+
+def get_zip_code(df):
+    df = df.with_columns(
+    pl.col("your_column_name").str.extract(r"(\d{5})").alias("Zip Code")
+    )
+
+    return df
+
+# 4. Cleaning date of occurrence
 
 def clean_date_occurrence(df):
     return df.with_columns(
@@ -63,14 +82,85 @@ def clean_date_occurrence(df):
         .alias("Cleaned Date")
     ).drop("temp_date")
 
+#5. Cleaning phone number
 
+def clean_phone_number(df):
+    pattern = r"#:"
+    df = df.with_columns(
+    pl.when(pl.col("Phone Number").str.contains(pattern))
+    .then(pl.col("Phone Number").str.extract(r"#\s*(\S.*)"))
+    .otherwise(pl.col("Phone Number"))
+    .alias("Phone Number")
+    )
 
+    return df
 
-# Extraction of names
+#6. Basic clean of time
 
+def clean_time(df):
+    pattern = r"Occurrence:"
+    df = df.with_columns(
+    pl.when(pl.col("Time of Day").str.contains(pattern))
+    .then(pl.col("Time of Day").str.extract(r"e:\s*(\S.*)"))
+    .otherwise(pl.col("Time of Day"))
+    .alias("Cleaned Time of Day")
+    )
 
+    return df
 
+# 7. Cleaning Occurrence List
 
+def clean_occurrences(entries):
+
+    actual_occurrences = ["Suicide (method)", "Suicide (attempt)", "Homicide", "Homicide Attempt", "Escape", "Escape Attempt",
+                "Fire", "Serious Injury", "Battery", "Riot of Rebellion", "Sex Offense", "Assault on Staff",
+                "Assault among Detainees", "Fighting among Detainees", "Restraints Used", "OC Spray Used", "Other (specify)"]
+    
+    if entries.is_empty():
+        return ["Error, no occurrence found"]
+
+    cleaned_list = []
+    for term in entries:
+        best_choice = None
+        highest_jaro = 0.0
+        for compare_term in actual_occurrences:
+            jaro_score = jellyfish.jaro_similarity(term, compare_term)
+            if jaro_score > highest_jaro:
+                highest_jaro = jaro_score
+                best_choice = compare_term
+
+        if best_choice in ["Suicide (method)", "Suicide (attempt)", "Other (specify)"]:
+            # Keep the original term (possibly has colon text, like "Other (specify): Fight")
+            cleaned_list.append(term)
+        else:
+            if best_choice not in cleaned_list:
+                cleaned_list.append(best_choice)
+
+def clean_other(df):
+    pattern = r"specify"
+    df = df.with_columns(
+    pl.when(pl.col("Cleaned Occurrences").str.contains(pattern))
+    .then(pl.col("Cleaned Occurrences").str.extract(r"\):\s*(\S.*)"))
+    .otherwise(pl.col("Cleaned Occurrences"))
+    .alias("Cleaned Occurrences")
+    )
+
+    return df
+
+#Extraction of names
+
+#9. Clean existing injuries
+
+def clean_injuries(df):
+    pattern = r"ibe\)[;:]"
+    df = df.with_columns(
+    pl.when(pl.col("Injuries?").str.contains(pattern))
+    .then(pl.col("Injuries?").str.extract(r"\)[;:]\s*(\S.*)"))
+    .otherwise(pl.col("Injuries?"))
+    .alias("Cleaned Injuries")
+    )
+
+    return df
 
 
 # Main assemble cleaning
@@ -87,3 +177,8 @@ def main():
 
 if __name__== "__main__":
     main()
+
+"""
+TO-DO
+Death Statistics
+"""
