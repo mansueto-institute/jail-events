@@ -52,7 +52,7 @@ class PageParsing:
                                 "Date": ((25, 950), (1200, 1100)),
                                 "Time of Day": ((1225, 950), (2200, 1100)),
                                 "AM or PM": ((2170, 1000), (2500, 1100)),
-                                "Occurrence Dictionary": ((430, 1075), (2475, 1400)),
+                                "Occurrence Dictionary": ((350, 1075), (2475, 1400)),
                                 "Table Contents": ((0, 1450), (2550, 2025)),
                                 "Injuries?": ((50, 2050), (2550, 2200)),
                                 "Resulting Death?": ((50, 2200), (2450, 2300)),
@@ -92,7 +92,7 @@ class PageParsing:
                                     "Date": ((25, 950), (1250, 1100)),
                                     "Time of Day": ((1250, 1000), (2500, 1100)),
                                     "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
-                                    "Occurrence Dictionary": ((50, 1050), (2500, 1450)), #up to here is standard
+                                    "Occurrence Dictionary": ((350, 1050), (2500, 1450)), #up to here is standard
                                     "Table Contents": ((0, 1400), (2550, 2700)),
                 }
 
@@ -105,7 +105,7 @@ class PageParsing:
                                         "Date": ((25, 950), (1250, 1100)),
                                         "Time of Day": ((1225, 950), (2170, 1100)),
                                         "AM or PM": ((2170, 1000), (2500, 1100)),
-                                        "Occurrence Dictionary": ((430, 1100), (2475, 1400)),
+                                        "Occurrence Dictionary": ((350, 1100), (2500, 1400)),
                                         "Table Contents": ((0, 1450), (2550, 2100)),
                                         "Injuries?": ((50, 2050), (2550, 2200)),
                                         "Resulting Death?": ((50, 2150), (2450, 2250)),
@@ -278,9 +278,9 @@ class PageParsing:
                         text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
                         return_dict[str((x,y))] = [text, fill_ratio]
 
-        # cv2.imshow("Contours Visualization", roi)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        cv2.imshow("Contours Visualization", roi)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         self.page_dict["Occurrence Dictionary"] = return_dict #returns dictionary of coordinate of the checkbox as keys then the text content and the fill ratio
 
     def get_table(self):
@@ -561,7 +561,7 @@ class PageParsing:
         if not sorting_dict: #what to return if nothing found/bad parse
             self.page_dict["Occurrence"] = final_list
             return
-        average_fill = np.mean(list(sorting_dict.values())) #get mean fill ratios 
+        average_fill = np.median(list(sorting_dict.values())) #get mean fill ratios 
         for occurrence, fill_ratio in sorting_dict.items():
             if fill_ratio > (average_fill + (average_fill*0.5)):
                 final_list.append(occurrence)
@@ -603,5 +603,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA December 2019_p140.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "SERVER" / "new run" / "processed" / "FOIA - December 2024 UO Part 1_p202.png"
     print (scrape_page(image_path))
