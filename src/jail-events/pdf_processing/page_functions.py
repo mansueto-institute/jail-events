@@ -8,8 +8,7 @@ import re
 import json
 import matplotlib.pyplot as plt
 import jellyfish
-import processing_functions as pf
-#from . 
+from . import processing_functions as pf
 
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
@@ -380,9 +379,6 @@ class PageParsing:
         """
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        cv2.imshow("Contours Visualization", roi)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
         contours = pf.blur_edge_contours(roi, 5)
         text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=1250)
         pattern = r"yes"
@@ -571,9 +567,9 @@ class PageParsing:
                 final_list.append(occurrence)
         self.page_dict["Occurrence"] = final_list
 
-def scrape_page(image_path):
-    cv2_image = cv2.imread(str(image_path))
-    cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
+def scrape_page(image):
+    #cv2_image = cv2.imread(str(image_path))
+    cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
     if page_parser.coordinate_dict == "No year found":
