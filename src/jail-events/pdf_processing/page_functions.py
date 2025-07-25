@@ -8,7 +8,8 @@ import re
 import json
 import matplotlib.pyplot as plt
 import jellyfish
-from . import processing_functions as pf
+import processing_functions as pf
+#from . 
 
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
 
@@ -34,9 +35,6 @@ class PageParsing:
         Performs an initial scan of the document to determine its years and if its Cook County, assigns dictionary of coordinates for points
         """
         roi = pf.get_roi(self.cv2_image, (2100, 2900), (2550, 3300))
-        # cv2.imshow("Contours Visualization", roi)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         text = pf.basic_text_line(roi)
 
         format_test = re.search(r"\d+", text)
@@ -65,15 +63,20 @@ class PageParsing:
                                 "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
                                 "Deceased Reporter": ((50, 2675), (2500, 2775)),
                                 "Deceased Examined by Physician": ((50, 2765), (2550, 2875)),
-                                "Deceased Signs of Illness": ((50,2865), (2500,2975)),
-                                "Resulting Death?": ((50, 2200), (2450, 2300)),
-                                "Deceased Name": ((50,2265),(2450,2375)),
-                                "Deceased Cause": ((50,2375),(2450,2475)),
-                                "Deceased Date and Time": ((50,2475),(2550,2575)),
-                                "Deceased on Suicide Watch": ((50, 2575), (2400, 2675)),
-                                "Deceased Reporter": ((50, 2675), (2500, 2775)),
-                                "Deceased Examined by Physician": ((50, 2765), (2550, 2875)),
                                 "Deceased Signs of Illness": ((50,2865), (2500,2975))}
+            roi = pf.get_roi(self.cv2_image, (100, 300), (1200, 800))
+            new_text = pf.basic_text_line(roi)
+            test_gym = re.search("Second Floor Gymnasium", new_text)
+            if test_gym:
+                new_coordinate_dict["Injuries?"] = ((50,2125), (2550, 2275))
+                new_coordinate_dict["Resulting Death?"] = ((50, 2225), (2450, 2325))
+                new_coordinate_dict["Deceased Name"] = ((50,2290),(2450,2400))
+                new_coordinate_dict["Deceased Cause"] = ((50,2400),(2450,2500))
+                new_coordinate_dict["Deceased Date and Time"] = ((50,2500),(2550,2600))
+                new_coordinate_dict["Deceased on Suicide Watch"] = ((50, 2600), (2400, 2700))
+                new_coordinate_dict["Deceased Reporter"] = ((50, 2700), (2500, 2800))
+                new_coordinate_dict["Deceased Examined by Physician"] = ((50, 2790), (2550, 2900))
+                new_coordinate_dict["Deceased Signs of Illness"] = ((50,2890), (2500,3000))
         else:
             self.coordinate_dict["Facility Name"] = ((50, 675), (1625, 850))
             self.get_facility_name()
@@ -112,7 +115,6 @@ class PageParsing:
                                         "Deceased Cause": ((50,2350),(2450,2450)),
                                         "Deceased Date and Time": ((50,2450),(2450,2550)),
                                         "Deceased Cause, Date, and Time": ((50, 2300), (2450, 2575)),
-                                        "Deceased on Suicide Watch": ((50, 2550), (2400, 2675)),
                                         "Deceased on Suicide Watch": ((50, 2550), (2400, 2675)),
                                         "Deceased Reporter": ((50, 2625), (2500, 2775)),
                                         "Deceased Examined by Physician": ((50, 2740), (2550, 2860)),
@@ -179,9 +181,6 @@ class PageParsing:
         """
         points = self.coordinate_dict["Date"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        # cv2.imshow("Contours Visualization", roi)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         text = pf.basic_text_line(roi)
 
         self.page_dict["Date"] = text
@@ -381,6 +380,9 @@ class PageParsing:
         """
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
+        cv2.imshow("Contours Visualization", roi)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         contours = pf.blur_edge_contours(roi, 5)
         text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=1250)
         pattern = r"yes"
@@ -569,9 +571,9 @@ class PageParsing:
                 final_list.append(occurrence)
         self.page_dict["Occurrence"] = final_list
 
-def scrape_page(image):
-    #cv2_image = cv2.imread(str(image_path))
-    cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+def scrape_page(image_path):
+    cv2_image = cv2.imread(str(image_path))
+    cv2_image = cv2.cvtColor(np.array(cv2_image), cv2.COLOR_RGB2BGR)
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
     if page_parser.coordinate_dict == "No year found":
@@ -605,5 +607,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA July 2018_p203.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA December 2019_p140.png"
     print (scrape_page(image_path))
