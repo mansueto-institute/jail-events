@@ -142,7 +142,7 @@ class DatabaseCleaning:
             return pl.DataFrame()
         
         # Create a unique page_id for tracking
-        df_with_page_id = df_with_contents.with_row_index("Rerport ID")
+        df_with_page_id = df_with_contents.with_row_index("page_id")
         
         # Reshape to long format
         long_df = reshape_to_long(
