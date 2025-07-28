@@ -43,16 +43,18 @@ class PageParsing:
 
         test_2002 = re.search("2002", text)
 
+        test_2024 = re.search("2024", text)
+
         if test_2002:
             new_coordinate_dict = {"Facility Type": ((1300, 300), (1950, 580)),
                                 "RD Number": ((1300,540),(2550,700)),
                                 "Facility Name": ((50, 650), (1625, 850)),
                                 "Phone Number": ((1625, 650), (2450, 850)),
-                                "Address": ((50, 800), (2400, 950)),
+                                "Address": ((50, 800), (2550, 950)),
                                 "Date": ((25, 950), (1200, 1100)),
                                 "Time of Day": ((1225, 950), (2200, 1100)),
-                                "AM or PM": ((2170, 1000), (2500, 1100)),
-                                "Occurrence Dictionary": ((300, 1075), (2475, 1400)),
+                                "AM or PM": ((2170, 950), (2500, 1100)),
+                                "Occurrence Dictionary": ((300, 1075), (2500, 1400)),
                                 "Table Contents": ((0, 1450), (2550, 2025)),
                                 "Injuries?": ((50, 2050), (2550, 2200)),
                                 "Resulting Death?": ((50, 2200), (2450, 2300)),
@@ -76,6 +78,28 @@ class PageParsing:
                 new_coordinate_dict["Deceased Reporter"] = ((50, 2700), (2500, 2800))
                 new_coordinate_dict["Deceased Examined by Physician"] = ((50, 2790), (2550, 2900))
                 new_coordinate_dict["Deceased Signs of Illness"] = ((50,2890), (2500,3000))
+
+        elif test_2024:
+            new_coordinate_dict = {"Facility Type": ((1300, 200), (1950, 580)),
+                    "RD Number": ((1300,440),(2550,600)),
+                    "Facility Name": ((50, 550), (1625, 725)),
+                    "Phone Number": ((1625, 550), (2450, 725)),
+                    "Address": ((50, 650), (2550, 850)),
+                    "Date": ((25, 850), (1200, 1000)),
+                    "Time of Day": ((1225, 850), (1800, 1000)),
+                    "AM or PM": ((1800, 850), (2500, 1000)),
+                    "Occurrence Dictionary": ((300, 975), (2500, 1300)),
+                    "Table Contents": ((0, 1350), (2550, 1925)),
+                    "Injuries?": ((50, 1900), (2550, 2000)),
+                    "Resulting Death?": ((50, 1975), (2450, 2075)),
+                    "Deceased Name": ((50,2165),(2450,2275)),
+                    "Deceased Cause": ((50,2275),(2450,2375)),
+                    "Deceased Date and Time": ((50,2375),(2550,2475)),
+                    "Deceased on Suicide Watch": ((50, 2475), (2400, 2575)),
+                    "Deceased Reporter": ((50, 2575), (2500, 2675)),
+                    "Deceased Examined by Physician": ((50, 2665), (2550, 2775)),
+                    "Deceased Signs of Illness": ((50,2765), (2500,2875))}
+                
         else:
             self.coordinate_dict["Facility Name"] = ((50, 675), (1625, 850))
             self.get_facility_name()
@@ -88,11 +112,11 @@ class PageParsing:
                                     "RD Number": ((1300,550),(2500,700)),
                                     "Facility Name": ((50, 675), (1625, 850)),
                                     "Phone Number": ((1650, 655), (2500, 850)),
-                                    "Address": ((50, 825), (2400, 925)),
+                                    "Address": ((50, 750), (2550, 875)),
                                     "Date": ((25, 950), (1250, 1100)),
-                                    "Time of Day": ((1250, 1000), (2500, 1100)),
+                                    "Time of Day": ((1500, 950), (2500, 1050)),
                                     "AM or PM": ((2170, 1000), (2500, 1100)), #doesn't need AM or PM part
-                                    "Occurrence Dictionary": ((300, 1050), (2500, 1450)), #up to here is standard
+                                    "Occurrence Dictionary": ((0, 1050), (2500, 1450)), #up to here is standard
                                     "Table Contents": ((0, 1400), (2550, 2700)),
                 }
 
@@ -101,11 +125,11 @@ class PageParsing:
                                         "RD Number": ((1300,525),(2550,700)),
                                         "Facility Name": ((50, 675), (1625, 850)),
                                         "Phone Number": ((1650, 655), (2500, 850)),
-                                        "Address": ((50, 800), (2500, 950)),
+                                        "Address": ((50, 800), (2550, 950)),
                                         "Date": ((25, 950), (1250, 1100)),
                                         "Time of Day": ((1225, 950), (2170, 1100)),
-                                        "AM or PM": ((2170, 1000), (2500, 1100)),
-                                        "Occurrence Dictionary": ((300, 1100), (2475, 1400)),
+                                        "AM or PM": ((2170, 950), (2500, 1100)),
+                                        "Occurrence Dictionary": ((300, 1100), (2500, 1400)),
                                         "Table Contents": ((0, 1450), (2550, 2100)),
                                         "Injuries?": ((50, 2050), (2550, 2200)),
                                         "Resulting Death?": ((50, 2150), (2450, 2250)),
@@ -130,7 +154,7 @@ class PageParsing:
         points = self.coordinate_dict["Facility Type"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         contours = pf.blur_edge_contours(roi, 5)
-        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=160, adjust_box_min_box_area=1500)
+        text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=160, adjust_box_min_box_area=1200)
 
         self.page_dict["Facility Type"] = text
 
@@ -203,7 +227,7 @@ class PageParsing:
             self.page_dict["AM or PM"] = "Check time, no AM or PM for Cook County"
         else:
             points = self.coordinate_dict["AM or PM"]
-            roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
+            roi = pf.get_roi(self.cv2_image, points[0], points[1])
             contours = pf.blur_edge_contours(roi, 1.5)
             text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=500)
 
@@ -238,7 +262,7 @@ class PageParsing:
             s = ""
             if (carea > 800) and (carea < 2000):
                 extent = cv2.contourArea(contour) / carea #rules out letters being selected
-                if extent > 0.9:
+                if extent > 0.85:
                     s = "**"
             if s == "**":
                 x, y, w, h = cv2.boundingRect(approx)
@@ -271,16 +295,12 @@ class PageParsing:
                         text_width = 300    # width of text region to extract
                         text_roi = roi[y-10:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
                         if text_roi.size == 0:
-                            #print ("Error creating ROI")
                             break
                         text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                         _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
                         text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
                         return_dict[str((x,y))] = [text, fill_ratio]
 
-        # cv2.imshow("Contours Visualization", roi)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         self.page_dict["Occurrence Dictionary"] = return_dict #returns dictionary of coordinate of the checkbox as keys then the text content and the fill ratio
 
     def get_table(self):
@@ -603,5 +623,5 @@ def scrape_page(image):
     return (page_parser.page_dict)
 
 if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "processed" / "UO - FOIA December 2019_p140.png"
+    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "SERVER" / "new run" / "processed" / "FOIA - 2024 January UOs_p85.png"
     print (scrape_page(image_path))

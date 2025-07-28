@@ -64,7 +64,6 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
         if (carea > adjust_box_min_box_area) and (carea < 2500):
             s = "**"
         if s == "**":
-            # cv2.drawContours(roi, [contour], -1, (0,255,0), 2)
             x, y, w, h = cv2.boundingRect(approx)
             cropped_rect = roi[y : (y + h), x : (x + w)]
             gray_box = cv2.cvtColor(cropped_rect, cv2.COLOR_BGR2GRAY)
@@ -74,9 +73,6 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
             fill_ratio = cv2.countNonZero(inner) / float(inner.size) #check how much is filled
             box_dict = {"x": x, "y": y, "w": w, "h": h, "fill_ratio": fill_ratio, "area": carea}
             box_list.append(box_dict)
-    # cv2.imshow("Contours Visualization", roi)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
     box_list = sorted(box_list, key=lambda d: d["fill_ratio"], reverse=True)
     if len(box_list) < 2:
         return "Error: less than two boxes found"
