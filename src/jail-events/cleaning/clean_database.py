@@ -208,7 +208,7 @@ def main():
     # Apply the cleaning
     out_path = Path(__file__).parent.parent / 'data/jails-data/SERVER/new run/output'
     in_parquet = out_path / 'jails_pdfs_full.parquet'
-    out_parquet = out_path / 'jails_pds_cleanned.parquet'
+    out_parquet = out_path / 'jails_pdfs_cleanned.parquet'
     out_parquet_persons = out_path / 'jails_person_records.parquet'
     
     # Cleaning
