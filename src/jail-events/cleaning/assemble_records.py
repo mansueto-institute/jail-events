@@ -67,7 +67,7 @@ def assemble_person_records(long_df: pl.DataFrame) -> pl.DataFrame:
 
     # Step 3: Pivot the data from long to wide format.
     pivoted_df = classified_df.pivot(
-        index=["person_id", "page_id"],
+        index=["person_id", "Report ID"],
         columns="info_type",
         values="final_value",
         aggregate_function="first"
@@ -75,7 +75,7 @@ def assemble_person_records(long_df: pl.DataFrame) -> pl.DataFrame:
 
     # Step 4: Clean up and select the final columns.
     # The pivot may create columns we don't need. We also drop the temporary person_id.
-    final_cols = ["page_id", "Name", "DOB", "Date_Confined", "Arresting_Charge"]
+    final_cols = ["Report ID", "Name", "DOB", "Date_Confined", "Arresting_Charge"]
     
     # Ensure all expected columns exist, filling with null if they don't
     for col_name in final_cols:

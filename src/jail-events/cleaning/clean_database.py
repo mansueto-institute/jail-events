@@ -147,7 +147,7 @@ class DatabaseCleaning:
         # Reshape to long format
         long_df = reshape_to_long(
             df_with_page_id, 
-            id_cols=["Report ID"], 
+            id_cols=["page_id", "Report ID"], 
             list_col="Table Contents"
         )
         
