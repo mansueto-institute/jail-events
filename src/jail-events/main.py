@@ -11,6 +11,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing as mp
 import polars as pl
 from analysis.analysis_handwritten import extract_ocr_confidence, generate_handwritten_report
+from cleaning.clean_database import main as clean_database_main
+
 import random
 
 def parse_image_dict(cleaned_img, key_id, image_path, origin_page, dpi, title_key):
@@ -175,8 +177,10 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
               type=click.Choice(['full', 'sample', 'debug']), 
               default = 'full',
               help = 'Processing mode: full (all data 27,800 pages), sample (aprox 120 pages), debug (few problematic pages)')
-
-def main(mode):
+@click.option("--step", 
+              type=click.Choice(['all', 'parse', 'clean']),
+              default='all', help='Pipeline step: all (parse+clean), parse (only parse), clean (only clean)')
+def main(mode, step):
     """ Processing jail PDFs """
     
     click.echo(f"Running in {mode.upper()} mode")
@@ -208,38 +212,42 @@ def main(mode):
     # Time cloking
     start_time = time.time()
     
-    # First parse all the pdfs and parrse images
-    all_dicts_list, processing_logs = process_all_pdfs(samples, processed, dpi=300)
-    
-    # report
-    generate_handwritten_report(all_dicts_list, out_analysis, threshold=70)
-    # Save data as a pickle
-    with open(backup_file, "wb") as f:
-        pickle.dump(all_dicts_list, f)
-    print(f"Saved backup to {backup_file}")
-    
-    df = pl.DataFrame(all_dicts_list)
-    df.write_parquet(out_parquet)
-    
-    #log of errors
-    log_df = pl.DataFrame(processing_logs)
-    log_df.write_parquet(log_parquet)
-    processing_time = time.time() - start_time
-    
-    # Summary 
-    click.echo("\n" + "="*50)
-    click.echo("PROCESSING SUMMARY")
-    click.echo("="*50)
-    click.echo(f"Mode: {mode.upper()}")
-    click.echo(f"Total pages attempted: {len(processing_logs)}")
-    
-    summary = log_df.group_by("status").agg(pl.len().alias("count"))
-    for row in summary.iter_rows(named=True):
-            status_color = 'green' if row['status'] == 'success' else 'red'
-            click.echo(f"{row['status'].title()}: ", nl=False)
-            click.secho(f"{row['count']} pages", fg=status_color)
-    
-    #Confidence analysis
+    if step in ['all', 'parse']: 
+        # First parse all the pdfs and parrse images
+        all_dicts_list, processing_logs = process_all_pdfs(samples, processed, dpi=300)
+        
+        # report
+        #generate_handwritten_report(all_dicts_list, out_analysis, threshold=70)
+        # Save data as a pickle
+        with open(backup_file, "wb") as f:
+            pickle.dump(all_dicts_list, f)
+        print(f"Saved backup to {backup_file}")
+        
+        df = pl.DataFrame(all_dicts_list)
+        df.write_parquet(out_parquet)
+        
+        #log of errors
+        log_df = pl.DataFrame(processing_logs)
+        log_df.write_parquet(log_parquet)
+        processing_time = time.time() - start_time
+        
+        # Summary 
+        click.echo("\n" + "="*50)
+        click.echo("PROCESSING SUMMARY")
+        click.echo("="*50)
+        click.echo(f"Mode: {mode.upper()}")
+        click.echo(f"Total pages attempted: {len(processing_logs)}")
+        
+        summary = log_df.group_by("status").agg(pl.len().alias("count"))
+        for row in summary.iter_rows(named=True):
+                status_color = 'green' if row['status'] == 'success' else 'red'
+                click.echo(f"{row['status'].title()}: ", nl=False)
+                click.secho(f"{row['count']} pages", fg=status_color)
+    if step in ['all', 'clean']:
+        click.echo("Running cleaning pipeline...")
+        clean_database_main(input_path=out_parquet)
+        
+        processing_time = time.time() - start_time
     
     click.echo(f"Processing time: {processing_time:.1f}s ({processing_time/60:.1f} min)")
 

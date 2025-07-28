@@ -2,9 +2,9 @@
 import polars as pl
 from pathlib import Path
 import jellyfish
-from extract_names import identify_names_in_long_df
-from reshape_db import reshape_to_long
-from assemble_records import assemble_person_records
+from .extract_names import identify_names_in_long_df
+from .reshape_db import reshape_to_long
+from .assemble_records import assemble_person_records
 
 # 1. Divide the dataset with not handwritten and handwritten stuff
 def divide_dataset(path_parquet):
@@ -204,10 +204,15 @@ def clean_occurrences(entries):
     return "; ".join(cleaned_list) if cleaned_list else "No occurrence found"
 
 # Main assemble cleaning
-def main():
+def main(input_path = None):
     # Apply the cleaning
-    out_path = Path(__file__).parent.parent / 'data/jails-data/SERVER/new run/output'
-    in_parquet = out_path / 'jails_pdfs_full.parquet'
+    if input_path is None:
+        out_path = Path(__file__).parent.parent / 'data/jails-data/SERVER/new run/output'
+        in_parquet = out_path / 'jails_pdfs_full.parquet'
+    else:
+        in_parquet = Path(input_path)
+        out_path = in_parquet.parent
+    
     out_parquet = out_path / 'jails_pdfs_cleanned.parquet'
     out_parquet_persons = out_path / 'jails_person_records.parquet'
     

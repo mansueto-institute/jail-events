@@ -4,13 +4,9 @@ from tqdm import tqdm
 from transformers import pipeline
 import torch.cuda
 ner_model = None
-from reshape_db import reshape_to_long
-try:
-    from .reshape_db import reshape_to_long
-    from .assemble_records import assemble_person_records
-except ImportError:
-    from reshape_db import reshape_to_long
-    from assemble_records import assemble_person_records
+from .reshape_db import reshape_to_long
+from .assemble_records import assemble_person_records
+
 
 def get_ner_model():
     """Initialization of NER model"""
