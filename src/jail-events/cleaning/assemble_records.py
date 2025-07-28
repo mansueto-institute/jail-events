@@ -19,22 +19,38 @@ def assemble_person_records(long_df: pl.DataFrame) -> pl.DataFrame:
     # The cumsum() on the boolean 'is_name' column creates a new group
     # every time it encounters 'True'. This is the key to grouping the data.
     df_with_person_id = long_df.with_columns(
-        person_id=pl.col("is_name").cumsum()
+        person_id=pl.col("is_name").cum_sum()
     )
 
     # Step 2: Classify each row's information type (Name, DOB, Date, Charge).
-    # We create two new columns: one for the classified type and one for the value.
+    
+    # Date patterns: YYYY or YY
+    date_pattern = r"\d{1,2}[/\s]\s?\d{1,2}[/\s]\s?\d{2,4}"
+    
     classified_df = df_with_person_id.with_columns(
-        # First, try to parse any string into a date object.
-        # This handles multiple common OCR formats. It will be null if parsing fails.
-        parsed_date=pl.col("Table Contents").str.to_date(
-            formats=["%m/%d/%Y", "%m/ %d/ %Y", "%m %d %Y"], strict=False
-        ),
-        # Keep the original text value for pivoting.
-        value=pl.col("Table Contents")
+        cleaned_for_date=pl.when(
+            pl.col("is_name").not_() & pl.col("Table Contents").str.contains(date_pattern)
+        )
+        .then(
+            pl.col("Table Contents")
+            .str.replace_all(r"[|*,.]", "")
+            .str.strip_chars()
+        )
+        .otherwise(None),
     ).with_columns(
-        # Now, use a series of conditions to determine the info_type.
-        # The order of these 'when' conditions is important.
+        # Try multiple date formats using pl.coalesce
+        parsed_date=pl.coalesce([
+            # 4-digit years first (more specific)
+            pl.col("cleaned_for_date").str.strptime(pl.Date, format="%m/%d/%Y", strict=False),
+            pl.col("cleaned_for_date").str.strptime(pl.Date, format="%m %d %Y", strict=False),
+            pl.col("cleaned_for_date").str.strptime(pl.Date, format="%m/ %d/ %Y", strict=False),
+            # 2-digit years second (less specific, but common)
+            pl.col("cleaned_for_date").str.strptime(pl.Date, format="%m/%d/%y", strict=False),
+            pl.col("cleaned_for_date").str.strptime(pl.Date, format="%m %d %y", strict=False),
+            pl.col("cleaned_for_date").str.strptime(pl.Date, format="%m/ %d/ %y", strict=False)
+        ]),
+    ).with_columns(
+        # Classify the info_type based on the parsing results
         info_type=pl.when(pl.col("is_name"))
         .then(pl.lit("Name"))
         .when(pl.col("parsed_date").dt.year() < 2005)
@@ -42,16 +58,19 @@ def assemble_person_records(long_df: pl.DataFrame) -> pl.DataFrame:
         .when(pl.col("parsed_date").is_not_null())
         .then(pl.lit("Date_Confined"))
         .otherwise(pl.lit("Arresting_Charge"))
+    ).with_columns(
+        # Use cleaned version for dates, original for everything else
+        final_value=pl.when(pl.col("cleaned_for_date").is_not_null())
+        .then(pl.col("cleaned_for_date"))  # Use cleaned version for dates
+        .otherwise(pl.col("Table Contents"))  # Use original for names/charges
     )
 
     # Step 3: Pivot the data from long to wide format.
-    # We group by the person_id and page_id, using the 'info_type' for new
-    # column names and the 'value' for the cell contents.
     pivoted_df = classified_df.pivot(
         index=["person_id", "page_id"],
         columns="info_type",
-        values="value",
-        aggregate_function="first" # Take the first value if there are duplicates
+        values="final_value",
+        aggregate_function="first"
     )
 
     # Step 4: Clean up and select the final columns.

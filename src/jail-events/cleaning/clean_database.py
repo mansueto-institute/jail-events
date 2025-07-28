@@ -2,6 +2,9 @@
 import polars as pl
 from pathlib import Path
 import jellyfish
+from extract_names import identify_names_in_long_df
+from reshape_db import reshape_to_long
+from assemble_records import assemble_person_records
 
 # 1. Divide the dataset with not handwritten and handwritten stuff
 def divide_dataset(path_parquet):
@@ -54,7 +57,7 @@ class DatabaseCleaning:
 
     def get_zip_code(self):
         self.df = self.df.with_columns(
-        pl.col("your_column_name").str.extract(r"(\d{5})").alias("Zip Code")
+        pl.col("Address").str.extract(r"(\d{5})").alias("Zip Code")
         )
 
     # 4. Cleaning date of occurrence
@@ -120,6 +123,47 @@ class DatabaseCleaning:
         .otherwise(pl.col("Injuries?"))
         .alias("Cleaned Injuries")
         )
+    # 10. persons database
+    def extract_person_records(self) -> pl.DataFrame:
+        """
+        Extract person-level records from Table Contents column.
+        Returns a separate DataFrame with individual person records.
+        """
+        print("Extracting person-level records from Table Contents...")
+        print("Available columns:", self.df.columns)
+        # Filter rows that have Table Contents data
+        df_with_contents = self.df.filter(
+            pl.col("Table Contents").is_not_null() & 
+            pl.col("Table Contents").list.len() > 0
+        )
+        
+        if len(df_with_contents) == 0:
+            print("No Table Contents data found for person extraction.")
+            return pl.DataFrame()
+        
+        # Create a unique page_id for tracking
+        df_with_page_id = df_with_contents.with_row_index("Rerport ID")
+        
+        # Reshape to long format
+        long_df = reshape_to_long(
+            df_with_page_id, 
+            id_cols=["Report ID"], 
+            list_col="Table Contents"
+        )
+        
+        # Identify names using the ML model
+        identified_df = identify_names_in_long_df(
+            long_df,
+            text_column="Table Contents",
+            target_column="is_name",
+            batch_size=1000  # Adjust based on your memory
+        )
+        
+        # Assemble into structured person records
+        person_records_df = assemble_person_records(identified_df)
+        
+        print(f"Extracted {len(person_records_df)} person records.")
+        return person_records_df
 
 def clean_occurrences(entries):
 
@@ -128,10 +172,14 @@ def clean_occurrences(entries):
                 "Assault among Detainees", "Fighting among Detainees", "Restraints Used", "OC Spray Used", "Other (specify)"]
     
     if entries.is_empty():
-        return ["Error, no occurrence found"]
+        return "Error, no occurrence found"
 
     cleaned_list = []
     for term in entries:
+        # Skip None or empty terms
+        if term is None or str(term).strip() == "":
+            continue
+        
         best_choice = None
         highest_jaro = 0.0
         for compare_term in actual_occurrences:
@@ -139,38 +187,55 @@ def clean_occurrences(entries):
             if jaro_score > highest_jaro:
                 highest_jaro = jaro_score
                 best_choice = compare_term
-
-        if best_choice in ["Suicide (method)", "Suicide (attempt)", "Other (specify)"]:
-            # Keep the original term (possibly has colon text, like "Other (specify): Fight")
-            cleaned_list.append(term)
+        #Add with minim hreshold if found a good match
+        if best_choice is not None and highest_jaro > 0.5:
+            if best_choice in ["Suicide (method)", "Suicide (attempt)", "Other (specify)"]:
+                # Keep the original term (possibly has colon text, like "Other (specify): Fight")
+                cleaned_list.append(term)
+            else:
+                if best_choice not in cleaned_list:
+                    cleaned_list.append(best_choice)
         else:
-            if best_choice not in cleaned_list:
-                cleaned_list.append(best_choice)
+            # If no good match found, keep original term but clean it
+            cleaned_term = str(term).strip()
+            if cleaned_term and cleaned_term not in cleaned_list:
+                cleaned_list.append(cleaned_term)
+    
+    return "; ".join(cleaned_list) if cleaned_list else "No occurrence found"
 
 # Main assemble cleaning
 def main():
     # Apply the cleaning
-    out_path = Path(__file__).parent / 'data/jails-data/output'
-    in_parquet = out_path / 'jails_pdfs.parquet'
+    out_path = Path(__file__).parent.parent / 'data/jails-data/SERVER/new run/output'
+    in_parquet = out_path / 'jails_pdfs_full.parquet'
     out_parquet = out_path / 'jails_pds_cleanned.parquet'
+    out_parquet_persons = out_path / 'jails_person_records.parquet'
+    
     # Cleaning
     df = divide_dataset(in_parquet)
     df_to_clean = DatabaseCleaning(df)
-
+    
+    print("=== CLEANING MAIN DATABASE ===")
     df_to_clean.clean_facility_name()
     df_to_clean.clean_address()
     df_to_clean.get_zip_code()
     df_to_clean.clean_date_occurrence()
     df_to_clean.clean_phone_number()
     df_to_clean.clean_time()
-    df_to_clean.df = df_to_clean.df.with_columns(pl.col("Occurrence").map_elements(clean_occurrences).alias("Cleaned Occurrences"))
+    df_to_clean.df = df_to_clean.df.with_columns(
+        pl.col("Occurrence").map_elements(clean_occurrences, return_dtype=pl.String).alias("Cleaned Occurrences")
+    )
     df_to_clean.clean_other_occ()
-    df.write_parquet(out_parquet)
+    df_to_clean.df.write_parquet(out_parquet)
+    
+    print("\n=== EXTRACTING PERSON RECORDS ===")
+    # Extract person-level records
+    person_records = df_to_clean.extract_person_records()
+    
+    # Save person records database
+    print(f"Saving person records database to: {out_parquet_persons}")
+    person_records.write_parquet(out_parquet_persons)
+    
 
-if __name__== "__main__":
+if __name__ == "__main__":
     main()
-
-"""
-TO-DO
-Death Statistics
-"""

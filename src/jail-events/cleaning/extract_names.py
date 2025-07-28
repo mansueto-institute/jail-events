@@ -5,6 +5,12 @@ from transformers import pipeline
 import torch.cuda
 ner_model = None
 from reshape_db import reshape_to_long
+try:
+    from .reshape_db import reshape_to_long
+    from .assemble_records import assemble_person_records
+except ImportError:
+    from reshape_db import reshape_to_long
+    from assemble_records import assemble_person_records
 
 def get_ner_model():
     """Initialization of NER model"""
@@ -206,7 +212,7 @@ def test_long_format_extraction():
     print(long_df)
     
     # Identify names
-    result_df = identify_names_in_long_df(
+    identified_df = identify_names_in_long_df(
         long_df, 
         text_column="Table Contents", 
         target_column="is_name",
@@ -214,14 +220,14 @@ def test_long_format_extraction():
     )
     
     print("\n--- Result with Name Identification ---")
-    print(result_df)
+    print(identified_df)
     
-    # Show just the names
-    names_only = result_df.filter(pl.col("is_name"))
-    print("\n--- Identified Names Only ---")
-    print(names_only)
+    # Assemble the final structured records
+    final_records_df = assemble_person_records(identified_df)
     
-    return result_df
+    print(final_records_df)
+    
+    return final_records_df
 
 if __name__ == "__main__":
     test_long_format_extraction()
