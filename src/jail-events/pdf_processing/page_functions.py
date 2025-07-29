@@ -1,13 +1,11 @@
-import pytesseract
-import pdf2image
-import cv2
-import numpy as np
-from PIL import Image
-from pathlib import Path
 import re
-import json
-import matplotlib.pyplot as plt
+from pathlib import Path
+
+import cv2
 import jellyfish
+import numpy as np
+import pytesseract
+
 from . import processing_functions as pf
 
 #pytesseract.pytesseract.tesseract_cmd = r"C:/Program Files/Tesseract-OCR/tesseract.exe"
@@ -611,14 +609,14 @@ def scrape_page(image):
         page_parser.get_table()
         page_parser.get_injuries()
         page_parser.get_resulting_death()
-        if page_parser.page_dict["Resulting Death?"] == "Yes":
-            page_parser.get_deceased_name()
-            page_parser.get_deceased_cause()
-            page_parser.get_deceased_date_time()
-            page_parser.get_suicide_watch()
-            page_parser.get_reported()
-            page_parser.get_deceased_examined()
-            page_parser.get_deceased_illness()
+        # if page_parser.page_dict["Resulting Death?"] == "Yes":
+        page_parser.get_deceased_name()
+        page_parser.get_deceased_cause()
+        page_parser.get_deceased_date_time()
+        page_parser.get_suicide_watch()
+        page_parser.get_reported()
+        page_parser.get_deceased_examined()
+        page_parser.get_deceased_illness()
     #test
     return (page_parser.page_dict)
 
