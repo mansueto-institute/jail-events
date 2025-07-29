@@ -9,6 +9,7 @@ format:
     slide-number: c/t
     scrollable: false
     self-contained: true
+jupyter: python3
 editor:
   render-on-save: true
 ---
@@ -23,85 +24,221 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import json
 alt.data_transformers.enable("vegafusion")
-root = Path('..')
-parquet_path = root / 'data/jails-data/output/jails_pdfs.parquet'
-df = pl.read_parquet(parquet_path)
 
-df_cleaned = 
+root = Path('../..')
+parquet_path = root / 'data/jails-data/SERVER/run 0728/output/jails_pdfs_cleanned.parquet'
+print(parquet_path)
+df_cleaned = pl.read_parquet(parquet_path)
+parquet_normal = root / 'data/jails-data/SERVER/run 0728/output/jails_pdfs_full.parquet'
+df_normal = pl.read_parquet(parquet_normal)
 ```
 
 ## Outline: {.smaller}
 
-1. **Overview and methodology**
-2. **Improvements**
-3. **Occurrences summary**
-4. **Breakdown** 
-   - Facilities and occurrences
-5. **Case Study**
-6. **Next steps and feedback**
+1. **Overview**
+    - **The challenge**
+    - **Methodology and solution** 
+2. **Overall statistics**
+5. **Findings**
+6. **Products**
 
 ---
 
 ## Overview {.smaller}
 
--  Questions to solve :
+- All jails in Illinois (92): required to submit reports of unusual occurences [section 701.30]
+- Unusual occurrences include: restraints, suicide attempts, sexual assault, battery, deaths, etc.
+- After FOIA requests, we have 299 PDFs, with different amount of reports each (pages).
+    - **27,892 pages in total**
+    - Different time coverage
+    - Only the first page of the reports was largely available
+    - Extra pages include testimony, write-ups and suggestions (not available for many)
+    - Some of the reports are handwritten
+- Examples 
 
+---
+
+##### **Examples of *good* reports** {.smaller}
+
+::: {.columns}
+::: {.column width="50%"} 
+![](images/GoodR1.png)
+:::
+
+::: {.column width="50%"}
+![](images/GoodR2.png)
+:::
+:::
+
+---
+
+## **Questions**
+
+- Can we systematically extract the information on the pdfs into an structured database?
+- What patterns in the extracted data can be identified?
+- What is the frequency of occurrences throughout Illinois Jails?
+
+:::{.callout .fragment}
+This project aims to extract, clean, and analyze reports of unusual occurrences from Illinois county jails. The project leverages OCR and data processing to transform scanned PDF reports into structured data, enabling statistical analysis and insights into jail events across the state. This can help with jail oversight and accountability.
+:::
+
+---
+
+## Challenges {.smaller}
+
+::: {.columns}
+::: {.column width="60%"}
+- Varying quality: Badly scanned, rotated or skewed pages  
+    - Content identification and standardization needed  
+- Handwritten reports  
+    - Identify them to differentiate the extraction process  
+- Different form types: 2002, 2016, 2024, and Cook County  
+    - Implies different coordinates for ROI definition  
+    - Cook County large tables  
+- Variation in how reports were filled out  
+- Name identification in table of contents  
+    - Create a person-level database  
+:::
+
+::: {.column width="40%"}
+
+<details>
+  <summary><b>Death box example</b></summary>
+  <img src="images/death%20box%20example.png" width="100%">
+</details>
+
+<details>
+  <summary><b>Handwritten example</b></summary>
+  <img src="images/handwrittenex.png" width="100%">
+</details>
+
+<details>
+  <summary><b>Bad scan example</b></summary>
+  <img src="images/badscanex.png" width="100%">
+</details>
+
+<details>
+  <summary><b>Cook County table</b></summary>
+  <img src="images/cook%20county%20example.png" width="100%">
+</details>
+
+:::
+:::
+
+---
+
+## Solutions {.smaller .scrollable}
+
+- Handwritten flagged with OCR confidence score
+
+```{python}
+#| echo: false
+#| include: true
+ocr_histogram = alt.Chart(df_normal).mark_bar().encode(
+    x=alt.X('OCR_Confidence:Q', 
+            bin=alt.Bin(maxbins=30),
+            title='OCR Confidence Score',
+            scale = alt.Scale(domain=[46,100])
+    ),
+    y=alt.Y('count():Q', 
+            title='Number of Documents'),
+    color=alt.value("#E0AC3BA6"),
+    tooltip=[
+        alt.Tooltip('OCR_Confidence:Q', bin=True, title='OCR Confidence Range'),
+        alt.Tooltip('count():Q', title='Document Count')
+    ]
+    ).properties(
+    width=600,
+    height=400,
+    title='Distribution of OCR Confidence Scores')
+
+vertical_line = alt.Chart(df_normal).mark_rule(
+    color='red',
+    strokeWidth=2,
+    strokeDash=[5, 5]
+    ).encode(
+    x=alt.X('OCR_Confidence:Q', scale=alt.Scale(domain=[46, 100]))
+    ).transform_calculate(
+    OCR_Confidence='80'
+    )
+ocr_histogram_with_line = ocr_histogram + vertical_line
+ocr_histogram_with_line
+```
+
+- Standardize layouts: fixed distance from top and bottom
+- Convert PDFs to images, scan text
+- Data pipeline
+![](images/MansuetoFlow.png){.fragment width="100%"}
+- Hardcoding coordinates depending on form type
+- LLM to identify persons and names 
 
 
 ---
 
-## Summary {.smaller}
+## Summary Statistics {.smaller}
 
-
+```{python}
+#| echo: false
+#| include: true
+total_pages_threshold = df_normal.filter(pl.col('OCR_Confidence') < 80).height
+total_pages_threshold = f"{total_pages_threshold:,}"
+```
 - Total pages: 27,892
-- Automated processing pipeline
-- Handwritten analysis: 857
-- Extraction OCR and cleaning
-- Resulting deaths: 137
+    - 98 % succeed → `{python} f"{df_cleaned.height:,}"`
+    - 2 % without title `Extraordinary | Unusual |Occurence`
 
-::: {.columns .fragment}
-::: {.column width="70%"} 
-![Data pipeline](images/MansuetoFlow.png){width=100%}
-:::
-
-::: {.column width="30%"}
-![OCR distribution](images/ocr_distribution.png){width=100%}
-:::
-:::
-
+- From the handwritten analysis: `{python} total_pages_threshold`
+- Resulting deaths: 78
 
 ---
 
-## Improvements {.smaller}
+## Summary Statistics {.smaller}
 
 ```{python}
 #| echo: false
 #| include: false
-#| warning: false
+def print_missing_stats(df, fields):
+    stats = []
+    total = df.height
+    for field in fields:
+        missing = df.select(pl.col(field).is_null().sum()).item()
+        stats.append({
+            "Field": field,
+            "Total": total,
+            "Missing": missing,
+            "Missing_Percent": (missing / total) * 100
+        })
+    stats_df = pl.DataFrame(stats)
+    print("## Missing Data Completeness\n")
+    with pl.Config(
+        tbl_formatting="MARKDOWN",
+        tbl_hide_column_data_types=True,
+        tbl_hide_dataframe_shape=True,
+    ):
+        print(stats_df.select(['Field', 'Total', 'Missing', 'Missing_Percent']))
 
+# Example usage:
+fields = ['Cleaned Facility Name', 'Cleaned Date', 'Cleaned Occurrences', 'Cleaned Address', 'Zip Code', 'RD Number', 'Resulting Death?']
+print_missing_stats(df_cleaned, fields)
 ```
 
-- Adjusted OCR regions to table of occurences
+- Statistics after cleaning and implementing alternative pipeline
 
-:::{.incremental}
-| Field                 | Total | Missing |     % |
+| Field                 | Total | Missing | Missing_Percent |
 |-----------------------|-------|---------|-----------------|
-| Cleaned Facility Name | 27,333 | 2,239    | 8.19       |
-| Cleaned Date | 27,333 | 5,431    | 19.86      |
-| Occurrences  | 27,333 | 3,418    | 12.5     |
-:::
+| Cleaned Facility Name | 26909 | 824     | 3.06        |
+| Cleaned Date          | 26909 | 2767    | 10.28       |
+| Cleaned Occurrences   | 26909 | 683     | 2.53       |
+| Cleaned Address       | 26909 | 1       | 0.0037        |
+| Zip Code              | 26909 | 1140    | 4.23        |
+| RD Number             | 26909 | 0       | 0.0             |
+| Resulting Death?      | 26909 | 0       | 0.0             |
 
 ---
 
-
-## Statistics {.smaller}
-
-Most common by facility name
+## Common Facilities {.smaller}
 
 ```{python}
-#| echo: false
-#| code-fold: true
-#| code-summary: "Show Python code"
 top_facilities = (
     df_cleaned
     .filter(pl.col('Cleaned Facility Name').is_not_null())  # Remove null facility names
@@ -133,76 +270,648 @@ facilities_chart
 
 ---
 
-## Occurrences summary{.smaller}
+## Time trend in reports {.smaller}
 
+```{python}
+#| echo: false
+#| include: true
+time_series_data = (
+    df_cleaned
+    .filter(pl.col('Cleaned Date').is_not_null())  # Remove null dates
+    .with_columns(
+        pl.col('Cleaned Date').str.to_date("%m/%d/%Y").alias('Date_parsed')  # Convert to actual date
+    )
+    .filter(pl.col('Date_parsed').dt.year().is_between(2018, 2024)) 
+    .with_columns(
+        pl.col('Date_parsed').dt.truncate('1mo').alias('Month')
+    )
+    .group_by('Month')
+    .len()
+    .sort('Month')
+    .rename({'len': 'Case Count'})
+)
 
-![](images/topocurrences.png){width=100%}
+# Create the time series chart
+time_series_chart = alt.Chart(time_series_data).mark_line(
+    point=True,
+    strokeWidth=2
+).encode(
+    x=alt.X('Month:T', 
+            title='Date of Occurrence',
+            axis=alt.Axis(format='%b %Y')  # Format as "Jan 2021"
+    ),
+    y=alt.Y('Case Count:Q', 
+            title='Number of Cases'
+    ),
+    color=alt.value("#50a0d9"),
+    tooltip=[
+        alt.Tooltip('Month:T', format='%B %d, %Y', title='Date'),
+        alt.Tooltip('Case Count:Q', title='Cases')
+    ]
+).properties(
+    width=700,
+    height=400,
+    title='Cases Over Time - Date of Occurrence'
+)
 
+time_series_chart
+```
 
 ---
 
-## Occurrences summary{.smaller}
+## Occurrence Statistics {.smaller}
 
-![](images/commonother.png){width=100%}
+```{python}
+#| echo: false
+#| include: true
+total_occurrence_result = (
+    df_cleaned
+    .with_columns(
+        pl.col("Cleaned Occurrences").str.split(",").alias("Cleaned Occurrences")
+    )
+    .explode("Cleaned Occurrences")
+    .filter(pl.col("Cleaned Occurrences").is_not_null())
+    .select(
+        pl.col("Cleaned Occurrences").value_counts(sort=True)
+    )
+    .unnest("Cleaned Occurrences")
+    .head(12)
+)
+
+total_occurrence_result = total_occurrence_result.filter(~pl.col("Cleaned Occurrences").is_in(["Error", " no occurrence found"]))
+
+total_occurrence_chart = alt.Chart(total_occurrence_result).mark_bar().encode(
+    x=alt.X("count:Q", title="Count"),
+    y=alt.Y("Cleaned Occurrences:N", title="Occurrence").sort('-x')
+).properties(
+    title="Most Common Occurrences Across All Jails"
+)
+
+total_occurrence_chart = alt.Chart(total_occurrence_result).mark_bar(
+    color="#54728d"
+).encode(
+    x=alt.X('count:Q', title='Number of Cases'),
+    y=alt.Y('Cleaned Occurrences:N', sort='-x', title='Occurrence'),
+    tooltip=[
+        alt.Tooltip('Cleaned Occurrences:N', title='Occurrence'),
+        alt.Tooltip('count:Q', format=',d', title='Case Count')
+    ]
+).properties(
+    width=600,
+    height=400,
+    title='Most Common Occurrences Across All Jails'
+)
+
+# Footnote as a separate text chart (keep your note)
+footnote = alt.Chart(pl.DataFrame({
+    "text": ["Note: Occurrences may be concurrent. Missing 2,027 Occurrences (7.3%)"],
+    "x": [0],
+    "y": [0]
+})).mark_text(
+    align="left",
+    baseline="bottom",
+    fontSize=10,
+    dx=0,
+    dy=20,
+    color="gray"
+).encode(
+    x=alt.value(-50),
+    y=alt.value(440),
+    text="text:N"
+)
+
+# Layer chart and footnote, remove box
+total_occurrence_chart = alt.layer(
+    total_occurrence_chart,
+    footnote
+).configure_view(
+    stroke=None
+)
+total_occurrence_chart
+```
+
+---
+
+## Occurrence Statistics {.smaller}
+
+```{python}
+#| echo: false
+#| include: true
+top_counties = (
+    df_cleaned
+    .select(["Cleaned Facility Name", "Cleaned Occurrences"])
+    .with_columns(
+        pl.col("Cleaned Occurrences").str.split(",").alias("Cleaned Occurrences")
+    )
+    .explode("Cleaned Occurrences")
+    .with_columns(
+        pl.col("Cleaned Occurrences").str.strip_chars().alias("Cleaned Occurrences")
+    )
+    .filter(pl.col("Cleaned Occurrences").is_not_null())
+)
+
+total_reports = (
+    top_counties
+    .group_by("Cleaned Facility Name")
+    .agg(pl.len().alias("total_reports"))
+)
+
+def get_county_occurrences(current_jail):
+    filtered_df = top_counties.filter(pl.col("Cleaned Facility Name") == current_jail)
+    current_jail_result = (
+    filtered_df.select(
+        pl.col("Cleaned Occurrences").value_counts(sort=True)
+    )
+    .unnest("Cleaned Occurrences")
+    .head(12)
+    )
+    current_jail_result = current_jail_result.filter(~pl.col("Cleaned Occurrences").is_in(["Error", "no occurrence found"]))
+    current_jail_chart = alt.Chart(current_jail_result).mark_bar(
+    color="#54728d").encode(
+    x=alt.X('count:Q', title='Number of Cases'),
+    y=alt.Y('Cleaned Occurrences:N', sort='-x', title='Occurrence'),
+    tooltip=[
+        alt.Tooltip('Cleaned Occurrences:N', title='Occurrence'),
+        alt.Tooltip('count:Q', format=',d', title='Case Count')
+    ]
+    ).properties(
+    width=600,
+    height=400,
+    title=current_jail
+    )
+    return current_jail_chart
+
+def get_county_occurrences_percent(current_jail):
+    filtered_df = top_counties.filter(pl.col("Cleaned Facility Name") == current_jail)
+    current_jail_result = (
+        filtered_df.select(
+            pl.col("Cleaned Occurrences").value_counts(sort=True)
+        )
+        .unnest("Cleaned Occurrences")
+        .filter(~pl.col("Cleaned Occurrences").is_in(["Error", "no occurrence found"]))
+    )
+    total_count = current_jail_result["count"].sum()
+    current_jail_result = current_jail_result.with_columns(
+        (pl.col("count") / total_count * 100).alias("percentage")
+    )
+    current_jail_result = current_jail_result.sort("count", descending=True).head(10)
+    current_jail_chart = alt.Chart(current_jail_result).mark_bar(
+    color="#54728d").encode(
+    x=alt.X('count:Q', title='Number of Cases'),
+    y=alt.Y('Cleaned Occurrences:N', sort='-x', title='Occurrence'),
+    tooltip=[
+        alt.Tooltip('Cleaned Occurrences:N', title='Occurrence'),
+        alt.Tooltip('count:Q', format=',d', title='Case Count')
+    ]
+    ).properties(
+    width=600,
+    height=400,
+    title=current_jail
+    )
+
+    return current_jail_chart
+get_county_occurrences("Cook County Department Of Corrections")
+```
 
 --- 
 
-## Breakdown{.smaller}
+## Occurrence Statistics {.smaller}
 
-Cook county
+```{python}
+#| echo: false
+#| include: true
 
-![](images/cook.png){width=100%}
+get_county_occurrences("Kane County Sheriffs Office")
 
----
-
-## Breakdown{.smaller}
-
-Kane county
-
-![](images/kane.png){width=100%}
+```
 
 ---
 
-## Breakdown{.smaller}
+## Occurrence Statistics {.smaller}
+```{python}
+#| echo: false
+#| include: true
 
-Madison
+get_county_occurrences("Madison County Sheriffs Office")
 
-![](images/madison.png){width=100%}
+```
 
----
-
-## Breakdown{.smaller}
-
-Restrains usage among jails
-
-::: {.columns .fragment}
-::: {.column width="50%"} 
-![](images/ganon/restrains_face.png)
-:::
-::: {.column width="50%"} 
-![](images/ganon/restrain_percent.png)
-:::
-:::
 
 ---
 
-## Breakdown{.smaller}
+## Occurrence Statistics {.smaller}
 
-Fighting
+```{python}
+#| echo: false
+#| include: true
 
-![](images/ganon/fights_tot.png)
+get_county_occurrences("Lake County Jail")
+
+```
 
 ---
 
-## Case Study
+## Occurrence Statistics {.smaller}
 
-Case study with Robert Ordonez. Here's some facts:
+```{python}
+#| echo: false
+#| include: true
 
-:::{.incremental}
-- Subject to 50 Occurrence Reports from March 12th, 2021 to August 7th, 2022
-- Imprisoned in Kane County
-- Was placed in a restraints or a restraint chair 41 times, making up 6% of all of Kane County's restraints usage
-- OC Spray used 4 times, "Taser Display" 3 times
-- "Charges Filed" 4 times
-- Injured once in restraints with "Abrasions right arm & fingers"
-:::
+get_county_occurrences("Peoria County Sheriffs Office")
+
+```
+
+---
+
+## Use of restraints {.smaller}
+
+
+```{python}
+#| echo: false
+#| include: true
+pattern = r"\bRestraints\b"
+
+restraints_table = df_cleaned.filter(
+    pl.col("Cleaned Occurrences").str.contains(pattern)
+)
+
+restraints_table = (
+    restraints_table.select(
+        pl.col("Cleaned Facility Name").value_counts(sort=True)
+    )
+    .unnest("Cleaned Facility Name")
+    .head(21)
+)
+
+restraints_table = restraints_table.filter(pl.col("Cleaned Facility Name") != "")
+
+restraints_chart = alt.Chart(restraints_table).mark_bar(
+    color="#5a8664").encode(
+    x=alt.X("count:Q", title="Count"),
+    y=alt.Y("Cleaned Facility Name:N", title="Jail").sort('-x'),
+    tooltip=[
+        alt.Tooltip("Cleaned Facility Name:N", title="Jail"),
+        alt.Tooltip("count:Q", format=",d", title="Case Count")
+    ]
+).properties(
+    width=600,
+    height=400,
+    title="Top Jails for Restraint Usage"
+)
+
+# Footnote as a separate text chart
+footnote = alt.Chart(pl.DataFrame({
+    "text": ["Note: Missing 1,119 County Names (4.33%)"],
+    "x": [0],
+    "y": [0]
+})).mark_text(
+    align="left",
+    baseline="bottom",
+    fontSize=10,
+    dx=0,
+    dy=20,  # distance below the main chart area
+    color="gray"
+).encode(
+    x=alt.value(0),
+    y=alt.value(440),  # just below the chart (chart height + some offset)
+    text="text:N"
+)
+
+# Use layering to draw the footnote over/under the chart
+restraints_chart = alt.layer(
+    restraints_chart,
+    footnote
+).configure_view(
+    stroke=None  # removes box around the chart
+)
+restraints_chart
+```
+
+---
+
+## Use of restraints {.smaller}
+
+```{python}
+#| echo: false
+#| include: true
+
+restraints_table = restraints_table.filter(
+    pl.col("Cleaned Facility Name") != "null"
+).join(total_reports, on="Cleaned Facility Name")
+
+restraints_per_jail = (
+    top_counties
+    .filter(pl.col("Cleaned Occurrences") == "Restraints Used")
+    .group_by("Cleaned Facility Name")
+    .agg(pl.len().alias("restraint_count"))
+)
+
+merged = (
+    restraints_per_jail
+    .join(total_reports, on="Cleaned Facility Name")
+    .with_columns(
+        (pl.col("restraint_count") / pl.col("total_reports") * 100).alias("perc")
+    )
+    .filter(pl.col("total_reports") >= 100)
+)
+
+restraints_perc_chart = alt.Chart(merged.to_pandas()).mark_bar().encode(
+    x=alt.X("perc:Q", title="Percentage"),
+    y=alt.Y("Cleaned Facility Name:N", title="Jail").sort('-x')
+).properties(
+    width=600,
+    height=400,
+    title="Top Jails for Restraint Usage as a Percent of Reports"
+)
+
+# Footnote as a separate text chart
+footnote = alt.Chart(pl.DataFrame({
+    "text": ["Note: Only Jails with over 100 Reports Total"],
+    "x": [0],
+    "y": [0]
+})).mark_text(
+    align="left",
+    baseline="bottom",
+    fontSize=10,
+    dx=0,
+    dy=20,  # distance below the main chart area
+    color="gray"
+).encode(
+    x=alt.value(0),
+    y=alt.value(440),  # just below the chart (chart height + some offset)
+    text="text:N"
+)
+
+# Use layering to draw the footnote over/under the chart
+restraints_perc_chart = alt.layer(
+    restraints_perc_chart,
+    footnote
+).configure_view(
+    stroke=None  # removes box around the chart
+)
+restraints_perc_chart
+```
+
+---
+
+
+## Use of restraints {.smaller}
+
+```{python}
+#| echo: false
+#| include: true
+
+
+pattern = r"\bSuicide\b"
+
+suicide_table = top_counties.filter(
+    pl.col("Cleaned Occurrences").str.contains(pattern)
+)
+
+suicide_table = (
+    suicide_table.select(
+        pl.col("Cleaned Facility Name").value_counts(sort=True)
+    )
+    .unnest("Cleaned Facility Name")
+    .head(11)
+)
+
+suicide_table_table = suicide_table.filter(pl.col("Cleaned Facility Name") != "")
+
+suicide_chart = alt.Chart(suicide_table).mark_bar().encode(
+    x=alt.X("count:Q", title="Count"),
+    y=alt.Y("Cleaned Facility Name:N", title="Jail").sort('-x')
+).properties(
+    width=600,
+    height=400,
+    title="Top Jails for Self Harm among Detainees"
+)
+suicide_chart
+```
+
+
+---
+
+## Comparison of Sample of 500 {.smaller}
+
+- We confidently matched 211 of handcopied sample of 505 restraint reports from 2019-2022
+    - Reports in which the facility name, individual’s name, and incident all matched up
+- Overall, facility names parsed well, though we can continue to improve the scan and recognition of names
+
+
+--- 
+
+## Deaths {.smaller}
+
+- 78 confirmed deaths, our program detected 118
+- Vermilion County - Inmate shot after attacking guard
+- Will County - Deputy Death on duty
+- Marshall County - Death after jumping from moving vehicle
+- Cook County - serious injury report 45 minutes before death report
+
+![](images/death%20newspaper.png)
+
+
+---
+
+## Facilities coverage {.smaller .scrollable}
+
+```{python}
+#| echo: false
+#| include: true
+facility_coverage = (
+    df_cleaned
+    .filter(
+        pl.col('Cleaned Date').is_not_null() &
+        pl.col('Cleaned Facility Name').is_not_null()
+    )
+    .with_columns(
+        pl.col('Cleaned Date').str.to_date("%m/%d/%Y").alias('Date_parsed')
+    )
+    .filter(pl.col('Date_parsed').dt.year().is_between(2018, 2024))
+    .with_columns(
+        pl.col('Date_parsed').dt.truncate('1mo').alias('Month_Year')
+    )
+    .group_by(['Cleaned Facility Name', 'Month_Year'])
+    .len()
+    .group_by('Cleaned Facility Name')
+    .agg([
+        pl.col('Month_Year').n_unique().alias('Months_With_Data'),
+        pl.col('len').sum().alias('Total_Records')
+    ])
+    .sort(['Months_With_Data', 'Total_Records'], descending=True)
+)
+
+top20 = facility_coverage.head(20)
+
+bar_chart = alt.Chart(top20.to_pandas()).mark_bar(opacity=0.8).encode(
+    x=alt.X('Months_With_Data:Q', title='Months Covered (2018-2024)'),
+    y=alt.Y('Cleaned Facility Name:N', sort='-x', title='Facility'),
+    color=alt.Color('Months_With_Data:Q', scale=alt.Scale(scheme='redpurple', reverse=True), legend=alt.Legend(title="Months Covered")),
+    tooltip=[
+        alt.Tooltip('Cleaned Facility Name:N', title='Facility'),
+        alt.Tooltip('Months_With_Data:Q', title='Months Covered'),
+        alt.Tooltip('Total_Records:Q', title='Total Records')
+    ]
+).properties(
+    width=600,
+    height=400,
+    title='Top 20 Facilities by Months Covered (2018-2024)'
+)
+
+bottom20 = facility_coverage.sort('Months_With_Data').head(20)
+
+bar_chart
+
+
+```
+
+
+```{python}
+#| echo: false
+#| include: true
+
+# Get top 20 by number of records
+top20_by_records = (
+    facility_coverage
+    .sort('Months_With_Data', descending=True)
+    .head(20)
+)
+top20_names = top20_by_records['Cleaned Facility Name'].to_list()
+
+facility_year_df_records = (
+    df_cleaned
+    .filter(
+        pl.col('Cleaned Date').is_not_null() &
+        pl.col('Cleaned Facility Name').is_not_null()
+    )
+    .with_columns(
+        pl.col('Cleaned Date').str.to_date("%m/%d/%Y").alias('Date_parsed')
+    )
+    .filter(pl.col('Date_parsed').dt.year().is_between(2018, 2024))
+    .with_columns(
+        pl.col('Date_parsed').dt.year().alias('Year')
+    )
+    .group_by(['Cleaned Facility Name', 'Year'])
+    .len()
+    .sort('len', descending=True)
+    .to_pandas()
+)
+
+# Filter to top 20 by number of records
+facility_year_df_records = facility_year_df_records[facility_year_df_records['Cleaned Facility Name'].isin(top20_names)]
+
+heatmap_year = alt.Chart(facility_year_df_records).mark_rect().encode(
+    y=alt.Y('Cleaned Facility Name:N', sort=top20_names, title='Facility'),
+    x=alt.X('Year:O', title='Year'),
+    color=alt.Color('len:Q', title='Reports', scale=alt.Scale(scheme='magma')),
+    tooltip=[
+        alt.Tooltip('Cleaned Facility Name:N', title='Facility'),
+        alt.Tooltip('Year:O', title='Year'),
+        alt.Tooltip('len:Q', title='Reports')
+    ]
+).properties(
+    width=500,
+    height=400,
+    title='Yearly Report Coverage for Top 200 Facilities (by Number of Records)'
+)
+
+heatmap_year
+
+```
+
+---
+
+## Person-level dataset {.smaller}
+
+- Table of contents with lists too big and messy
+- Using pre-trained Hugging Face Named Entity Recognition (NER) model to automatically detect and label person names within extracted text fields from the reports:
+    - 334 Million parameters
+    - leverages both local (word-level) and global (sentence-level) context
+    - **F1 Score 92-93% person entity class**: This means it correctly identifies person names with very high precision (few false positives) and recall (few missed names) in typical English text
+    - Batch processing
+- Person-level dataset to search on specific people
+
+---
+
+## Person-level dataset {.smaller .scrollable}
+
+Example
+
+| page_id | Table Contents                                                      |
+|---------|---------------------------------------------------------------------|
+| page_1  | Cross, Anton Nelson, \| 02/04/1999, Murder 1*, Agg Battery, Smith, John |
+| page_2  | Johnson, Mary Jane, Gannon Andres, This is not a name, SHERIFF DEPT |
+| page_3  | Camacho, Juan L1S1218, 4/01/1995., 01/03/2021                       |
+
+**Long DataFrame**
+
+| page_id | Table Contents         |
+|---------|-----------------------|
+| page_1  | Cross, Anton Nelson   |
+| page_1  | | 02/04/1999          |
+| page_1  | Murder 1*, Agg Battery|
+| page_1  | Smith, John           |
+| page_2  | Johnson, Mary Jane    |
+| page_2  | SHERIFF DEPT          |
+| page_3  | Camacho, Juan L1S1218 |
+| page_3  | 4/01/1995.            |
+| page_3  | 01/03/2021            |
+
+Name identification
+
+| Report ID | Table Contents         | is_name |
+|-----------|-----------------------|---------|
+| page_1    | Cross, Anton Nelson   | true    |
+| page_1    | | 02/04/1999          | false   |
+| page_1    | Murder 1*, Agg Battery| false   |
+| page_1    | Smith, John           | true    |
+| page_2    | Johnson, Mary Jane    | true    |
+| ...       | ...                   | ...     |
+| page_2    | This is not a name    | false   |
+| page_2    | SHERIFF DEPT          | false   |
+| page_3    | Camacho, Juan L1S1218 | true    |
+| page_3    | 4/01/1995.            | false   |
+| page_3    | 01/03/2021            | false   |
+
+Person table
+
+| Report ID | Name                | DOB        | Date_Confined | Arresting_Charge       |
+|-----------|---------------------|------------|---------------|------------------------|
+| page_1    | Cross, Anton Nelson | 02/04/1999 | null          | Murder 1*, Agg Battery |
+| page_1    | Smith, John         | null       | null          | null                   |
+| page_2    | Johnson, Mary Jane  | null       | null          | null                   |
+| page_2    | Gannon Andres       | null       | null          | This is not a name     |
+| page_3    | Camacho, Juan L1S1218 | 4/01/1995 | 01/03/2021    | null                   |
+
+
+
+
+---
+
+## Deliverables {.smaller}
+
+- Final database in Excel with 2 sheets:
+    - Final cleaned data base including original fields by page
+    - Link page-person and personal information
+- Reports: 
+    - This report, graphs and analysis
+    - Coverage by facility
+- Code:
+    - Clean, efficient replication package and instructions
+    - Main function as a Python module with options
+    - Presentation (qmd) with Quarto code
+
+
+---
+
+## Next steps
+
+- Manual input of handwritten reports (or model)
+- Deep dive into specific trends by county, death reports (Dashboard?)
+- Divide facilities by address and disaggregate
+- What could the missing pages tell us about how jails responded to suggestions?
+
+---
+
+Thanks!
