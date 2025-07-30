@@ -20,22 +20,15 @@ def get_roi(cv2_image, type_start_point, type_end_point):
 
     return roi
 
-def blur_edge_contours(roi, alpha):
-    # cv2.imshow("roi",roi)
-    # contrast_img = cv2.convertScaleAbs(roi, alpha=alpha, beta=0.5)
-    #contrast_img = np.array(ImageEnhance.Contrast(Image.fromarray(roi)).enhance(2.0))
-    # cv2.imshow("ci",contrast_img)
-    #blurred_image = cv2.GaussianBlur(contrast_img, (5, 5), 0)
-    # cv2.imshow("bi",blurred_image)
+def blur_edge_contours(roi):
+    '''
+    Takes an ROI and takes the contours after some image modification to pull text.
+    '''
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     _, binary = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
-    # ERODE to break text up
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2,2))
     eroded = cv2.erode(binary, kernel, iterations=1) #breaking apart text itself
-
-    # (optional) then dilate to re-strengthen box edges
-    dilated = cv2.dilate(eroded, kernel, iterations=1)
-    #edges = cv2.Canny(roi, 50, 150) #get contoured polygons
+    dilated = cv2.dilate(eroded, kernel, iterations=1) # Dilate to re-strengthen box edges
     contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     return contours
@@ -59,7 +52,7 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
         if contour.ndim == 3:
             contour = contour[:,0]
-        carea = ((np.max(contour[:,0]) - np.min(contour[:,0]))) * (np.max(contour[:,1]) - np.min(contour[:,1])) #gets comments from divij
+        carea = ((np.max(contour[:,0]) - np.min(contour[:,0]))) * (np.max(contour[:,1]) - np.min(contour[:,1])) #Find X height, Y height, find max possible area
         s = ""
         if (carea > adjust_box_min_box_area) and (carea < 2500):
             s = "**"
@@ -99,6 +92,9 @@ def basic_box_check(roi, contours, adjust_fill_ratio, adjust_width, adjust_box_m
 
 
 def yes_no_box_check(roi, contours, adjust_fill_ratio, adjust_width):
+    '''
+    In situations of a "No" and a "Yes" box, checks fill and if "Yes", grabs the text after it
+    '''
     text = "No"
     for contour in contours:
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
