@@ -1,6 +1,9 @@
 ---
 title: "Illinois Jail Events - Reports Extraction"
-author: "Mansueto Institute for Urban Innovation"
+author:
+    name: Andrés Camacho, Ganon Evans
+    affiliation: Mansueto Institute for Urban Innovation
+
 date: "29 July 2025"
 format:
   revealjs:
@@ -26,11 +29,46 @@ import json
 alt.data_transformers.enable("vegafusion")
 
 root = Path('../..')
-parquet_path = root / 'data/jails-data/SERVER/run 0728/output/jails_pdfs_cleanned.parquet'
+#parquet_path = root / 'data/jails-data/SERVER/run 0728/output/jails_pdfs_cleanned.parquet'
+parquet_path = root / 'data/jails-data/final files/output/jails_pdfs_cleanned.parquet'
 print(parquet_path)
 df_cleaned = pl.read_parquet(parquet_path)
-parquet_normal = root / 'data/jails-data/SERVER/run 0728/output/jails_pdfs_full.parquet'
+#parquet_normal = root / 'data/jails-data/SERVER/run 0728/output/jails_pdfs_full.parquet'
+parquet_normal = root / 'data/jails-data/final files/output/jails_pdfs_full.parquet'
 df_normal = pl.read_parquet(parquet_normal)
+
+df_cleaned= df_cleaned.with_columns(
+    pl.when(pl.col("Cleaned Facility Name").str.contains("Peoria"))
+    .then(pl.lit("Peoria County Jail"))
+    .when(pl.col("Cleaned Facility Name").str.contains("Adams"))
+    .then(pl.lit("Adams County Jail"))
+    .when(pl.col("Cleaned Facility Name").str.contains("Dupage"))
+    .then(pl.lit("Dupage County Jail"))
+    .when(pl.col("Cleaned Facility Name").str.contains("Kane"))
+    .then(pl.lit("Kane County Jail"))
+    .when(pl.col("Cleaned Facility Name").str.contains("Lake County"))
+    .then(pl.lit("Lake County Jail"))
+    .when(pl.col("Cleaned Facility Name").str.contains("Sangamon"))
+    .then(pl.lit("Sangamon County Jail"))
+    .when(pl.col("Cleaned Facility Name").str.contains("Vill County"))
+    .then(pl.lit("Will County Jail"))
+    .when(pl.col("Cleaned Facility Name").str.contains("Williamson"))
+    .then(pl.lit("Williamson County Jail"))
+    .when(pl.col("Cleaned Facility Name").str.contains("Winnebago"))
+    .then(pl.lit("Williamson County Jail"))
+    .otherwise(pl.col("Cleaned Facility Name"))
+    .alias("Cleaned Facility Name")
+)
+
+parquet_path_persons = root / 'data/jails-data/final files/output/jails_person_records.parquet'
+df = pl.read_parquet(parquet_path_persons)
+df_cleaned_p = df.with_columns(
+    pl.col("Name")
+    .str.replace_all(r"[;|_\-!~\"“”]", "")  # Remove ; | _ - ! ~ " “ ”
+    .str.strip_chars()
+    .alias("Cleaned Name")
+)
+
 ```
 
 ## Outline: {.smaller}
@@ -39,14 +77,15 @@ df_normal = pl.read_parquet(parquet_normal)
     - **The challenge**
     - **Methodology and solution** 
 2. **Overall statistics**
-5. **Findings**
-6. **Products**
+3. **Findings**
+4. **Deliverables**
+5. **Possible future extensions**
 
 ---
 
 ## Overview {.smaller}
 
-- All jails in Illinois (92): required to submit reports of unusual occurences [section 701.30]
+- All jails in Illinois: required to submit reports of unusual occurences [Section 701.30] (County, Municipal, Police Departments)
 - Unusual occurrences include: restraints, suicide attempts, sexual assault, battery, deaths, etc.
 - After FOIA requests, we have 299 PDFs, with different amount of reports each (pages).
     - **27,892 pages in total**
@@ -74,7 +113,7 @@ df_normal = pl.read_parquet(parquet_normal)
 
 ## **Questions**
 
-- Can we systematically extract the information on the pdfs into an structured database?
+- Can we systematically extract the information on the PDFs into an structured database?
 - What patterns in the extracted data can be identified?
 - What is the frequency of occurrences throughout Illinois Jails?
 
@@ -168,10 +207,9 @@ ocr_histogram_with_line
 - Standardize layouts: fixed distance from top and bottom
 - Convert PDFs to images, scan text
 - Data pipeline
-![](images/MansuetoFlow.png){.fragment width="100%"}
+![](images/Mansueto.jpg){.fragment width="100%"}
 - Hardcoding coordinates depending on form type
-- LLM to identify persons and names 
-
+- LLM to identify persons and names [runs local on Mansueto's computer]
 
 ---
 
@@ -184,11 +222,11 @@ total_pages_threshold = df_normal.filter(pl.col('OCR_Confidence') < 80).height
 total_pages_threshold = f"{total_pages_threshold:,}"
 ```
 - Total pages: 27,892
-    - 98 % succeed → `{python} f"{df_cleaned.height:,}"`
-    - 2 % without title `Extraordinary | Unusual |Occurence`
+    - 98 % succeed being a report (have title) → `{python} f"{df_cleaned.height:,}"`
+    - 2 % without this words on the title `Extraordinary | Unusual |Occurence`
 
 - From the handwritten analysis: `{python} total_pages_threshold`
-- Resulting deaths: 78
+- Confirmed deaths: 78
 
 ---
 
@@ -222,9 +260,9 @@ fields = ['Cleaned Facility Name', 'Cleaned Date', 'Cleaned Occurrences', 'Clean
 print_missing_stats(df_cleaned, fields)
 ```
 
-- Statistics after cleaning and implementing alternative pipeline
+- Percentage missing extraction stats after cleaning and implementing alternative pipeline
 
-| Field                 | Total | Missing | Missing_Percent |
+| Field                 | Total | Missing | Missing Percentage |
 |-----------------------|-------|---------|-----------------|
 | Cleaned Facility Name | 26909 | 824     | 3.06        |
 | Cleaned Date          | 26909 | 2767    | 10.28       |
@@ -327,7 +365,7 @@ time_series_chart
 total_occurrence_result = (
     df_cleaned
     .with_columns(
-        pl.col("Cleaned Occurrences").str.split(",").alias("Cleaned Occurrences")
+        pl.col("Cleaned Occurrences").str.split("; ").alias("Cleaned Occurrences")
     )
     .explode("Cleaned Occurrences")
     .filter(pl.col("Cleaned Occurrences").is_not_null())
@@ -338,17 +376,17 @@ total_occurrence_result = (
     .head(12)
 )
 
-total_occurrence_result = total_occurrence_result.filter(~pl.col("Cleaned Occurrences").is_in(["Error", " no occurrence found"]))
+total_occurrence_result = total_occurrence_result.filter(~pl.col("Cleaned Occurrences").is_in(["Error, no occurrence found"]))
 
 total_occurrence_chart = alt.Chart(total_occurrence_result).mark_bar().encode(
     x=alt.X("count:Q", title="Count"),
-    y=alt.Y("Cleaned Occurrences:N", title="Occurrence").sort('-x')
+    y=alt.Y("Cleaned Occurrences:N", title="Occurrence",).sort('-x')
 ).properties(
     title="Most Common Occurrences Across All Jails"
 )
 
 total_occurrence_chart = alt.Chart(total_occurrence_result).mark_bar(
-    color="#54728d"
+    color="#E0AC3BA6"
 ).encode(
     x=alt.X('count:Q', title='Number of Cases'),
     y=alt.Y('Cleaned Occurrences:N', sort='-x', title='Occurrence'),
@@ -401,7 +439,7 @@ top_counties = (
     df_cleaned
     .select(["Cleaned Facility Name", "Cleaned Occurrences"])
     .with_columns(
-        pl.col("Cleaned Occurrences").str.split(",").alias("Cleaned Occurrences")
+        pl.col("Cleaned Occurrences").str.split(";").alias("Cleaned Occurrences")
     )
     .explode("Cleaned Occurrences")
     .with_columns(
@@ -481,7 +519,7 @@ get_county_occurrences("Cook County Department Of Corrections")
 #| echo: false
 #| include: true
 
-get_county_occurrences("Kane County Sheriffs Office")
+get_county_occurrences("Kane County Jail")
 
 ```
 
@@ -517,7 +555,7 @@ get_county_occurrences("Lake County Jail")
 #| echo: false
 #| include: true
 
-get_county_occurrences("Peoria County Sheriffs Office")
+get_county_occurrences("Peoria County Jail")
 
 ```
 
@@ -615,7 +653,9 @@ merged = (
     .filter(pl.col("total_reports") >= 100)
 )
 
-restraints_perc_chart = alt.Chart(merged.to_pandas()).mark_bar().encode(
+restraints_perc_chart = alt.Chart(merged.to_pandas()).mark_bar(
+    color='#E74C3C99'
+).encode(
     x=alt.X("perc:Q", title="Percentage"),
     y=alt.Y("Cleaned Facility Name:N", title="Jail").sort('-x')
 ).properties(
@@ -692,25 +732,69 @@ suicide_chart
 
 ---
 
-## Comparison of Sample of 500 {.smaller}
+##  Samples comparisons {.smaller}
 
-- We confidently matched 211 of handcopied sample of 505 restraint reports from 2019-2022
+- Random sample of 100: properly identified occurrences on 95 of the report
+    - 2 handwritten, 3 poor quality
+
+- We confidently matched 209 of hand copied sample of 505 restraint reports from 2019-2022
     - Reports in which the facility name, individual’s name, and incident all matched up
-- Overall, facility names parsed well, though we can continue to improve the scan and recognition of names
+    - Of the 209, only 2 of ours (0.95%) had a partially incorrect parse of the occurrence
 
+- Facility helped with the matching, though name recognition was a challenge
 
 --- 
 
 ## Deaths {.smaller}
 
-- 78 confirmed deaths, our program detected 118
+- 78 confirmed deaths, our script confidently identified 68
 - Vermilion County - Inmate shot after attacking guard
 - Will County - Deputy Death on duty
 - Marshall County - Death after jumping from moving vehicle
 - Cook County - serious injury report 45 minutes before death report
 
+::: {.columns .fragment}
+::: {.column width="90%"}
 ![](images/death%20newspaper.png)
+:::
+:::
 
+---
+
+## Repeated names in the database {.smaller .scrollable}
+
+```{python}
+df_cleaned_p = df.with_columns(
+    pl.col("Name")
+    .str.replace_all(r"[;|_\-!~\"“”]", "")  # Remove ; | _ - ! ~ " “ ”
+    .str.strip_chars()
+    .alias("Cleaned Name")
+)
+
+name_counts = (
+    df_cleaned_p
+    .filter(
+        pl.col("Cleaned Name").is_not_null()
+    )
+    .group_by("Cleaned Name")
+    .len()
+    .sort("len", descending=True)
+    .head(10)
+    .to_pandas()
+)
+
+# Bar chart of top 50 names with custom color
+alt.Chart(name_counts).mark_bar(color='#E0AC3BA6').encode(
+    x=alt.X('len:Q', title='Frequency'),
+    y=alt.Y('Cleaned Name:N', sort='-x', title='Name'),
+    tooltip=['Cleaned Name', 'len']
+).properties(
+    width=600,
+    height=800,
+    title='Top 10 Most Frequent Names'
+)
+
+```
 
 ---
 
@@ -742,7 +826,7 @@ facility_coverage = (
     .sort(['Months_With_Data', 'Total_Records'], descending=True)
 )
 
-top20 = facility_coverage.head(20)
+top20 = facility_coverage.head(15)
 
 bar_chart = alt.Chart(top20.to_pandas()).mark_bar(opacity=0.8).encode(
     x=alt.X('Months_With_Data:Q', title='Months Covered (2018-2024)'),
@@ -775,7 +859,7 @@ bar_chart
 top20_by_records = (
     facility_coverage
     .sort('Months_With_Data', descending=True)
-    .head(20)
+    .head(15)
 )
 top20_names = top20_by_records['Cleaned Facility Name'].to_list()
 
@@ -813,7 +897,7 @@ heatmap_year = alt.Chart(facility_year_df_records).mark_rect().encode(
 ).properties(
     width=500,
     height=400,
-    title='Yearly Report Coverage for Top 200 Facilities (by Number of Records)'
+    title='Yearly Report Coverage for Top 15 Facilities (by Number of Records)'
 )
 
 heatmap_year
@@ -905,7 +989,7 @@ Person table
 
 ---
 
-## Next steps
+## Possible future extensions
 
 - Manual input of handwritten reports (or model)
 - Deep dive into specific trends by county, death reports (Dashboard?)
@@ -914,4 +998,7 @@ Person table
 
 ---
 
-Thanks!
+
+<div style="display: flex; justify-content: center; align-items: center; height: 80vh; font-size:2em;">
+Thank you to our reporters Crystal, Grace, Casey, Meredith, and Janelle!
+</div>

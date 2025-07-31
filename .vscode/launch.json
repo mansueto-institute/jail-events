@@ -11,6 +11,18 @@
             "cwd": "${workspaceFolder}/src/jail-events",
             "env": {},
             "justMyCode": false
+        },
+        {
+            "name": "Debug Pytest test_clean_database.py",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "src/jail-events/tests/test_clean_database.py"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false
         }
     ]
 }

@@ -61,14 +61,14 @@ def assemble_person_records(long_df: pl.DataFrame) -> pl.DataFrame:
     ).with_columns(
         # Use cleaned version for dates, original for everything else
         final_value=pl.when(pl.col("cleaned_for_date").is_not_null())
-        .then(pl.col("cleaned_for_date"))  # Use cleaned version for dates
-        .otherwise(pl.col("Table Contents"))  # Use original for names/charges
+        .then(pl.col("cleaned_for_date")) 
+        .otherwise(pl.col("Table Contents"))
     )
 
     # Step 3: Pivot the data from long to wide format.
     pivoted_df = classified_df.pivot(
         index=["person_id", "Report ID"],
-        columns="info_type",
+        on="info_type",
         values="final_value",
         aggregate_function="first"
     )

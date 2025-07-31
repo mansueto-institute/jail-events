@@ -4,9 +4,12 @@ from tqdm import tqdm
 from transformers import pipeline
 import torch.cuda
 ner_model = None
-from .reshape_db import reshape_to_long
-from .assemble_records import assemble_person_records
-
+try:
+    from .reshape_db import reshape_to_long
+    from .assemble_records import assemble_person_records
+except ImportError:
+    from reshape_db import reshape_to_long
+    from assemble_records import assemble_person_records
 
 def get_ner_model():
     """Initialization of NER model"""
@@ -190,11 +193,16 @@ def test_long_format_extraction():
     
     # Create sample wide data
     wide_df = pl.DataFrame({
-        "page_id": ["page_1", "page_2", "page_3"],
+        "Report ID": ["page_1", "page_2", "page_3", "page_4", "page_5", "page_6_1"],
         "Table Contents": [
             ["Cross, Anton Nelson", "| 02/04/1999", "Murder 1*, Agg Battery", "Smith, John"],
             ["Johnson, Mary Jane", "Gannon Andres", "This is not a name", "SHERIFF DEPT"],
-            ['Camacho, Juan L1S1218','4/01/1995.','01/03/2021']
+            ['Camacho, Juan L1S1218','4/01/1995.','01/03/2021'],
+            ['Ordonez, Robert F.', '08/12/1981', '03/11/2021'
+ 'Violating Order of Protection'],
+            ['Ordonez, Robert F.','08/12/1981' ,'05/23/2021' ,'Agg.Assault, Battery'],
+            ['Ordonez, Robert F.','08/12/1981', '03/11/2021'
+ 'Crim.Damage Govt.Property']
         ]
     })
     
@@ -202,7 +210,7 @@ def test_long_format_extraction():
     print(wide_df)
     
     # Reshape to long format
-    long_df = reshape_to_long(wide_df, id_cols="page_id", list_col="Table Contents")
+    long_df = reshape_to_long(wide_df, id_cols="Report ID", list_col="Table Contents")
     
     print("\n--- Long DataFrame ---")
     print(long_df)

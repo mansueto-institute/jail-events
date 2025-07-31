@@ -132,14 +132,7 @@ class DatabaseCleaning:
         print("Extracting person-level records from Table Contents...")
         print("Available columns:", self.df.columns)
         # Filter rows that have Table Contents data
-        df_with_contents = self.df.filter(
-            pl.col("Table Contents").is_not_null() & 
-            pl.col("Table Contents").list.len() > 0
-        )
-        
-        if len(df_with_contents) == 0:
-            print("No Table Contents data found for person extraction.")
-            return pl.DataFrame()
+        df_with_contents = self.df
         
         # Create a unique page_id for tracking
         df_with_page_id = df_with_contents.with_row_index("page_id")
@@ -150,7 +143,7 @@ class DatabaseCleaning:
             id_cols=["page_id", "Report ID"], 
             list_col="Table Contents"
         )
-        
+        print(long_df)
         # Identify names using the ML model
         identified_df = identify_names_in_long_df(
             long_df,
