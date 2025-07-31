@@ -151,7 +151,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Facility Type"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        contours = pf.blur_edge_contours(roi, 5)
+        contours = pf.blur_edge_contours(roi)
         text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=160, adjust_box_min_box_area=1200)
 
         self.page_dict["Facility Type"] = text
@@ -226,7 +226,7 @@ class PageParsing:
         else:
             points = self.coordinate_dict["AM or PM"]
             roi = pf.get_roi(self.cv2_image, points[0], points[1])
-            contours = pf.blur_edge_contours(roi, 1.5)
+            contours = pf.blur_edge_contours(roi)
             text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=500)
 
             self.page_dict["AM or PM"] = text
@@ -251,7 +251,7 @@ class PageParsing:
 
         text = None
         roi = self.cv2_image[y1:y2, x1:x2]
-        contours = pf.blur_edge_contours(roi, 1.5)
+        contours = pf.blur_edge_contours(roi)
         for contour in contours:
             approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True) #get polgyon curve
             if contour.ndim == 3:
@@ -281,9 +281,6 @@ class PageParsing:
                         text_roi = roi[y-15:y+h+10, x+w+text_offset_x:x+w+text_offset_x+text_width]
                         if text_roi.size == 0:
                             break
-                        # cv2.imshow("Contours Visualization", text_roi)
-                        # cv2.waitKey(0)
-                        # cv2.destroyAllWindows()
                         text_gray = cv2.cvtColor(text_roi, cv2.COLOR_BGR2GRAY)
                         _, text_thresh = cv2.threshold(text_gray, 150, 255, cv2.THRESH_BINARY)
                         text = pytesseract.image_to_string(text_thresh, config='--psm 6') #gets first letters of the phrase
@@ -382,7 +379,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Injuries?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        contours = pf.blur_edge_contours(roi, 1.5)
+        contours = pf.blur_edge_contours(roi)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=2000)
         pattern = r"\bno\b"
         match = re.search(pattern, text, re.IGNORECASE)
@@ -397,7 +394,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Resulting Death?"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        contours = pf.blur_edge_contours(roi, 5)
+        contours = pf.blur_edge_contours(roi)
         text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=1250)
         pattern = r"yes"
         match = re.search(pattern, text, re.IGNORECASE)
@@ -433,7 +430,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Deceased on Suicide Watch"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1]) 
-        contours = pf.blur_edge_contours(roi, 1.5)
+        contours = pf.blur_edge_contours(roi)
         text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=60, adjust_box_min_box_area=1500)
 
         self.page_dict["Deceased on Suicide Watch"] = text
@@ -454,7 +451,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Deceased Examined by Physician"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        contours = pf.blur_edge_contours(roi, 1.5)
+        contours = pf.blur_edge_contours(roi)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1800)
 
         self.page_dict["Deceased Examined by Physician"] = text
@@ -465,7 +462,7 @@ class PageParsing:
         """
         points = self.coordinate_dict["Deceased Signs of Illness"]
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
-        contours = pf.blur_edge_contours(roi, 1.5)
+        contours = pf.blur_edge_contours(roi)
         text = pf.yes_no_box_check(roi, contours, adjust_fill_ratio=0.2, adjust_width=1200)
         if text != "No":
             new_roi = pf.get_roi(self.cv2_image, (50,points[0][1]+100), (2500,points[1][1]+100))
@@ -586,7 +583,6 @@ class PageParsing:
         self.page_dict["Occurrence"] = final_list
 
 def scrape_page(image):
-    #cv2_image = cv2.imread(str(image_path))
     cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     page_parser = PageParsing(cv2_image)
     page_parser.get_form_type()
@@ -602,14 +598,12 @@ def scrape_page(image):
     page_parser.get_am_pm()
     page_parser.get_occurrence_dict()
     page_parser.clean_occurrences()
-    #page_parser.page_dict.del delete the occurrence dict key after getting it clean
     if page_parser.cook_county:
         page_parser.cook_county_parse()
     else:
         page_parser.get_table()
         page_parser.get_injuries()
         page_parser.get_resulting_death()
-        # if page_parser.page_dict["Resulting Death?"] == "Yes":
         page_parser.get_deceased_name()
         page_parser.get_deceased_cause()
         page_parser.get_deceased_date_time()
@@ -617,9 +611,4 @@ def scrape_page(image):
         page_parser.get_reported()
         page_parser.get_deceased_examined()
         page_parser.get_deceased_illness()
-    #test
     return (page_parser.page_dict)
-
-if __name__ == "__main__":
-    image_path = Path(__file__).resolve().parents[2] / "jail-events" / "data" / "jails-data" / "SERVER" / "new run" / "processed" / "FOIA - 2024 January UOs_p85.png"
-    print (scrape_page(image_path))

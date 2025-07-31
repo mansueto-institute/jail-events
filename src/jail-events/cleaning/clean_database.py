@@ -157,6 +157,30 @@ class DatabaseCleaning:
         
         print(f"Extracted {len(person_records_df)} person records.")
         return person_records_df
+    
+    def combine_counties(self):
+        self.df = self.df.with_columns(
+            pl.when(pl.col("Cleaned Facility Name").str.contains("Peoria"))
+            .then(pl.lit("Peoria County Jail"))
+            .when(pl.col("Cleaned Facility Name").str.contains("Adams"))
+            .then(pl.lit("Adams County Jail"))
+            .when(pl.col("Cleaned Facility Name").str.contains("Dupage"))
+            .then(pl.lit("Dupage County Jail"))
+            .when(pl.col("Cleaned Facility Name").str.contains("Kane"))
+            .then(pl.lit("Kane County Jail"))
+            .when(pl.col("Cleaned Facility Name").str.contains("Lake County"))
+            .then(pl.lit("Lake County Jail"))
+            .when(pl.col("Cleaned Facility Name").str.contains("Sangamon"))
+            .then(pl.lit("Sangamon County Jail"))
+            .when(pl.col("Cleaned Facility Name").str.contains("Vill County"))
+            .then(pl.lit("Will County Jail"))
+            .when(pl.col("Cleaned Facility Name").str.contains("Williamson"))
+            .then(pl.lit("Williamson County Jail"))
+            .when(pl.col("Cleaned Facility Name").str.contains("Winnebago"))
+            .then(pl.lit("Williamson County Jail"))
+            .otherwise(pl.col("Cleaned Facility Name"))
+            .alias("Cleaned Facility Name")
+            )
 
 def clean_occurrences(entries):
 

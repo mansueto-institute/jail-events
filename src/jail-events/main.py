@@ -1,7 +1,6 @@
 import click
 from pathlib import Path
 from pdf_processing.page_functions import scrape_page
-from pdf_processing.dictionary_functions import main as dictionary_cleaning
 import json
 import pickle
 from tqdm import tqdm
