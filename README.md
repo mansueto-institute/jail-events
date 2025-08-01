@@ -1,11 +1,13 @@
 # Extraction of Illinois Jail Event Reports
 
 <div align="center">
-  <img src="https://mansueto.uchicago.edu/wp-content/uploads/2019/09/mansueto-logo-horizontal.png" alt="Mansueto Institute Logo" width="400">
+  <img src="https://voices.uchicago.edu/miurban/files/2024/10/UChicago_MansuetoInstitute_Color_RGB.png" alt="Mansueto Institute Logo" width="400">
 </div>
 
 
-By Mansueto Institute Data Journalism Fellows Andrés Comacho and Ganon Evans
+
+By Mansueto Institute Data Journalism Fellows Andrés Camacho and Ganon Evans as part of the [Summer Mansueto Fellowship](https://miurban.uchicago.edu/local-data-journalism-fellowship/)
+
 
 ## Background
 
