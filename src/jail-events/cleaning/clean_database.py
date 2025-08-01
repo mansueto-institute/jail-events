@@ -181,6 +181,61 @@ class DatabaseCleaning:
             .otherwise(pl.col("Cleaned Facility Name"))
             .alias("Cleaned Facility Name")
             )
+    def get_confident_deaths(self):
+        self.df = self.df.with_columns(
+            (
+                (
+                    (
+                        pl.col("Deceased Name")
+                        .str.strip_chars()
+                        .str.replace_all("N?a?m?e? ?o?f? ?d?e?c?e?a?s?e?d ? ?:? ?", "")
+                        .str.strip_chars()
+                        .str.replace_all("^$", "N/A")
+                        != "N/A"
+                    ).cast(pl.Int8)
+                )
+                + (
+                    (
+                        pl.col("Deceased Cause")
+                        .str.strip_chars()
+                        .str.replace_all("S?p?e?c?i?f?i?c? ?c?a?u?s?e? ?o?f? ?d?e?a?t?h? ? ?:? ?", "")
+                        .str.strip_chars()
+                        .str.replace_all("^$", "N/A")
+                        != "N/A"
+                    ).cast(pl.Int8)
+                )
+                + (
+                    (
+                        pl.col("Deceased Date and Time")
+                        .str.strip_chars()
+                        .str.replace_all("D?a?t?e? ?\&? ?t?i?m?e? ?o?f? ?d?e?a?t?h? ? ?:? ?", "")
+                        .str.strip_chars()
+                        .str.replace_all("^$", "N/A")
+                        != "N/A"
+                    ).cast(pl.Int8)
+                )
+                + (
+                    (
+                        pl.col("Deceased on Suicide Watch")
+                        .str.strip_chars()
+                        .str.replace_all("No filled box found", "N/A")
+                        .str.strip_chars()
+                        .str.replace_all("^Y.*", "Yes")
+                        != "N/A"
+                    ).cast(pl.Int8)
+                )
+                + (
+                    (
+                        pl.col("Deceased Reporter")
+                        .str.strip_chars()
+                        .str.replace_all("R?e?p?o?r?t?e?d? ?b?y? ?:? ?", "")
+                        .str.strip_chars()
+                        .str.replace_all("^$", "N/A")
+                        != "N/A"
+                    ).cast(pl.Int8)
+                )
+            ).alias("Death Confidence")
+        )
 
 def clean_occurrences(entries):
 
@@ -230,7 +285,7 @@ def main(input_path = None):
         in_parquet = Path(input_path)
         out_path = in_parquet.parent
     
-    out_parquet = out_path / 'jails_pdfs_cleanned.parquet'
+    out_parquet = out_path / 'jails_pdfs_cleaned.parquet'
     out_parquet_persons = out_path / 'jails_person_records.parquet'
     
     # Cleaning
@@ -248,6 +303,8 @@ def main(input_path = None):
         pl.col("Occurrence").map_elements(clean_occurrences, return_dtype=pl.String).alias("Cleaned Occurrences")
     )
     df_to_clean.clean_other_occ()
+    df_to_clean.combine_counties()
+    df_to_clean.get_confident_deaths()
     df_to_clean.df.write_parquet(out_parquet)
     
     print("\n=== EXTRACTING PERSON RECORDS ===")
