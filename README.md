@@ -81,6 +81,9 @@ jail-events/
 └── README.md
 ```
 
+Running the program requires installation of the Tesseract software. [Instructions on doing so can be found here.](https://tesseract-ocr.github.io/tessdoc/Installation.html)
+
+
 ### Installation
 
 1. **Clone the repository:**
