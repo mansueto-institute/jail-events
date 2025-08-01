@@ -48,3 +48,23 @@ We use OpenCV's polygon approximation tools to identify square-like shapes then 
 
 ## How to run
 
+Running the program requires installation of the Tesseract software. [Instructions on doing so can be found here.](https://tesseract-ocr.github.io/tessdoc/Installation.html)
+
+The steps for running the program can are below:
+
+- **Clone the repository to your local machine** - [https://github.com/mansueto-institute/jail-events](https://github.com/mansueto-institute/jail-events)
+- **Add the data files** - The following files need to be added to the given locations inside the `woc/data` folder for the app to work. 
+	```
+	├── data
+	│   ├── jails-data
+	│   │   ├── raw
+    |	│   │   ├── Place all raw PDF files to scan at this time. Must be PDF files.
+    │   │   ├── processed
+    |	│   │   ├── This folder should empty at creation and will be filled out as the program runs with image files.
+    │   │   ├── output
+    |	│   │   ├── This folder should empty at creation and will be filled out as the program runs with result data.
+	```
+	- The files should be obtained from FOIA requests.
+- **Install the dependencies** - We recommend installing `uv` [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/) and then running `uv sync` within the repository to install the dependencies. 
+- **Run the app** - Navigate to `jail-events`. Run the app using the command `uv run src/jail-events/main.py --mode full 2>&1 | tee results.txt`. The program will run on all PDFs currently in the "raw" folder and will output an Excel file as well as Parquet files with raw and cleaned results.
+
