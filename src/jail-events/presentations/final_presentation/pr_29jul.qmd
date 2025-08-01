@@ -30,11 +30,11 @@ alt.data_transformers.enable("vegafusion")
 
 root = Path('../..')
 #parquet_path = root / 'data/jails-data/SERVER/run 0728/output/jails_pdfs_cleanned.parquet'
-parquet_path = root / 'data/jails-data/final files/output/jails_pdfs_cleanned.parquet'
+parquet_path = root / 'data/jails-data/output/jails_pdfs_cleanned.parquet'
 print(parquet_path)
 df_cleaned = pl.read_parquet(parquet_path)
 #parquet_normal = root / 'data/jails-data/SERVER/run 0728/output/jails_pdfs_full.parquet'
-parquet_normal = root / 'data/jails-data/final files/output/jails_pdfs_full.parquet'
+parquet_normal = root / 'data/jails-data/output/jails_pdfs_full.parquet'
 df_normal = pl.read_parquet(parquet_normal)
 
 df_cleaned= df_cleaned.with_columns(

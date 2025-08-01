@@ -61,31 +61,25 @@ class DatabaseCleaning:
         )
 
     # 4. Cleaning date of occurrence
-    def clean_date_occurrence(df: pl.DataFrame) -> pl.DataFrame:
-        return (
-            df
-            # 1) normalize whitespace & strip
-            .with_columns(
+    def clean_date_occurrence(self):
+        """ Cleaning dates with 5 steps 1) normalize 2) extract dates, 3) polars date functions, 4) nulls as odd years"""
+        self.df = self.df.with_columns(
                 pl.col("Date")
                 .str.replace_all(r"\r?\n|\|", " ")  
                 .str.replace_all(r"\s+", " ")
                 .str.strip_chars()  
                 .alias("Date_Cleaned")
-            )
-            # 2) extract first date-like substring
-            .with_columns(
+            ).with_columns(
                 pl.col("Date_Cleaned")
                 .str.extract(r"(\d{1,2}\s*[\/\-.]\s*\d{1,2}\s*[\/\-.]\s*\d{4})", 1)
                 .alias("Date_Extracted")
             ).with_columns(
                 pl.col("Date_Extracted")
-                .str.replace_all(r"\s+", "")  # remove all spaces from extracted date
+                .str.replace_all(r"\s+", "")
                 .alias("Date_Extracted_Clean")
-    )
-            # 3) parse into a Polars Date with coalesce of multiple formats
-            .with_columns(
+            ).with_columns(
                 pl.coalesce(
-                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%m/%d/%Y", strict=False),
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%m/%d/%Y", strict=False),             # 3) parse into a Polars Date with coalesce of multiple formats
                     pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%m-%d-%Y", strict=False),
                     pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%-m/%-d/%Y", strict=False),
                     pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%d/%m/%Y", strict=False),
@@ -95,9 +89,7 @@ class DatabaseCleaning:
                     pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%Y-%m-%d", strict=False),
                 )
                 .alias("temp_date")
-            )
-            # 4) null-out years outside [2000, 2025] and format valid ones
-            .with_columns(
+            ).with_columns(
                 pl.when(
                     pl.col("temp_date").dt.year().is_between(2000, 2025)
                 )
@@ -106,10 +98,7 @@ class DatabaseCleaning:
                 )
                 .otherwise(None)
                 .alias("Cleaned Date")
-            )
-            # 5) drop intermediate helpers
-            .drop("Date_Cleaned", "Date_Extracted", "Date_Extracted_Clean", "temp_date")
-        )
+            ).drop("Date_Cleaned", "Date_Extracted", "Date_Extracted_Clean", "temp_date")
 
     #5. Cleaning phone number
     def clean_phone_number(self):
@@ -180,11 +169,8 @@ class DatabaseCleaning:
             target_column="is_name",
             batch_size=1000  # Adjust based on your memory
         )
-        
         # Assemble into structured person records
         person_records_df = assemble_person_records(identified_df)
-        
-        print(f"Extracted {len(person_records_df)} person records.")
         return person_records_df
     
     def combine_counties(self):
@@ -237,7 +223,7 @@ class DatabaseCleaning:
                     (
                         pl.col("Deceased Date and Time")
                         .str.strip_chars()
-                        .str.replace_all("D?a?t?e? ?\&? ?t?i?m?e? ?o?f? ?d?e?a?t?h? ? ?:? ?", "")
+                        .str.replace_all(r"D?a?t?e? ?\\?&? ?t?i?m?e? ?o?f? ?d?e?a?t?h? ? ?:? ?", "")
                         .str.strip_chars()
                         .str.replace_all("^$", "N/A")
                         != "N/A"
@@ -305,20 +291,9 @@ def clean_occurrences(entries):
     return "; ".join(cleaned_list) if cleaned_list else "No occurrence found"
 
 # Main assemble cleaning
-def main(input_path = None):
+def main(input_parquet_full, out_parquet, out_parquet_persons):
     # Apply the cleaning
-    if input_path is None:
-        out_path = Path(__file__).parent.parent / 'data/jails-data/SERVER/new run/output'
-        in_parquet = out_path / 'jails_pdfs_full.parquet'
-    else:
-        in_parquet = Path(input_path)
-        out_path = in_parquet.parent
-    
-    out_parquet = out_path / 'jails_pdfs_cleaned.parquet'
-    out_parquet_persons = out_path / 'jails_person_records.parquet'
-    
-    # Cleaning
-    df = divide_dataset(in_parquet)
+    df = divide_dataset(input_parquet_full)
     df_to_clean = DatabaseCleaning(df)
     
     print("=== CLEANING MAIN DATABASE ===")
