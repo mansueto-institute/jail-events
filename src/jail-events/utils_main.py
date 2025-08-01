@@ -182,8 +182,10 @@ def export_parquets_excel(in_parquet_pages, in_parquet_persons,
                                             "Time of Day", "AM or PM", "Occurrence", "Table Contents"])
     
     # Create hyperlink column
-    df_pages = add_hyperlink_column(df_pages, base_url)
-    df_persons = add_hyperlink_column(df_persons, base_url)
+    #df_pages = add_hyperlink_column(df_pages, base_url)
+    #df_persons = add_hyperlink_column(df_persons, base_url)
+
+    excel_formula = f'=HYPERLINK("{base_url}" & [@"Report ID"] & ".png?Web=1", "View Image")'
 
     with Workbook(excel_file) as wb:
         #formats
@@ -196,9 +198,12 @@ def export_parquets_excel(in_parquet_pages, in_parquet_persons,
         df_pages.write_excel(
             workbook=wb, 
             worksheet='Pages database',
-            column_formats={"Image_Link": hyperlink_format},
-            column_widths={"Image_Link": 15},
-            formula_columns=["Image_Link"]
+            #column_formats={"Image_Link": hyperlink_format},
+            #column_widths={"Image_Link": 15},
+            formulas={"Image_Link": {
+                "formula": f'=HYPERLINK("{base_url}" & [@Report ID] & ".png?Web=1", "View Image")',
+                "return_dtype": pl.String}
+            }
             )
         #Persons dataset on excel
         df_persons.write_excel(
@@ -206,6 +211,9 @@ def export_parquets_excel(in_parquet_pages, in_parquet_persons,
             worksheet='Persons database',
             column_formats={"Image_Link": hyperlink_format},
             column_widths={"Image_Link": 15},
-            formula_columns=["Image_Link"]
+            formulas={"Image_Link": {
+                "formula": f'=HYPERLINK("{base_url}" & [@Report ID] & ".png?Web=1", "View Image")',
+                "return_dtype": pl.String}
+            }
             )
     print(f"Excel file exported to {excel_file}")
