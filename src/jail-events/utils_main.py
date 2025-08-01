@@ -176,7 +176,7 @@ def export_parquets_excel(in_parquet_pages, in_parquet_persons,
     df_pages = pl.read_parquet(in_parquet_pages)
     df_persons = pl.read_parquet(in_parquet_persons)
     df_pages = df_pages.select(["Report ID", "Cleaned Facility Name", "Cleaned Address", "Zip Code", "Cleaned Date",
-                                            "Cleaned Time of Day", "Cleaned Occurrences", "Injuries?", "Resulting Death?", "Deceased Name",
+                                            "Cleaned Time of Day", "Cleaned Occurrences", "Injuries?", "Resulting Death?","Death Confidence", "Deceased Name",
                                             "Deceased Cause", "Deceased Date and Time", "Deceased on Suicide Watch", "Deceased Reporter", "Deceased Examined by Physician",
                                             "OCR_Confidence", "OCR_Word_Count", "Facility Name", "RD Number", "Phone Number", "Address", "Date",
                                             "Time of Day", "AM or PM", "Occurrence", "Table Contents"])
@@ -197,13 +197,15 @@ def export_parquets_excel(in_parquet_pages, in_parquet_persons,
             workbook=wb, 
             worksheet='Pages database',
             column_formats={"Image_Link": hyperlink_format},
-            column_widths={"Image_Link": 15}
+            column_widths={"Image_Link": 15},
+            formula_columns=["Image_Link"]
             )
         #Persons dataset on excel
         df_persons.write_excel(
             workbook=wb, 
             worksheet='Persons database',
             column_formats={"Image_Link": hyperlink_format},
-            column_widths={"Image_Link": 15}
+            column_widths={"Image_Link": 15},
+            formula_columns=["Image_Link"]
             )
     print(f"Excel file exported to {excel_file}")

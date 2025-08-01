@@ -25,7 +25,7 @@ The app has three primary processes, an overview of each of which are below:
 
 The standardization phase uses image analysis techniques to create consistent output dimensions and positioning across all reports. The system employs statistical analysis of pixel intensity distributions using Polars DataFrames to identify content boundaries, applying rolling median filters to smooth out noise and detect meaningful content edges. Auto-cropping algorithms remove variable scanner borders by identifying the darkest pixel boundaries, while maintaining configurable margins around detected content. The final output is a precisely sized image (2550×3300 pixels) with content positioned at consistent coordinates, enabling reliable OCR extraction in subsequent processing steps. This standardization is crucial for the coordinate-based field extraction system, as it ensures that facility names, dates, checkbox locations, and table structures appear in predictable positions across all four report versions (2002, 2016, 2024, and Cook County formats).
 
-1. **PDF Processing** - As images, pixel coordinates are used on the reports to define regions of interest (ROI) for fields of the report so they can be extracted via OCR. The correct coordinates for each report depend on the report version, of which there were 4 we accounted for: 2002, 2016, 2024, and Cook County. We get the report version from doing an initial extraction of the bottom right corner and finding the year. Cook County forms are listed as the 2016 version, so we do an initial extraction of the facility name to see if it contains "Cook County." The importance of identifying Cook County comes with parsing the Detainee table and information after it.
+2. **PDF Processing** - As images, pixel coordinates are used on the reports to define regions of interest (ROI) for fields of the report so they can be extracted via OCR. The correct coordinates for each report depend on the report version, of which there were 4 we accounted for: 2002, 2016, 2024, and Cook County. We get the report version from doing an initial extraction of the bottom right corner and finding the year. Cook County forms are listed as the 2016 version, so we do an initial extraction of the facility name to see if it contains "Cook County." The importance of identifying Cook County comes with parsing the Detainee table and information after it.
 
     To extract the facility name, address, phone number, date, time, RD Number, deceased name, cause of death, date and time of death, and death reporter, we use image to text conversion based on coordinate. For most reports, the sections involving a death will remain empty or with variables like "NA", but we still pull the text here to confirm with confidence there was a death. 
 
@@ -37,9 +37,15 @@ The standardization phase uses image analysis techniques to create consistent ou
 
     In the 2002, 2016, and 2024 forms, the table is always four rows. However, for Cook County, the table varies with the number of detainees involved, ranging from 1 to more than 20. Depending on the length of the page, information on injuries and deaths may be higher up or farther down - sometimes pushed onto a second page. To account for this, in Cook County reports, we define a large ROI and then have to first find the lowest horiztonal line of the table. We then cut off the ROI at this line and perform table extraction as above. Then, coordinates for injuries and the death statistics are calculated for the rest of the report. 
 
-    Each report produces a dictionary with its fields, which are used to produce a Parquet file of all reports. At this time, an OCR confidence score is produced. Reports with a score less than 80 are marked as handwritten due to their quality, thus necessitating individual analysis.
+    Each report produces a dictionary with its fields, which are used to produce a Parquet file of all reports. At this time, an OCR confidence score is produced using the `analysis_handwritten.py` module. This module analyzes the OCR output to calculate:
+    
+    - **Average OCR confidence**: Statistical measure of text recognition certainty
+    - **Word count**: Number of successfully recognized words
+    - **Text detection status**: Whether readable text was found
+    
+    Reports with an OCR confidence score less than 80% are automatically flagged as potentially handwritten or poor quality, requiring individual manual review. This automated classification helps prioritize which reports need human verification versus those that can be processed with high confidence through the automated pipeline.
 
-1. **Cleaning** - The Parquet file of all reports has basic cleaning to its fields to isolate information from hallucinations or extra characters from OCR extraction. Similar county entries are combined. 
+3. **Cleaning** - The Parquet file of all reports has basic cleaning to its fields to isolate information from hallucinations or extra characters from OCR extraction. Similar county entries are combined. 
 
 At this time, the extraction of the detainee table are fed into the Hugging Face Named Entity Recognition (NER) model to identify names, which are then use to create a database of reports by individual. The NER uses 334 Million parameters that leverages both local and global contexts. The model reports an F1 Score of 92-93% with the person entity class on trained data. This means it correctly identifies person names with very high precision (few false positives) and recall (few missed names) in typical English text.
 
@@ -65,7 +71,12 @@ jail-events/
 │       ├── utils.py                   # Utility functions for PDF processing
 │       ├── cleaning/                  # Data cleaning pipeline
 │       ├── preprocess/                # Image preprocessing pipeline
-│       └── pdf_processing/            # OCR and field extraction
+│       ├── pdf_processing/            # OCR and field extraction
+│       ├── analysis/                  # OCR confidence and handwritten detection
+│       │   └── analysis_handwritten.py
+│       └── presentations/             # Automated Quarto reports
+│           └── final_presentation/
+│               └── pr_29jul.qmd
 │
 ├── data/
 │   └── jails-data/
