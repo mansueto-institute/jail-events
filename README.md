@@ -66,5 +66,5 @@ The steps for running the program can are below:
 	```
 	- The files should be obtained from FOIA requests.
 - **Install the dependencies** - We recommend installing `uv` [https://docs.astral.sh/uv/getting-started/installation/](https://docs.astral.sh/uv/getting-started/installation/) and then running `uv sync` within the repository to install the dependencies. 
-- **Run the app** - Navigate to `jail-events`. Run the app using the command `uv run src/jail-events/main.py --mode full 2>&1 | tee results.txt`. The program will run on all PDFs currently in the "raw" folder and will output an Excel file as well as Parquet files with raw and cleaned results.
+- **Run the app** - Navigate to `jail-events`. Run the app using the command `uv run src/jail-events/main.py --mode full`. The program will run on all PDFs currently in the "raw" folder and will output an Excel file as well as Parquet files with raw and cleaned results.
 
