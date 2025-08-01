@@ -9,7 +9,7 @@ from preprocess.cleaning import pre_process_page
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import multiprocessing as mp
 import polars as pl
-from analysis.analysis_handwritten import extract_ocr_confidence, generate_handwritten_report
+from analysis.analysis_handwritten import extract_ocr_confidence
 from cleaning.clean_database import main as clean_database_main
 
 import random
@@ -171,6 +171,77 @@ def process_all_pdfs(src_folder: Path, dst_folder: Path, dpi: int = 300):
     
     return list_docs, all_processing_logs
 
+
+def export_parquets_excel(in_parquet_pages, in_parquet_persons, out_data):
+    """ Export the final parquet to Excel with hyperlinks to images """
+    
+    # Define paths
+    #out_data = Path(__file__).parent / "data/jails-data/output"
+    
+    # Base URL for the shared folder (you can modify this as needed)
+    base_url = "https://uchicagoedu-my.sharepoint.com/personal/afcamachob_uchicago_edu/Documents/Try/"
+
+    
+    # Read the parquet file
+    df = pl.read_parquet(in_parquet_pages)
+    
+    df = df.select(["Report ID", "Cleaned Facility Name", "Cleaned Address", "Zip Code", "Cleaned Date",
+                                            "Cleaned Time of Day", "Cleaned Occurrences", "Injuries?", "Resulting Death?", "Deceased Name",
+                                            "Deceased Cause", "Deceased Date and Time", "Deceased on Suicide Watch", "Deceased Reporter", "Deceased Examined by Physician",
+                                            "OCR_Confidence", "OCR_Word_Count", "Facility Name", "RD Number", "Phone Number", "Address", "Date",
+                                            "Time of Day", "AM or PM", "Occurrence", "Table Contents"])
+    
+    # Create hyperlink column
+    df = df.with_columns([
+        pl.when(pl.col("Report ID").is_null())
+        .then(pl.lit(""))
+        .otherwise(
+            pl.lit('=HYPERLINK("') + 
+            pl.lit(base_url) + 
+            pl.col("Report ID").str.replace(" ", "%20") + 
+            pl.lit('.png?Web=1", "View Image")')
+        )
+        .alias("Image_Link")
+    ])
+    
+    # Reorder columns to put the link column near the Report ID
+    cols = df.columns
+    if 'Report ID' in cols:
+        report_id_idx = cols.index('Report ID')
+        new_cols = cols[:report_id_idx + 1] + ['Image_Link'] + [col for col in cols[report_id_idx + 1:] if col != 'Image_Link']
+        df = df.select(new_cols)
+    
+    # Create Excel file path
+    excel_path = out_data / f"jails_pdfs_with_links_database.xlsx"
+    
+    df_pandas = df.to_pandas()
+    
+    # Export to Excel
+    with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
+        df_pandas.to_excel(writer, sheet_name='Jail_Reports', index=False)
+        
+        # Get the worksheet to format the hyperlink column
+        worksheet = writer.sheets['Jail_Reports']
+        
+        # Find the Image_Link column
+        link_col = None
+        for idx, col in enumerate(df.columns, 1):
+            if col == 'Image_Link':
+                link_col = idx
+                break
+        
+        if link_col:
+            # Format the hyperlink column
+            from openpyxl.styles import Font
+            
+            # Make the hyperlink column blue and underlined
+            for row in range(2, len(df) + 2):  # Start from row 2 (skip header)
+                cell = worksheet.cell(row=row, column=link_col)
+                cell.font = Font(color="0000FF", underline="single")
+                
+            # Adjust column width
+            worksheet.column_dimensions[worksheet.cell(1, link_col).column_letter].width = 15
+
 @click.command()
 @click.option("--mode",
               type=click.Choice(['full', 'sample', 'debug']), 
@@ -215,8 +286,6 @@ def main(mode, step):
         # First parse all the pdfs and parrse images
         all_dicts_list, processing_logs = process_all_pdfs(samples, processed, dpi=300)
         
-        # report
-        #generate_handwritten_report(all_dicts_list, out_analysis, threshold=70)
         # Save data as a pickle
         with open(backup_file, "wb") as f:
             pickle.dump(all_dicts_list, f)
@@ -237,11 +306,6 @@ def main(mode, step):
         click.echo(f"Mode: {mode.upper()}")
         click.echo(f"Total pages attempted: {len(processing_logs)}")
         
-        summary = log_df.group_by("status").agg(pl.len().alias("count"))
-        for row in summary.iter_rows(named=True):
-                status_color = 'green' if row['status'] == 'success' else 'red'
-                click.echo(f"{row['status'].title()}: ", nl=False)
-                click.secho(f"{row['count']} pages", fg=status_color)
     if step in ['all', 'clean']:
         click.echo("Running cleaning pipeline...")
         clean_database_main(input_path=out_parquet)

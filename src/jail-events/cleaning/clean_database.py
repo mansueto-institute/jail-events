@@ -61,26 +61,55 @@ class DatabaseCleaning:
         )
 
     # 4. Cleaning date of occurrence
-    def clean_date_occurrence(self):
-        self.df = self.df.with_columns(
-            pl.col("Date")
-            # OCR cleanup (keep forward slashes)
-            .str.replace_all(r"\\n|\\\\", " ")
-            .str.replace_all(r"\n", " ")
-            .str.replace_all(r"\s+", " ")
-            .str.strip_chars()
-            # Extract the MM/DD/YYYY text
-            .str.extract(r"Date of Occurrence:\s*([0-9]{1,2}/[0-9]{1,2}/(20[0-9]{2}))", 1)
-            # Parse & re‐format to zero‐padded MM/DD/YYYY
-            .str.strptime(pl.Date, "%m/%d/%Y", strict=False)
-            .alias("temp_date")
-        ).with_columns(
-            # Only keep dates between 2000 and 2025, otherwise set to null
-            pl.when(pl.col("temp_date").dt.year().is_between(2000, 2025))
-            .then(pl.col("temp_date").dt.strftime("%m/%d/%Y"))
-            .otherwise(None)
-            .alias("Cleaned Date")
-        ).drop("temp_date")
+    def clean_date_occurrence(df: pl.DataFrame) -> pl.DataFrame:
+        return (
+            df
+            # 1) normalize whitespace & strip
+            .with_columns(
+                pl.col("Date")
+                .str.replace_all(r"\r?\n|\|", " ")  
+                .str.replace_all(r"\s+", " ")
+                .str.strip_chars()  
+                .alias("Date_Cleaned")
+            )
+            # 2) extract first date-like substring
+            .with_columns(
+                pl.col("Date_Cleaned")
+                .str.extract(r"(\d{1,2}\s*[\/\-.]\s*\d{1,2}\s*[\/\-.]\s*\d{4})", 1)
+                .alias("Date_Extracted")
+            ).with_columns(
+                pl.col("Date_Extracted")
+                .str.replace_all(r"\s+", "")  # remove all spaces from extracted date
+                .alias("Date_Extracted_Clean")
+    )
+            # 3) parse into a Polars Date with coalesce of multiple formats
+            .with_columns(
+                pl.coalesce(
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%m/%d/%Y", strict=False),
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%m-%d-%Y", strict=False),
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%-m/%-d/%Y", strict=False),
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%d/%m/%Y", strict=False),
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%-d/%-m/%Y", strict=False),
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%d-%m-%Y", strict=False),
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%Y.%m.%d", strict=False),
+                    pl.col("Date_Extracted_Clean").str.strptime(pl.Date, "%Y-%m-%d", strict=False),
+                )
+                .alias("temp_date")
+            )
+            # 4) null-out years outside [2000, 2025] and format valid ones
+            .with_columns(
+                pl.when(
+                    pl.col("temp_date").dt.year().is_between(2000, 2025)
+                )
+                .then(
+                    pl.col("temp_date").dt.strftime("%m/%d/%Y") 
+                )
+                .otherwise(None)
+                .alias("Cleaned Date")
+            )
+            # 5) drop intermediate helpers
+            .drop("Date_Cleaned", "Date_Extracted", "Date_Extracted_Clean", "temp_date")
+        )
 
     #5. Cleaning phone number
     def clean_phone_number(self):
@@ -130,7 +159,7 @@ class DatabaseCleaning:
         Returns a separate DataFrame with individual person records.
         """
         print("Extracting person-level records from Table Contents...")
-        print("Available columns:", self.df.columns)
+        #print("Available columns:", self.df.columns)
         # Filter rows that have Table Contents data
         df_with_contents = self.df
         
@@ -143,7 +172,7 @@ class DatabaseCleaning:
             id_cols=["page_id", "Report ID"], 
             list_col="Table Contents"
         )
-        print(long_df)
+        #print(long_df)
         # Identify names using the ML model
         identified_df = identify_names_in_long_df(
             long_df,

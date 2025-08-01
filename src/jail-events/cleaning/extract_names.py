@@ -187,54 +187,54 @@ def extract_names_column_batch(df: pl.DataFrame, source_column: str, target_colu
         pl.Series(name=target_column, values=all_extracted_names)
     )
 
-# We can simplify the main entry point now
-def test_long_format_extraction():
-    """Test the name extraction with long format data"""
+# # We can simplify the main entry point now
+# def test_long_format_extraction():
+#     """Test the name extraction with long format data"""
     
-    # Create sample wide data
-    wide_df = pl.DataFrame({
-        "Report ID": ["page_1", "page_2", "page_3", "page_4", "page_5", "page_6_1"],
-        "Table Contents": [
-            ["Cross, Anton Nelson", "| 02/04/1999", "Murder 1*, Agg Battery", "Smith, John"],
-            ["Johnson, Mary Jane", "Gannon Andres", "This is not a name", "SHERIFF DEPT"],
-            ['Camacho, Juan L1S1218','4/01/1995.','01/03/2021'],
-            ['Ordonez, Robert F.', '08/12/1981', '03/11/2021'
- 'Violating Order of Protection'],
-            ['Ordonez, Robert F.','08/12/1981' ,'05/23/2021' ,'Agg.Assault, Battery'],
-            ['Ordonez, Robert F.','08/12/1981', '03/11/2021'
- 'Crim.Damage Govt.Property']
-        ]
-    })
+#     # Create sample wide data
+#     wide_df = pl.DataFrame({
+#         "Report ID": ["page_1", "page_2", "page_3", "page_4", "page_5", "page_6_1"],
+#         "Table Contents": [
+#             ["Cross, Anton Nelson", "| 02/04/1999", "Murder 1*, Agg Battery", "Smith, John"],
+#             ["Johnson, Mary Jane", "Gannon Andres", "This is not a name", "SHERIFF DEPT"],
+#             ['Camacho, Juan L1S1218','4/01/1995.','01/03/2021'],
+#             ['Ordonez, Robert F.', '08/12/1981', '03/11/2021'
+#  'Violating Order of Protection'],
+#             ['Ordonez, Robert F.','08/12/1981' ,'05/23/2021' ,'Agg.Assault, Battery'],
+#             ['Ordonez, Robert F.','08/12/1981', '03/11/2021'
+#  'Crim.Damage Govt.Property']
+#         ]
+#     })
     
-    print("--- Original Wide DataFrame ---")
-    print(wide_df)
+#     print("--- Original Wide DataFrame ---")
+#     print(wide_df)
     
-    # Reshape to long format
-    long_df = reshape_to_long(wide_df, id_cols="Report ID", list_col="Table Contents")
+#     # Reshape to long format
+#     long_df = reshape_to_long(wide_df, id_cols="Report ID", list_col="Table Contents")
     
-    print("\n--- Long DataFrame ---")
-    print(long_df)
+#     print("\n--- Long DataFrame ---")
+#     print(long_df)
     
-    # Identify names
-    identified_df = identify_names_in_long_df(
-        long_df, 
-        text_column="Table Contents", 
-        target_column="is_name",
-        batch_size=5  # Small batch for testing
-    )
+#     # Identify names
+#     identified_df = identify_names_in_long_df(
+#         long_df, 
+#         text_column="Table Contents", 
+#         target_column="is_name",
+#         batch_size=5  # Small batch for testing
+#     )
     
-    print("\n--- Result with Name Identification ---")
-    print(identified_df)
+#     print("\n--- Result with Name Identification ---")
+#     print(identified_df)
     
-    # Assemble the final structured records
-    final_records_df = assemble_person_records(identified_df)
+#     # Assemble the final structured records
+#     final_records_df = assemble_person_records(identified_df)
     
-    print(final_records_df)
+#     print(final_records_df)
     
-    return final_records_df
+#     return final_records_df
 
-if __name__ == "__main__":
-    test_long_format_extraction()
+# if __name__ == "__main__":
+#     test_long_format_extraction()
 
 #example = ['Odio, Chevaz' '- 07227120 17' 'Aggravated Arson' '12/ 10/ 1988'
 # '"Calvin, Maria' '04/07/1985' 'Man / Del Controlled Substance'
