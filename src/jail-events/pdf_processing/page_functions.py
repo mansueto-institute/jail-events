@@ -396,7 +396,7 @@ class PageParsing:
         roi = pf.get_roi(self.cv2_image, points[0], points[1])
         contours = pf.blur_edge_contours(roi)
         text = pf.basic_box_check(roi, contours, adjust_fill_ratio=0.1, adjust_width=100, adjust_box_min_box_area=1250)
-        pattern = r"yes"
+        pattern = r"ye"
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
             text = "Yes"  
