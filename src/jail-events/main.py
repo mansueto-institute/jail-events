@@ -31,7 +31,7 @@ def main(mode, step):
         processed = Path(__file__).parent / "data/jails-data/processed/big_samples"
         suffix = "_sample"
     elif mode == "debug":
-        samples = Path(__file__).parent / "data/jails-data/samples/operand_debug"
+        samples = Path(__file__).parent / "data/jails-data/samples/debug"
         processed = Path(__file__).parent / "data/jails-data/processed/debug_processed"
         suffix = "_debug"
         
@@ -74,7 +74,7 @@ def main(mode, step):
         clean_database_main(out_parquet, out_parquet_cleaned, out_parquet_persons)
         processing_time = time.time() - start_time
     
-    base_url = "https://uchicagoedu-my.sharepoint.com/personal/afcamachob_uchicago_edu/Documents/Try/"
+    base_url = "https://uchicagoedu-my.sharepoint.com/personal/divijs_uchicago_edu/Documents/Jail reports data/"
     
     if step in ['all', 'export']:
         click.echo("Exporting to Excel with hyperlinks...")
