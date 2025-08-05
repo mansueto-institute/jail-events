@@ -60,7 +60,7 @@ df_cleaned= df_cleaned.with_columns(
     .alias("Cleaned Facility Name")
 )
 
-parquet_path_persons = root / 'data/jails-data/final files/output/jails_person_records.parquet'
+parquet_path_persons = root / 'data/jails-data/output/jails_person_records.parquet'
 df = pl.read_parquet(parquet_path_persons)
 df_cleaned_p = df.with_columns(
     pl.col("Name")
