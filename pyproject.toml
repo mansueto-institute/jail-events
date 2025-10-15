@@ -28,8 +28,12 @@ dependencies = [
     "layoutparser>=0.3.4",
     "quarto-cli>=1.7.32",
     "nltk>=3.9.1",
-    "transformers>=4.53.2",
-    "torch>=2.7.1",
+            "transformers>=4.53.2",
+            "torch>=2.7.1",
+            "requests>=2.31.0",
+            "geopy>=2.4.0",
+            "folium>=0.15.0",
+            "pandas>=2.3.0",
 ]
 
 [dependency-groups]

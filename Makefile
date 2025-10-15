@@ -51,6 +51,18 @@ handwritten-cached:
 handwritten-smart:
 	docker-compose run --rm jail-events uv run --no-sync python src/jail-events/main.py --mode handwritten --step handwritten
 
+# Geocode jail addresses
+geocode:
+	uv run python src/jail-events/main.py --mode geocode --step geocode
+
+# Build Illinois jail database and match with existing data
+illinois-db:
+	uv run python src/jail-events/main.py --mode illinois-db --step illinois-db
+
+# Create interactive maps
+map:
+	uv run python src/jail-events/main.py --mode map --step map
+
 # Local development
 install-deps:
 	pip install uv

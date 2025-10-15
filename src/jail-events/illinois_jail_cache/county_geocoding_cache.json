@@ -1,0 +1,794 @@
+{
+  "county_seat_Adams": {
+    "latitude": 39.9356016,
+    "longitude": -91.4098727,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Quincy, Adams County, Illinois, United States",
+    "county_seat": "Quincy",
+    "county": "Adams"
+  },
+  "county_seat_Alexander": {
+    "latitude": 37.0057958,
+    "longitude": -89.1772449,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Cairo, Alexander County, Illinois, 62914, United States",
+    "county_seat": "Cairo",
+    "county": "Alexander"
+  },
+  "county_seat_Bond": {
+    "latitude": 38.8922687,
+    "longitude": -89.4131356,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Greenville, Bond County, Illinois, 62246, United States",
+    "county_seat": "Greenville",
+    "county": "Bond"
+  },
+  "county_seat_Boone": {
+    "latitude": 42.2579991,
+    "longitude": -88.841734,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Belvidere, Belvidere Township, Boone County, Illinois, 61008, United States",
+    "county_seat": "Belvidere",
+    "county": "Boone"
+  },
+  "county_seat_Brown": {
+    "latitude": 39.9872707,
+    "longitude": -90.763463,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Mount Sterling, Brown County, Illinois, United States",
+    "county_seat": "Mount Sterling",
+    "county": "Brown"
+  },
+  "county_seat_Bureau": {
+    "latitude": 41.368092,
+    "longitude": -89.4648145,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Princeton, Bureau County, Illinois, 61356, United States",
+    "county_seat": "Princeton",
+    "county": "Bureau"
+  },
+  "county_seat_Calhoun": {
+    "latitude": 39.1567149,
+    "longitude": -90.6178995,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Hardin, Calhoun County, Illinois, 62047, United States",
+    "county_seat": "Hardin",
+    "county": "Calhoun"
+  },
+  "county_seat_Carroll": {
+    "latitude": 42.0948582,
+    "longitude": -89.9777041,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Mount Carroll, Carroll County, Illinois, United States",
+    "county_seat": "Mount Carroll",
+    "county": "Carroll"
+  },
+  "county_seat_Cass": {
+    "latitude": 39.9511595,
+    "longitude": -90.2123427,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Virginia, Cass County, Illinois, 62691, United States",
+    "county_seat": "Virginia",
+    "county": "Cass"
+  },
+  "county_seat_Champaign": {
+    "latitude": 40.1117174,
+    "longitude": -88.207301,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Urbana, Champaign County, Illinois, United States",
+    "county_seat": "Urbana",
+    "county": "Champaign"
+  },
+  "county_seat_Christian": {
+    "latitude": 39.5487452,
+    "longitude": -89.2941549,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Taylorville, Christian County, Illinois, 62568, United States",
+    "county_seat": "Taylorville",
+    "county": "Christian"
+  },
+  "county_seat_Clark": {
+    "latitude": 39.3914252,
+    "longitude": -87.6936384,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Marshall, Clark County, Illinois, 62441, United States",
+    "county_seat": "Marshall",
+    "county": "Clark"
+  },
+  "county_seat_Clay": {
+    "latitude": 38.772269,
+    "longitude": -88.5025485,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Louisville, Louisville Township, Clay County, Illinois, United States",
+    "county_seat": "Louisville",
+    "county": "Clay"
+  },
+  "county_seat_Clinton": {
+    "latitude": 38.6103264,
+    "longitude": -89.3725796,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Carlyle, Clinton County, Illinois, United States",
+    "county_seat": "Carlyle",
+    "county": "Clinton"
+  },
+  "county_seat_Coles": {
+    "latitude": 39.4961458,
+    "longitude": -88.1761521,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Charleston, Coles County, Illinois, 61920, United States",
+    "county_seat": "Charleston",
+    "county": "Coles"
+  },
+  "county_seat_Crawford": {
+    "latitude": 39.0053201,
+    "longitude": -87.7391936,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Robinson, Crawford County, Illinois, 62454, United States",
+    "county_seat": "Robinson",
+    "county": "Crawford"
+  },
+  "county_seat_Cumberland": {
+    "latitude": 39.2736491,
+    "longitude": -88.2436523,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Toledo, Cumberland County, Illinois, United States",
+    "county_seat": "Toledo",
+    "county": "Cumberland"
+  },
+  "county_seat_Douglas": {
+    "latitude": 39.7998585,
+    "longitude": -88.2884552,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Tuscola, Douglas County, Illinois, 61953, United States",
+    "county_seat": "Tuscola",
+    "county": "Douglas"
+  },
+  "county_seat_Edgar": {
+    "latitude": 39.611146,
+    "longitude": -87.6961374,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Paris, Edgar County, Illinois, 61944, United States",
+    "county_seat": "Paris",
+    "county": "Edgar"
+  },
+  "county_seat_Edwards": {
+    "latitude": 38.3775484,
+    "longitude": -88.0561465,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Albion, Edwards County, Illinois, 62806, United States",
+    "county_seat": "Albion",
+    "county": "Edwards"
+  },
+  "county_seat_Effingham": {
+    "latitude": 39.1201433,
+    "longitude": -88.54348,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Effingham, Effingham County, Illinois, 62401, United States",
+    "county_seat": "Effingham",
+    "county": "Effingham"
+  },
+  "county_seat_Fayette": {
+    "latitude": 38.960601,
+    "longitude": -89.0936778,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Vandalia, Fayette County, Illinois, 62471, United States",
+    "county_seat": "Vandalia",
+    "county": "Fayette"
+  },
+  "county_seat_Ford": {
+    "latitude": 40.4603125,
+    "longitude": -88.0953201,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Paxton, Ford County, Illinois, 60957, United States",
+    "county_seat": "Paxton",
+    "county": "Ford"
+  },
+  "county_seat_Franklin": {
+    "latitude": 37.9967163,
+    "longitude": -88.9200685,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Benton, Franklin County, Illinois, 62812, United States",
+    "county_seat": "Benton",
+    "county": "Franklin"
+  },
+  "county_seat_Fulton": {
+    "latitude": 40.3930973,
+    "longitude": -90.1548421,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Lewistown, Fulton County, Illinois, 61542, United States",
+    "county_seat": "Lewistown",
+    "county": "Fulton"
+  },
+  "county_seat_Gallatin": {
+    "latitude": 37.7167171,
+    "longitude": -88.1864144,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Shawneetown, Gallatin County, Illinois, United States",
+    "county_seat": "Shawneetown",
+    "county": "Gallatin"
+  },
+  "county_seat_Greene": {
+    "latitude": 39.3022693,
+    "longitude": -90.4070632,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Carrollton, Greene County, Illinois, 62016, United States",
+    "county_seat": "Carrollton",
+    "county": "Greene"
+  },
+  "county_seat_Grundy": {
+    "latitude": 41.3574135,
+    "longitude": -88.4215234,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Morris, Grundy County, Illinois, 60450, United States",
+    "county_seat": "Morris",
+    "county": "Grundy"
+  },
+  "county_seat_Hamilton": {
+    "latitude": 38.0933811,
+    "longitude": -88.5356076,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "McLeansboro, Hamilton County, Illinois, 62859, United States",
+    "county_seat": "McLeansboro",
+    "county": "Hamilton"
+  },
+  "county_seat_Hancock": {
+    "latitude": 40.416433,
+    "longitude": -91.1362537,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Carthage, Hancock County, Illinois, United States",
+    "county_seat": "Carthage",
+    "county": "Hancock"
+  },
+  "county_seat_Hardin": {
+    "latitude": 37.4459108,
+    "longitude": -88.305099,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Elizabethtown, Hardin County, Illinois, United States",
+    "county_seat": "Elizabethtown",
+    "county": "Hardin"
+  },
+  "county_seat_Henderson": {
+    "latitude": 40.931982,
+    "longitude": -90.9470863,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Oquawka, Henderson County, Illinois, 61469, United States",
+    "county_seat": "Oquawka",
+    "county": "Henderson"
+  },
+  "county_seat_Henry": {
+    "latitude": 41.3025257,
+    "longitude": -90.1962861,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Cambridge, Henry County, Illinois, United States",
+    "county_seat": "Cambridge",
+    "county": "Henry"
+  },
+  "county_seat_Iroquois": {
+    "latitude": 40.7761465,
+    "longitude": -87.7364218,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Watseka, Iroquois County, Illinois, 60970, United States",
+    "county_seat": "Watseka",
+    "county": "Iroquois"
+  },
+  "county_seat_Jackson": {
+    "latitude": 37.7644952,
+    "longitude": -89.3350888,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Murphysboro, Jackson County, Illinois, 62966, United States",
+    "county_seat": "Murphysboro",
+    "county": "Jackson"
+  },
+  "county_seat_Jasper": {
+    "latitude": 38.9904382,
+    "longitude": -88.161961,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Newton, Jasper County, Illinois, United States",
+    "county_seat": "Newton",
+    "county": "Jasper"
+  },
+  "county_seat_Jefferson": {
+    "latitude": 38.3172715,
+    "longitude": -88.9031201,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Mount Vernon, Jefferson County, Illinois, 62864, United States",
+    "county_seat": "Mount Vernon",
+    "county": "Jefferson"
+  },
+  "county_seat_Jersey": {
+    "latitude": 39.1200471,
+    "longitude": -90.3284479,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Jerseyville, Jersey County, Illinois, 62052, United States",
+    "county_seat": "Jerseyville",
+    "county": "Jersey"
+  },
+  "county_seat_Jo Daviess": {
+    "latitude": 42.4157304,
+    "longitude": -90.4294726,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Galena, West Galena Township, Jo Daviess County, Illinois, United States",
+    "county_seat": "Galena",
+    "county": "Jo Daviess"
+  },
+  "county_seat_Johnson": {
+    "latitude": 37.4153295,
+    "longitude": -88.8978435,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Vienna, Johnson County, Illinois, 62995, United States",
+    "county_seat": "Vienna",
+    "county": "Johnson"
+  },
+  "county_seat_Kankakee": {
+    "latitude": 41.1200325,
+    "longitude": -87.8611531,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Kankakee, Kankakee County, Illinois, 60901, United States",
+    "county_seat": "Kankakee",
+    "county": "Kankakee"
+  },
+  "county_seat_Kendall": {
+    "latitude": 41.6411409,
+    "longitude": -88.4472948,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Yorkville, Kendall Township, Kendall County, Illinois, United States",
+    "county_seat": "Yorkville",
+    "county": "Kendall"
+  },
+  "county_seat_Knox": {
+    "latitude": 40.9475652,
+    "longitude": -90.3712169,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Galesburg, Knox County, Illinois, United States",
+    "county_seat": "Galesburg",
+    "county": "Knox"
+  },
+  "county_seat_Lawrence": {
+    "latitude": 38.7292138,
+    "longitude": -87.6816927,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Lawrenceville, Lawrence County, Illinois, 62439, United States",
+    "county_seat": "Lawrenceville",
+    "county": "Lawrence"
+  },
+  "county_seat_Lee": {
+    "latitude": 41.8425197,
+    "longitude": -89.4814291,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Dixon, Dixon Township, Lee County, Illinois, 61021, United States",
+    "county_seat": "Dixon",
+    "county": "Lee"
+  },
+  "county_seat_Livingston": {
+    "latitude": 40.8808666,
+    "longitude": -88.6297839,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Pontiac, Pontiac Township, Livingston County, Illinois, 61764, United States",
+    "county_seat": "Pontiac",
+    "county": "Livingston"
+  },
+  "county_seat_Logan": {
+    "latitude": 40.1481349,
+    "longitude": -89.3636569,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Lincoln, Logan County, Illinois, 62656, United States",
+    "county_seat": "Lincoln",
+    "county": "Logan"
+  },
+  "county_seat_Macon": {
+    "latitude": 39.8454163,
+    "longitude": -88.9524151,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Decatur, Macon County, Illinois, United States",
+    "county_seat": "Decatur",
+    "county": "Macon"
+  },
+  "county_seat_Macoupin": {
+    "latitude": 39.2797699,
+    "longitude": -89.8817662,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Carlinville, Macoupin County, Illinois, 62626, United States",
+    "county_seat": "Carlinville",
+    "county": "Macoupin"
+  },
+  "county_seat_Madison": {
+    "latitude": 38.8114364,
+    "longitude": -89.953157,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Edwardsville, Madison County, Illinois, United States",
+    "county_seat": "Edwardsville",
+    "county": "Madison"
+  },
+  "county_seat_Marion": {
+    "latitude": 38.6269929,
+    "longitude": -88.9456158,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Salem, Marion County, Illinois, 62881, United States",
+    "county_seat": "Salem",
+    "county": "Marion"
+  },
+  "county_seat_Marshall": {
+    "latitude": 41.0247583,
+    "longitude": -89.4112007,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Lacon, Marshall County, Illinois, United States",
+    "county_seat": "Lacon",
+    "county": "Marshall"
+  },
+  "county_seat_Mason": {
+    "latitude": 40.3014316,
+    "longitude": -90.0633625,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Havana, Mason County, Illinois, United States",
+    "county_seat": "Havana",
+    "county": "Mason"
+  },
+  "county_seat_Massac": {
+    "latitude": 37.1511655,
+    "longitude": -88.7319979,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Metropolis, Massac County, Illinois, United States",
+    "county_seat": "Metropolis",
+    "county": "Massac"
+  },
+  "county_seat_Menard": {
+    "latitude": 40.0117151,
+    "longitude": -89.8481652,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Petersburg, Menard County, Illinois, 62675, United States",
+    "county_seat": "Petersburg",
+    "county": "Menard"
+  },
+  "county_seat_Mercer": {
+    "latitude": 41.1998568,
+    "longitude": -90.7486349,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Aledo, Mercer County, Illinois, United States",
+    "county_seat": "Aledo",
+    "county": "Mercer"
+  },
+  "county_seat_Monroe": {
+    "latitude": 38.3358857,
+    "longitude": -90.1498341,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Waterloo, Monroe County, Illinois, United States",
+    "county_seat": "Waterloo",
+    "county": "Monroe"
+  },
+  "county_seat_Montgomery": {
+    "latitude": 39.1609575,
+    "longitude": -89.4933899,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Hillsboro, Montgomery County, Illinois, 62049, United States",
+    "county_seat": "Hillsboro",
+    "county": "Montgomery"
+  },
+  "county_seat_Morgan": {
+    "latitude": 39.7343697,
+    "longitude": -90.228782,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Jacksonville, Morgan County, Illinois, 62650, United States",
+    "county_seat": "Jacksonville",
+    "county": "Morgan"
+  },
+  "county_seat_Moultrie": {
+    "latitude": 39.599479,
+    "longitude": -88.6078392,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Sullivan, Moultrie County, Illinois, 61951, United States",
+    "county_seat": "Sullivan",
+    "county": "Moultrie"
+  },
+  "county_seat_Ogle": {
+    "latitude": 42.0147513,
+    "longitude": -89.3323279,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Oregon, Oregon - Nashua Township, Ogle County, Illinois, 61061, United States",
+    "county_seat": "Oregon",
+    "county": "Ogle"
+  },
+  "county_seat_Perry": {
+    "latitude": 38.0803286,
+    "longitude": -89.3820321,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Pinckneyville, Perry County, Illinois, 62274, United States",
+    "county_seat": "Pinckneyville",
+    "county": "Perry"
+  },
+  "county_seat_Piatt": {
+    "latitude": 40.026295,
+    "longitude": -88.567956,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Monticello, Piatt County, Illinois, 61856, United States",
+    "county_seat": "Monticello",
+    "county": "Piatt"
+  },
+  "county_seat_Pike": {
+    "latitude": 39.6078254,
+    "longitude": -90.805129,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Pittsfield, Pike County, Illinois, 62363, United States",
+    "county_seat": "Pittsfield",
+    "county": "Pike"
+  },
+  "county_seat_Pope": {
+    "latitude": 37.3672744,
+    "longitude": -88.4864316,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Golconda, Pope County, Illinois, United States",
+    "county_seat": "Golconda",
+    "county": "Pope"
+  },
+  "county_seat_Pulaski": {
+    "latitude": 37.0853292,
+    "longitude": -89.1625731,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Mound City, Pulaski County, Illinois, 62963, United States",
+    "county_seat": "Mound City",
+    "county": "Pulaski"
+  },
+  "county_seat_Putnam": {
+    "latitude": 41.2542033,
+    "longitude": -89.3423112,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Hennepin, Putnam County, Illinois, 61327, United States",
+    "county_seat": "Hennepin",
+    "county": "Putnam"
+  },
+  "county_seat_Randolph": {
+    "latitude": 37.9136628,
+    "longitude": -89.8220505,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Chester, Randolph County, Illinois, United States",
+    "county_seat": "Chester",
+    "county": "Randolph"
+  },
+  "county_seat_Richland": {
+    "latitude": 38.7296538,
+    "longitude": -88.0846891,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Olney, Richland County, Illinois, 62450, United States",
+    "county_seat": "Olney",
+    "county": "Richland"
+  },
+  "county_seat_Rock Island": {
+    "latitude": 41.5095446,
+    "longitude": -90.5792031,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Rock Island, Rock Island County, Illinois, United States",
+    "county_seat": "Rock Island",
+    "county": "Rock Island"
+  },
+  "county_seat_Saline": {
+    "latitude": 37.7385,
+    "longitude": -88.5405213,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Harrisburg, Saline County, Illinois, 62946, United States",
+    "county_seat": "Harrisburg",
+    "county": "Saline"
+  },
+  "county_seat_Schuyler": {
+    "latitude": 40.1211577,
+    "longitude": -90.5631829,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Rushville, Schuyler County, Illinois, 62681, United States",
+    "county_seat": "Rushville",
+    "county": "Schuyler"
+  },
+  "county_seat_Scott": {
+    "latitude": 39.62973,
+    "longitude": -90.4562813,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Winchester, Scott County, Illinois, 62694, United States",
+    "county_seat": "Winchester",
+    "county": "Scott"
+  },
+  "county_seat_Shelby": {
+    "latitude": 39.4064284,
+    "longitude": -88.7900689,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Shelbyville, Shelby County, Illinois, 62565, United States",
+    "county_seat": "Shelbyville",
+    "county": "Shelby"
+  },
+  "county_seat_St. Clair": {
+    "latitude": 38.5135805,
+    "longitude": -89.9841627,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Belleville, Saint Clair County, Illinois, United States",
+    "county_seat": "Belleville",
+    "county": "St. Clair"
+  },
+  "county_seat_Stark": {
+    "latitude": 41.0934687,
+    "longitude": -89.8658731,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Toulon, Stark County, Illinois, United States",
+    "county_seat": "Toulon",
+    "county": "Stark"
+  },
+  "county_seat_Stephenson": {
+    "latitude": 42.2966861,
+    "longitude": -89.6212271,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Freeport, Stephenson County, Illinois, 61032, United States",
+    "county_seat": "Freeport",
+    "county": "Stephenson"
+  },
+  "county_seat_Tazewell": {
+    "latitude": 40.5687911,
+    "longitude": -89.6501621,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Pekin, Tazewell County, Illinois, 61554, United States",
+    "county_seat": "Pekin",
+    "county": "Tazewell"
+  },
+  "county_seat_Union": {
+    "latitude": 37.4517163,
+    "longitude": -89.2681402,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Jonesboro, Union County, Illinois, United States",
+    "county_seat": "Jonesboro",
+    "county": "Union"
+  },
+  "county_seat_Vermilion": {
+    "latitude": 40.125222,
+    "longitude": -87.6304614,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Danville, Vermilion County, Illinois, United States",
+    "county_seat": "Danville",
+    "county": "Vermilion"
+  },
+  "county_seat_Wabash": {
+    "latitude": 38.4108801,
+    "longitude": -87.7614174,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Mount Carmel, Wabash County, Illinois, United States",
+    "county_seat": "Mount Carmel",
+    "county": "Wabash"
+  },
+  "county_seat_Warren": {
+    "latitude": 40.9127103,
+    "longitude": -90.6472477,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Monmouth, Warren County, Illinois, 61462, United States",
+    "county_seat": "Monmouth",
+    "county": "Warren"
+  },
+  "county_seat_Washington": {
+    "latitude": 38.3434906,
+    "longitude": -89.3809783,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Nashville, Washington County, Illinois, 62263, United States",
+    "county_seat": "Nashville",
+    "county": "Washington"
+  },
+  "county_seat_Wayne": {
+    "latitude": 38.378937,
+    "longitude": -88.3597684,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Fairfield, Wayne County, Illinois, 62837, United States",
+    "county_seat": "Fairfield",
+    "county": "Wayne"
+  },
+  "county_seat_White": {
+    "latitude": 38.0908796,
+    "longitude": -88.1586488,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Carmi, White County, Illinois, 62821, United States",
+    "county_seat": "Carmi",
+    "county": "White"
+  },
+  "county_seat_Whiteside": {
+    "latitude": 41.8094058,
+    "longitude": -89.9649496,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Morrison, Whiteside County, Illinois, United States",
+    "county_seat": "Morrison",
+    "county": "Whiteside"
+  },
+  "county_seat_Williamson": {
+    "latitude": 37.7306054,
+    "longitude": -88.9331256,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Marion, Williamson County, Illinois, 62959, United States",
+    "county_seat": "Marion",
+    "county": "Williamson"
+  },
+  "county_seat_Woodford": {
+    "latitude": 40.7213015,
+    "longitude": -89.2726708,
+    "confidence": 0.8,
+    "method": "county_seat",
+    "formatted_address": "Eureka, Woodford County, Illinois, 61530, United States",
+    "county_seat": "Eureka",
+    "county": "Woodford"
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "nominatim_2700 S CALIFORNIA AVE, CHICAGO, IL 60608_Illinois": {
+    "latitude": 41.8424196,
+    "longitude": -87.6962297,
+    "formatted_address": "Div 5/8 Visitors Processing Center, 2700, South California Avenue, South Lawndale, Chicago, West Chicago Township, Cook County, Illinois, 60623, United States",
+    "confidence": 0.7142857142857142,
+    "source": "nominatim",
+    "address_components": {
+      "information": "Div 5/8 Visitors Processing Center",
+      "house_number": "2700",
+      "road": "South California Avenue",
+      "suburb": "South Lawndale",
+      "city": "Chicago",
+      "municipality": "West Chicago Township",
+      "county": "Cook County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "60623",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 408925148,
+    "osm_type": "way",
+    "osm_id": 359658854
+  },
+  "nominatim_4901 W CERMAK RD, CICERO, IL 60804_Illinois": {
+    "latitude": 41.8507636,
+    "longitude": -87.7473088,
+    "formatted_address": "Cicero Police Department, 4901, West Cermak Road, Cicero, Cook County, Illinois, 60804, United States",
+    "confidence": 0.7142857142857142,
+    "source": "nominatim",
+    "address_components": {
+      "amenity": "Cicero Police Department",
+      "house_number": "4901",
+      "road": "West Cermak Road",
+      "town": "Cicero",
+      "county": "Cook County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "60804",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 343954986,
+    "osm_type": "way",
+    "osm_id": 424471710
+  },
+  "nominatim_501 N CO FARM RD, WHEATON, IL 60187_Illinois": {
+    "latitude": 41.8694942,
+    "longitude": -88.1444312,
+    "formatted_address": "County Farm Road, Wheaton, DuPage County, Illinois, 60187, United States",
+    "confidence": 0.6499999999999999,
+    "source": "nominatim",
+    "address_components": {
+      "road": "County Farm Road",
+      "town": "Wheaton",
+      "county": "DuPage County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "60187",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 343743596,
+    "osm_type": "way",
+    "osm_id": 1019121661
+  },
+  "nominatim_37W755 IL 38, ST. CHARLES, IL 60175_Illinois": {
+    "latitude": 41.9019083,
+    "longitude": -88.3531671,
+    "formatted_address": "Kane County Juvenile Justice Center, 37W755, Lincoln Highway, St. Charles, St. Charles Township, Kane County, Illinois, 60175, United States",
+    "confidence": 0.7142857142857142,
+    "source": "nominatim",
+    "address_components": {
+      "amenity": "Kane County Juvenile Justice Center",
+      "house_number": "37W755",
+      "road": "Lincoln Highway",
+      "town": "St. Charles",
+      "municipality": "St. Charles Township",
+      "county": "Kane County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "60175",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 344689153,
+    "osm_type": "way",
+    "osm_id": 110558188
+  },
+  "nominatim_25 S MARTIN LUTHER KING JR AVE, WAUKEGAN, IL 60085_Illinois": {
+    "latitude": 42.3584815,
+    "longitude": -87.8335933,
+    "formatted_address": "Lake County Sheriff's Office, 25, South Martin Luther King Jr Avenue, Waukegan, Lake County, Illinois, 60085, United States",
+    "confidence": 0.8,
+    "source": "nominatim",
+    "address_components": {
+      "amenity": "Lake County Sheriff's Office",
+      "house_number": "25",
+      "road": "South Martin Luther King Jr Avenue",
+      "city": "Waukegan",
+      "county": "Lake County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "60085",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 343307628,
+    "osm_type": "node",
+    "osm_id": 4393119958
+  },
+  "nominatim_95 S CHICAGO ST, JOLIET, IL 60432_Illinois": {
+    "latitude": 41.5179102,
+    "longitude": -88.0804531,
+    "formatted_address": "95, South Chicago Street, Joliet, Will County, Illinois, 60433, United States",
+    "confidence": 0.7142857142857142,
+    "source": "nominatim",
+    "address_components": {
+      "house_number": "95",
+      "road": "South Chicago Street",
+      "city": "Joliet",
+      "county": "Will County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "60433",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 385484953,
+    "osm_type": "way",
+    "osm_id": 43874757
+  },
+  "nominatim_2200 N SEMINARY AVE, WOODSTOCK, IL 60098_Illinois": {
+    "latitude": 42.3409678,
+    "longitude": -88.4405239,
+    "formatted_address": "McHenry County Government Center, 2200, North Seminary Avenue, Woodstock, McHenry County, Illinois, 60098, United States",
+    "confidence": 0.8,
+    "source": "nominatim",
+    "address_components": {
+      "office": "McHenry County Government Center",
+      "house_number": "2200",
+      "road": "North Seminary Avenue",
+      "town": "Woodstock",
+      "county": "McHenry County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "60098",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 343414683,
+    "osm_type": "way",
+    "osm_id": 494988813
+  },
+  "nominatim_650 W STATE ST, ROCKFORD, IL 61102_Illinois": {
+    "latitude": 42.272986,
+    "longitude": -89.099028,
+    "formatted_address": "650, West State Street, Downtown Rockford, Rockford, Rockford Township, Winnebago County, Illinois, 61102, United States",
+    "confidence": 0.8,
+    "source": "nominatim",
+    "address_components": {
+      "house_number": "650",
+      "road": "West State Street",
+      "commercial": "Downtown Rockford",
+      "city": "Rockford",
+      "municipality": "Rockford Township",
+      "county": "Winnebago County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "61102",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 362285174,
+    "osm_type": "way",
+    "osm_id": 863690955
+  },
+  "nominatim_301 N MAXWELL RD, PEORIA, IL 61604_Illinois": {
+    "latitude": 40.690703,
+    "longitude": -89.693991,
+    "formatted_address": "301, North Maxwell Road, Maxwell, Peoria County, Illinois, 61604, United States",
+    "confidence": 0.7142857142857142,
+    "source": "nominatim",
+    "address_components": {
+      "house_number": "301",
+      "road": "North Maxwell Road",
+      "hamlet": "Maxwell",
+      "county": "Peoria County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "61604",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 386849975,
+    "osm_type": "way",
+    "osm_id": 863296526
+  },
+  "nominatim_200 S 9TH ST, SPRINGFIELD, IL 62701_Illinois": {
+    "latitude": 39.800372,
+    "longitude": -89.643508,
+    "formatted_address": "200, South 9th Street, Springfield, Sangamon County, Illinois, 62701, United States",
+    "confidence": 0.8,
+    "source": "nominatim",
+    "address_components": {
+      "house_number": "200",
+      "road": "South 9th Street",
+      "city": "Springfield",
+      "county": "Sangamon County",
+      "state": "Illinois",
+      "ISO3166-2-lvl4": "US-IL",
+      "postcode": "62701",
+      "country": "United States",
+      "country_code": "us"
+    },
+    "place_id": 373576545,
+    "osm_type": "way",
+    "osm_id": 842424811
+  }
+}
