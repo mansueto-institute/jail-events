@@ -5,15 +5,16 @@ import time
 import polars as pl
 from cleaning.clean_database import main as clean_database_main
 from utils_main import process_all_pdfs, export_parquets_excel
+from handwritten.handwritten_processor import process_handwritten_only, get_handwritten_statistics
 
 @click.command()
 @click.option("--mode",
-              type=click.Choice(['full', 'sample', 'debug']), 
+              type=click.Choice(['full', 'sample', 'debug', 'handwritten']), 
               default = 'full',
-              help = 'Processing mode: full (all data 27,800 pages), sample (aprox 642 pages), debug (few problematic pages)')
+              help = 'Processing mode: full (all data 27,800 pages), sample (aprox 642 pages), debug (few problematic pages), handwritten (only handwritten documents)')
 @click.option("--step", 
-              type=click.Choice(['all', 'parse', 'clean', 'export']),
-              default='all', help='Pipeline step: all (parse+clean+export), parse (only parse), clean (only clean), export (only export parquets to excel)')
+              type=click.Choice(['all', 'parse', 'clean', 'export', 'handwritten']),
+              default='all', help='Pipeline step: all (parse+clean+export), parse (only parse), clean (only clean), export (only export parquets to excel), handwritten (only handwritten analysis)')
 def main(mode, step):
     """ Processing jail PDFs """
     click.echo(f"Running in {mode.upper()} mode")
@@ -34,6 +35,11 @@ def main(mode, step):
         samples = Path(__file__).parent / "data/jails-data/samples/debug"
         processed = Path(__file__).parent / "data/jails-data/processed/debug_processed"
         suffix = "_debug"
+    elif mode == "handwritten":
+        # For handwritten mode, we work with existing parsed data
+        samples = None
+        processed = None
+        suffix = "_handwritten"
         
     # Create output file paths
     out_parquet = out_data / f"jails_pdfs{suffix}.parquet"
@@ -44,6 +50,12 @@ def main(mode, step):
     
     # Final Excel database out path_
     out_excel_final = out_data / f"jails_database_with_links.xlsx"
+    
+    # Handwritten specific paths
+    handwritten_dir = Path(__file__).parent / "data/jails-data/handwritten_party"
+    handwritten_dir.mkdir(parents=True, exist_ok=True)
+    handwritten_parquet = handwritten_dir / "handwritten_cleaned.parquet"
+    handwritten_excel = handwritten_dir / "handwritten_documents.xlsx"
     
     # Time cloking
     start_time = time.time()
@@ -80,6 +92,29 @@ def main(mode, step):
         click.echo("Exporting to Excel with hyperlinks...")
         export_parquets_excel(out_parquet_cleaned, out_parquet_persons,out_excel_final , base_url)
         processing_time = time.time() - start_time
+    
+    if step == 'handwritten' or mode == 'handwritten':
+        click.echo("Processing handwritten documents...")
+        
+        # Use raw data for handwritten processing
+        full_parquet = out_data / "jails_pdfs_full.parquet"
+        
+        if not full_parquet.exists():
+            click.echo(f" Error: {full_parquet} not found.")
+            click.echo("Please run the full pipeline first to generate the raw data files.")
+            return
+        
+        click.echo(f"✓ Using raw data: {full_parquet}")
+        click.echo("Note: This will process only handwritten documents (OCR < 80)")
+        
+        # Get handwritten statistics from raw data
+        stats = get_handwritten_statistics(full_parquet)
+        click.echo(f"Handwritten documents: {stats['handwritten_documents']} out of {stats['total_documents']} ({stats['handwritten_percentage']:.2f}%)")
+        
+        # Process handwritten documents from raw data
+        process_handwritten_only(full_parquet, handwritten_parquet, handwritten_excel, base_url)
+        processing_time = time.time() - start_time
+    
     # Final timing
     click.echo(f"Processing time: {processing_time:.1f}s ({processing_time/60:.1f} min)")
 

@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  jail-events:
+    build: .
+    volumes:
+      - /Users/anfelipecb/Library/CloudStorage/Box-Box/Summer Data Journalism 2025/E. Jail Reports/:/app/src/jail-events/data/jails-data
+      - ./src/jail-events/notebooks:/app/notebooks
+      - ./src/jail-events/presentations:/app/presentations
+    environment:
+      - PYTHONPATH=/app/src
+    command: ["python", "-m", "jail-events.main", "--help"]
+    
+  # Service for running the full pipeline
+  pipeline:
+    build: .
+    volumes:
+      - /Users/anfelipecb/Library/CloudStorage/Box-Box/Summer Data Journalism 2025/E. Jail Reports/:/app/src/jail-events/data/jails-data
+    environment:
+      - PYTHONPATH=/app/src
+    command: ["python", "-m", "jail-events.main", "--mode", "full", "--step", "all"]
+    
+  # Service for handwritten analysis only
+  handwritten:
+    build: .
+    volumes:
+      - /Users/anfelipecb/Library/CloudStorage/Box-Box/Summer Data Journalism 2025/E. Jail Reports/:/app/src/jail-events/data/jails-data
+    environment:
+      - PYTHONPATH=/app/src
+    command: ["python", "-m", "jail-events.main", "--mode", "handwritten", "--step", "handwritten"]

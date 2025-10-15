@@ -7,14 +7,23 @@ from .reshape_db import reshape_to_long
 from .assemble_records import assemble_person_records
 
 # 1. Divide the dataset with not handwritten and handwritten stuff
-def divide_dataset(path_parquet):
+def divide_dataset(path_parquet, include_handwritten=False):
     """
-    Divide the dataset into handwritten and 
+    Divide the dataset into handwritten and non-handwritten.
+    
+    Args:
+        path_parquet: Path to the parquet file
+        include_handwritten: If True, include handwritten documents (OCR < 80)
     """
-    df = (pl.scan_parquet(path_parquet)
-    .filter(pl.col("OCR_Confidence") > 80)
-    .collect()
-    )
+    df = pl.scan_parquet(path_parquet)
+    
+    if include_handwritten:
+        # Include all documents
+        df = df.collect()
+    else:
+        # Filter out handwritten documents (OCR confidence > 80)
+        df = (df.filter(pl.col("OCR_Confidence") > 80).collect())
+    
     return df
 
 class DatabaseCleaning:
@@ -291,9 +300,9 @@ def clean_occurrences(entries):
     return "; ".join(cleaned_list) if cleaned_list else "No occurrence found"
 
 # Main assemble cleaning
-def main(input_parquet_full, out_parquet, out_parquet_persons):
+def main(input_parquet_full, out_parquet, out_parquet_persons, include_handwritten=False):
     # Apply the cleaning
-    df = divide_dataset(input_parquet_full)
+    df = divide_dataset(input_parquet_full, include_handwritten=include_handwritten)
     df_to_clean = DatabaseCleaning(df)
     
     print("=== CLEANING MAIN DATABASE ===")
