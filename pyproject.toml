@@ -34,6 +34,8 @@ dependencies = [
             "geopy>=2.4.0",
             "folium>=0.15.0",
             "pandas>=2.3.0",
+            "plotly>=5.17.0",
+            "streamlit>=1.28.0",
 ]
 
 [dependency-groups]

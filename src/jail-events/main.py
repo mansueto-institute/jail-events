@@ -9,12 +9,12 @@ from handwritten.handwritten_processor import process_handwritten_only, get_hand
 
 @click.command()
 @click.option("--mode",
-              type=click.Choice(['full', 'sample', 'debug', 'handwritten', 'geocode', 'illinois-db', 'map']),
+              type=click.Choice(['full', 'sample', 'debug', 'handwritten', 'geocode', 'illinois-db', 'map', 'dashboard', 'altair-dashboard']),
               default = 'full',
-              help = 'Processing mode: full (all data 27,800 pages), sample (aprox 642 pages), debug (few problematic pages), handwritten (only handwritten documents), geocode (geocode addresses), illinois-db (build Illinois jail database), map (create interactive maps)')
+              help = 'Processing mode: full (all data 27,800 pages), sample (aprox 642 pages), debug (few problematic pages), handwritten (only handwritten documents), geocode (geocode addresses), illinois-db (build Illinois jail database), map (create interactive maps), dashboard (create comprehensive dashboard), altair-dashboard (create Altair-style dashboard)')
 @click.option("--step",
-              type=click.Choice(['all', 'parse', 'clean', 'export', 'handwritten', 'geocode', 'illinois-db', 'map']),
-              default='all', help='Pipeline step: all (parse+clean+export), parse (only parse), clean (only clean), export (only export parquets to excel), handwritten (only handwritten analysis), geocode (geocode addresses), illinois-db (build Illinois jail database), map (create interactive maps)')
+              type=click.Choice(['all', 'parse', 'clean', 'export', 'handwritten', 'geocode', 'illinois-db', 'map', 'dashboard', 'altair-dashboard']),
+              default='all', help='Pipeline step: all (parse+clean+export), parse (only parse), clean (only clean), export (only export parquets to excel), handwritten (only handwritten analysis), geocode (geocode addresses), illinois-db (build Illinois jail database), map (create interactive maps), dashboard (create comprehensive dashboard), altair-dashboard (create Altair-style dashboard)')
 def main(mode, step):
     """ Processing jail PDFs """
     click.echo(f"Running in {mode.upper()} mode")
@@ -40,8 +40,8 @@ def main(mode, step):
         samples = None
         processed = None
         suffix = "_handwritten"
-    elif mode == "geocode" or mode == "illinois-db" or mode == "map":
-        # For geocoding, Illinois DB, and mapping modes, we work with existing data
+    elif mode == "geocode" or mode == "illinois-db" or mode == "map" or mode == "dashboard" or mode == "altair-dashboard":
+        # For geocoding, Illinois DB, mapping, and dashboard modes, we work with existing data
         samples = None
         processed = None
         suffix = ""
@@ -227,6 +227,54 @@ def main(mode, step):
         
         processing_time = time.time() - start_time
         click.echo(f"Map creation completed in {processing_time:.1f}s ({processing_time/60:.1f} min)")
+
+    if step == 'dashboard' or mode == 'dashboard':
+        click.echo("Creating comprehensive dashboard...")
+
+        # Import dashboard components
+        from dashboard.main_dashboard import main as dashboard_main
+
+        # Run dashboard creation
+        try:
+            # Change to the correct directory for dashboard execution
+            import os
+            original_cwd = os.getcwd()
+            os.chdir(Path(__file__).parent)
+            
+            dashboard_main.callback(step='all', force_rebuild=False)
+            
+            # Restore original directory
+            os.chdir(original_cwd)
+            
+            processing_time = time.time() - start_time
+            click.echo(f"Dashboard creation completed in {processing_time:.1f}s ({processing_time/60:.1f} min)")
+        except Exception as e:
+            click.echo(f"❌ Error creating dashboard: {e}")
+            return
+
+    if step == 'altair-dashboard' or mode == 'altair-dashboard':
+        click.echo("Creating Altair-style dashboard...")
+
+        # Import Altair dashboard components
+        from dashboard.altair_dashboard_creator import create_illinois_jail_altair_dashboard
+
+        # Run Altair dashboard creation
+        try:
+            # Change to the correct directory for dashboard execution
+            import os
+            original_cwd = os.getcwd()
+            os.chdir(Path(__file__).parent)
+            
+            dashboard, files = create_illinois_jail_altair_dashboard()
+            
+            # Restore original directory
+            os.chdir(original_cwd)
+            
+            processing_time = time.time() - start_time
+            click.echo(f"Altair dashboard creation completed in {processing_time:.1f}s ({processing_time/60:.1f} min)")
+        except Exception as e:
+            click.echo(f"❌ Error creating Altair dashboard: {e}")
+            return
     
     # Final timing
     click.echo(f"Processing time: {processing_time:.1f}s ({processing_time/60:.1f} min)")

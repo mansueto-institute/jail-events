@@ -258,15 +258,14 @@ class IllinoisJailFoliumMap:
         map_obj.get_root().html.add_child(folium.Element(stats_html))
     
     def create_multiple_maps(self) -> List[str]:
-        """Create multiple map types."""
-        map_types = ["all", "geocoded", "county", "municipal", "juvenile"]
+        """Create only the main comprehensive map."""
         created_maps = []
         
-        for map_type in map_types:
-            output_file = f"illinois_jails_{map_type}_map.html"
-            map_path = self.create_interactive_map(map_type, output_file)
-            if map_path:
-                created_maps.append(map_path)
+        # Only create the main "all" map
+        output_file = "illinois_jails_all_map.html"
+        map_path = self.create_interactive_map("all", output_file)
+        if map_path:
+            created_maps.append(map_path)
         
         return created_maps
     

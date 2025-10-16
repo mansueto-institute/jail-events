@@ -14,6 +14,16 @@ help:
 	@echo "  debug-pipeline     - Run pipeline on debug data"
 	@echo "  handwritten-pipeline - Run handwritten analysis only"
 	@echo "  handwritten-smart    - Smart handwritten analysis (checks cache, runs full pipeline if needed)"
+	@echo "  geocode            - Geocode jail addresses"
+	@echo "  illinois-db        - Build Illinois jail database"
+	@echo "  map                - Create interactive maps"
+	@echo "  dashboard          - Create comprehensive dashboard"
+	@echo "  altair-dashboard   - Create Altair-style dashboard (matches presentation)"
+	@echo "  streamlit-dashboard - Create interactive Streamlit dashboard with filtering"
+	@echo "  dashboard-link     - Link jail records to geocoded facilities"
+	@echo "  dashboard-analyze  - Analyze time series patterns"
+	@echo "  dashboard-create   - Create dashboard visualizations"
+	@echo "  altair-dashboard-create - Create Altair visualizations only"
 	@echo "  install-deps       - Install Python dependencies locally"
 	@echo "  test               - Run tests"
 
@@ -62,6 +72,31 @@ illinois-db:
 # Create interactive maps
 map:
 	uv run python src/jail-events/main.py --mode map --step map
+
+# Create comprehensive dashboard
+dashboard:
+	uv run python src/jail-events/main.py --mode dashboard --step dashboard
+
+# Create Altair-style dashboard (matches presentation style)
+altair-dashboard:
+	uv run python src/jail-events/dashboard/main_dashboard.py --step altair-dashboard
+
+# Create interactive Streamlit dashboard
+streamlit-dashboard:
+	uv run streamlit run src/jail-events/dashboard/streamlit_dashboard.py --server.port 8501
+
+# Create dashboard components individually
+dashboard-link:
+	uv run python src/jail-events/dashboard/data_linker.py
+
+dashboard-analyze:
+	uv run python src/jail-events/dashboard/time_series_analyzer.py
+
+dashboard-create:
+	uv run python src/jail-events/dashboard/dashboard_creator.py
+
+altair-dashboard-create:
+	uv run python src/jail-events/dashboard/altair_dashboard_creator.py
 
 # Local development
 install-deps:
