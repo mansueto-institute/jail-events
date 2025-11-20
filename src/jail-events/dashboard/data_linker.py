@@ -19,11 +19,13 @@ class JailDataLinker:
     def __init__(self, 
                  jail_records_path: str = None,
                  geocoded_db_path: str = None):
-        # Set default paths if not provided
+        # Set default paths if not provided - relative to script location
+        base_dir = Path(__file__).parent.parent  # Points to src/jail-events/
+        
         if jail_records_path is None:
-            jail_records_path = "data/jails-data/output/jails_pdfs_cleaned.parquet"
+            jail_records_path = base_dir / "data/jails-data/output/jails_pdfs_cleaned.parquet"
         if geocoded_db_path is None:
-            geocoded_db_path = "data/illinois_jail_analysis/unified_illinois_jails.parquet"
+            geocoded_db_path = base_dir / "data/illinois_jail_analysis/unified_illinois_jails.parquet"
         
         self.jail_records_path = Path(jail_records_path)
         self.geocoded_db_path = Path(geocoded_db_path)
@@ -234,10 +236,14 @@ class JailDataLinker:
             "county_matches": county_matches.to_dicts()
         }
     
-    def export_linked_data(self, output_path: str = "data/illinois_jail_analysis/linked_jail_data.parquet") -> str:
+    def export_linked_data(self, output_path: str = None) -> str:
         """Export the linked data to a parquet file."""
         if self.linked_data_df is None:
             raise ValueError("No linked data available. Run match_facilities() first.")
+        
+        if output_path is None:
+            base_dir = Path(__file__).parent.parent  # Points to src/jail-events/
+            output_path = base_dir / "data/illinois_jail_analysis/linked_jail_data.parquet"
         
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)

@@ -31,8 +31,10 @@ class IllinoisJailStreamlitDashboard:
     """
     
     def __init__(self):
-        self.cleaned_data_path = Path("data/jails-data/output/jails_pdfs_cleaned.parquet")
-        self.geocoded_db_path = Path("data/illinois_jail_analysis/unified_illinois_jails.parquet")
+        # Resolve paths relative to script location
+        base_dir = Path(__file__).parent.parent  # Points to src/jail-events/
+        self.cleaned_data_path = base_dir / "data/jails-data/output/jails_pdfs_cleaned.parquet"
+        self.geocoded_db_path = base_dir / "data/illinois_jail_analysis/unified_illinois_jails.parquet"
         self.cleaned_data_df: Optional[pl.DataFrame] = None
         self.geocoded_db_df: Optional[pl.DataFrame] = None
         
