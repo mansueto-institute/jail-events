@@ -155,7 +155,7 @@ class IllinoisCountyGeocoder:
         county_clean = county_name.replace(" County", "").strip().title()
         
         if county_clean not in self.county_seats:
-            print(f"⚠️ County seat not found for: {county_name}")
+            print(f"County seat not found for: {county_name}")
             return None
         
         county_seat = self.county_seats[county_clean]
@@ -183,14 +183,14 @@ class IllinoisCountyGeocoder:
                 self._save_cache()
                 return result
             else:
-                print(f"❌ Could not geocode county seat: {county_seat}")
+                print(f"Could not geocode county seat: {county_seat}")
                 return None
                 
         except (GeocoderTimedOut, GeocoderServiceError) as e:
-            print(f"❌ Error geocoding county seat {county_seat}: {e}")
+            print(f"Error geocoding county seat {county_seat}: {e}")
             return None
         except Exception as e:
-            print(f"❌ Unexpected error geocoding county seat {county_seat}: {e}")
+            print(f"Unexpected error geocoding county seat {county_seat}: {e}")
             return None
     
     def geocode_placeholder_addresses(self, df: pl.DataFrame) -> pl.DataFrame:
@@ -203,13 +203,13 @@ class IllinoisCountyGeocoder:
         Returns:
             DataFrame with additional geocoding data
         """
-        print("🏛️ Geocoding placeholder addresses to county seats...")
+        print("Geocoding placeholder addresses to county seats...")
         
         # Find records with placeholder addresses
         placeholder_mask = df["address"].str.contains("TBD - .* County, IL")
         placeholder_records = df.filter(placeholder_mask)
         
-        print(f"📊 Found {len(placeholder_records)} placeholder addresses")
+        print(f"Found {len(placeholder_records)} placeholder addresses")
         
         if len(placeholder_records) == 0:
             return df
@@ -267,7 +267,7 @@ class IllinoisCountyGeocoder:
                     .otherwise(pl.col("county_seat"))
                     .alias("county_seat")
                 ])
-                print(f"✅ Geocoded {county_name} County to {geocoding_result['county_seat']}")
+                print(f"Geocoded {county_name} County to {geocoding_result['county_seat']}")
             else:
                 # Update with failed status
                 result_df = result_df.with_columns([
@@ -280,9 +280,9 @@ class IllinoisCountyGeocoder:
                     .otherwise(pl.col("geocoded_method"))
                     .alias("geocoded_method")
                 ])
-                print(f"❌ Failed to geocode {county_name} County")
+                print(f"Failed to geocode {county_name} County")
         
-        print(f"✅ Geocoded {len(placeholder_records)} placeholder addresses")
+        print(f"Geocoded {len(placeholder_records)} placeholder addresses")
         return result_df
     
     def get_geocoding_statistics(self, df: pl.DataFrame) -> Dict[str, Any]:
@@ -301,7 +301,7 @@ class IllinoisCountyGeocoder:
 
 def enhance_illinois_database_with_county_geocoding():
     """Enhance the Illinois database with county-level geocoding."""
-    print("🏛️ Enhancing Illinois Database with County-Level Geocoding")
+    print("Enhancing Illinois Database with County-Level Geocoding")
     print("=" * 60)
     
     # Load existing database
@@ -309,13 +309,13 @@ def enhance_illinois_database_with_county_geocoding():
     db_path = data_dir / "unified_illinois_jails.parquet"
     
     if not db_path.exists():
-        print(f"❌ Database not found: {db_path}")
+        print(f"Database not found: {db_path}")
         print("Please run 'make illinois-db' first.")
         return
     
     # Load data
     df = pl.read_parquet(db_path)
-    print(f"📊 Loaded {len(df)} records")
+    print(f"Loaded {len(df)} records")
     
     # Initialize county geocoder
     county_geocoder = IllinoisCountyGeocoder()
@@ -326,7 +326,7 @@ def enhance_illinois_database_with_county_geocoding():
     # Get statistics
     stats = county_geocoder.get_geocoding_statistics(enhanced_df)
     
-    print(f"\n📈 Geocoding Statistics:")
+    print(f"\nGeocoding Statistics:")
     print(f"   Total Records: {stats['total_records']}")
     print(f"   Geocoded Records: {stats['geocoded_records']}")
     print(f"   Success Rate: {stats['geocoding_success_rate']:.1%}")
@@ -336,15 +336,15 @@ def enhance_illinois_database_with_county_geocoding():
     # Save enhanced database
     enhanced_path = data_dir / "unified_illinois_jails_enhanced.parquet"
     enhanced_df.write_parquet(enhanced_path)
-    print(f"\n💾 Enhanced database saved to: {enhanced_path}")
+    print(f"\nEnhanced database saved to: {enhanced_path}")
     
     # Also update the original database
     enhanced_df.write_parquet(db_path)
-    print(f"💾 Original database updated: {db_path}")
+    print(f"Original database updated: {db_path}")
     
     return enhanced_df
 
 if __name__ == "__main__":
     enhanced_df = enhance_illinois_database_with_county_geocoding()
-    print("\n🎉 County-level geocoding completed!")
-    print("💡 Now you should have coordinates for all 110 facilities!")
+    print("\nCounty-level geocoding completed!")
+    print("Now you should have coordinates for all 110 facilities!")

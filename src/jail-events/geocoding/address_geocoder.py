@@ -231,7 +231,7 @@ class IllinoisAddressGeocoder:
         Returns:
             DataFrame with geocoding results
         """
-        print(f"🌍 Geocoding {len(df)} addresses...")
+        print(f"Geocoding {len(df)} addresses...")
         
         results = []
         successful = 0
@@ -281,7 +281,7 @@ class IllinoisAddressGeocoder:
         # Save cache
         self._save_cache()
         
-        print(f"✅ Geocoding completed: {successful} successful, {failed} failed")
+        print(f"Geocoding completed: {successful} successful, {failed} failed")
         
         return pl.DataFrame(results)
     
@@ -295,7 +295,7 @@ class IllinoisAddressGeocoder:
         Returns:
             Enhanced DataFrame with Illinois jail database information
         """
-        print("🏛️ Building Illinois jail database...")
+        print("Building Illinois jail database...")
         
         # Add facility type classification
         df_classified = df.with_columns([

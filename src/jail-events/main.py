@@ -109,7 +109,7 @@ def main(mode, step):
             click.echo("Please run the full pipeline first to generate the raw data files.")
             return
         
-        click.echo(f"✓ Using raw data: {full_parquet}")
+        click.echo(f"Using raw data: {full_parquet}")
         click.echo("Note: This will process only handwritten documents (OCR < 80)")
         
         # Get handwritten statistics from raw data
@@ -129,15 +129,15 @@ def main(mode, step):
         # Check if cleaned data exists
         cleaned_parquet = out_data / "jails_database_with_links.xlsx"
         if not cleaned_parquet.exists():
-            click.echo(f"❌ Error: {cleaned_parquet} not found.")
+            click.echo(f"Error: {cleaned_parquet} not found.")
             click.echo("Please run the cleaning step first to generate the cleaned data.")
             return
         
-        click.echo(f"✓ Using cleaned data: {cleaned_parquet}")
+        click.echo(f"Using cleaned data: {cleaned_parquet}")
         
         # Load the data
         df = pl.read_excel(cleaned_parquet)
-        click.echo(f"📊 Loaded {len(df)} records")
+        click.echo(f"Loaded {len(df)} records")
         
         # Process addresses with Illinois geocoding
         processor = JailAddressProcessor()
@@ -149,7 +149,7 @@ def main(mode, step):
         
         # Get and display statistics
         stats = processor.get_processing_stats(df_geocoded)
-        click.echo(f"\n📈 Geocoding Statistics:")
+        click.echo(f"\nGeocoding Statistics:")
         click.echo(f"   Successfully Geocoded: {stats.get('successfully_geocoded', 0)}")
         click.echo(f"   Success Rate: {stats.get('success_rate', 0):.2%}")
         click.echo(f"   High Confidence Matches: {stats.get('high_confidence_matches', 0)}")
@@ -167,16 +167,16 @@ def main(mode, step):
         # Check if cleaned data exists
         cleaned_data_path = out_data / "jails_database_with_links.xlsx"
         if not cleaned_data_path.exists():
-            click.echo(f"❌ Error: {cleaned_data_path} not found.")
+            click.echo(f"Error: {cleaned_data_path} not found.")
             click.echo("Please run the cleaning step first to generate the cleaned data.")
             return
         
-        click.echo(f"✓ Using cleaned data: {cleaned_data_path}")
+        click.echo(f"Using cleaned data: {cleaned_data_path}")
         
         # Process all Illinois jail data
         results = process_illinois_jail_data(str(cleaned_data_path))
         
-        click.echo(f"\n📊 Illinois Database Results:")
+        click.echo(f"\nIllinois Database Results:")
         click.echo(f"   Illinois Facilities: {len(results['illinois_database'])}")
         click.echo(f"   Geocoded: {len(results['illinois_database'].filter(pl.col('latitude').is_not_null()))}")
         click.echo(f"   Matched Records: {len(results['matched_data'].filter(pl.col('illinois_latitude').is_not_null()))}")
@@ -196,11 +196,11 @@ def main(mode, step):
         # Check if Illinois database exists
         illinois_db_path = Path(__file__).parent / "data/illinois_jail_analysis/unified_illinois_jails.parquet"
         if not illinois_db_path.exists():
-            click.echo(f"❌ Error: {illinois_db_path} not found.")
+            click.echo(f"Error: {illinois_db_path} not found.")
             click.echo("Please run the Illinois database step first.")
             return
         
-        click.echo(f"✓ Using Illinois database: {illinois_db_path}")
+        click.echo(f"Using Illinois database: {illinois_db_path}")
         
         # Create interactive maps
         click.echo("Creating Folium maps...")
@@ -214,14 +214,14 @@ def main(mode, step):
         
         all_maps = folium_maps + leaflet_maps + kepler_maps
         
-        click.echo(f"\n🗺️ Created {len(all_maps)} interactive maps:")
-        click.echo("   📁 Folium Maps:")
+        click.echo(f"\nCreated {len(all_maps)} interactive maps:")
+        click.echo("   Folium Maps:")
         for map_path in folium_maps:
             click.echo(f"      - {map_path}")
-        click.echo("   📁 Leaflet Maps:")
+        click.echo("   Leaflet Maps:")
         for map_path in leaflet_maps:
             click.echo(f"      - {map_path}")
-        click.echo("   📁 Kepler.gl Maps:")
+        click.echo("   Kepler.gl Maps:")
         for map_path in kepler_maps:
             click.echo(f"      - {map_path}")
         
@@ -249,7 +249,7 @@ def main(mode, step):
             processing_time = time.time() - start_time
             click.echo(f"Dashboard creation completed in {processing_time:.1f}s ({processing_time/60:.1f} min)")
         except Exception as e:
-            click.echo(f"❌ Error creating dashboard: {e}")
+            click.echo(f"Error creating dashboard: {e}")
             return
 
     if step == 'altair-dashboard' or mode == 'altair-dashboard':
@@ -273,7 +273,7 @@ def main(mode, step):
             processing_time = time.time() - start_time
             click.echo(f"Altair dashboard creation completed in {processing_time:.1f}s ({processing_time/60:.1f} min)")
         except Exception as e:
-            click.echo(f"❌ Error creating Altair dashboard: {e}")
+            click.echo(f"Error creating Altair dashboard: {e}")
             return
     
     # Final timing

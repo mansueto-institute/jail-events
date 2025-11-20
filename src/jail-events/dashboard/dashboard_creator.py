@@ -39,27 +39,27 @@ class IllinoisJailDashboard:
         
     def load_data(self) -> Tuple[pl.DataFrame, pl.DataFrame]:
         """Load linked data and geocoded database."""
-        print("📂 Loading data for dashboard...")
+        print("Loading data for dashboard...")
         
         # Load linked data
         if not self.linked_data_path.exists():
             raise FileNotFoundError(f"Linked data not found: {self.linked_data_path}")
         
         self.linked_data_df = pl.read_parquet(self.linked_data_path)
-        print(f"   📊 Loaded {len(self.linked_data_df)} linked records")
+        print(f"   Loaded {len(self.linked_data_df)} linked records")
         
         # Load geocoded database
         if not self.geocoded_db_path.exists():
             raise FileNotFoundError(f"Geocoded database not found: {self.geocoded_db_path}")
         
         self.geocoded_db_df = pl.read_parquet(self.geocoded_db_path)
-        print(f"   📍 Loaded {len(self.geocoded_db_df)} geocoded facilities")
+        print(f"   Loaded {len(self.geocoded_db_df)} geocoded facilities")
         
         return self.linked_data_df, self.geocoded_db_df
     
     def create_time_series_charts(self) -> List[str]:
         """Create time series visualization charts."""
-        print("📈 Creating time series charts...")
+        print("Creating time series charts...")
         
         if self.linked_data_df is None:
             raise ValueError("Data not loaded. Call load_data() first.")
@@ -140,12 +140,12 @@ class IllinoisJailDashboard:
         pyo.plot(fig_occurrence, filename=str(occurrence_file), auto_open=False)
         chart_files.append(str(occurrence_file))
         
-        print(f"   ✅ Created {len(chart_files)} time series charts")
+        print(f"   Created {len(chart_files)} time series charts")
         return chart_files
     
     def create_interactive_map(self) -> str:
         """Create an interactive map showing jail facilities and incidents."""
-        print("🗺️ Creating interactive map...")
+        print("Creating interactive map...")
         
         if self.linked_data_df is None or self.geocoded_db_df is None:
             raise ValueError("Data not loaded. Call load_data() first.")
@@ -157,7 +157,7 @@ class IllinoisJailDashboard:
         )
         
         if len(matched_records) == 0:
-            print("   ⚠️ No matched records with coordinates found")
+            print("   No matched records with coordinates found")
             return ""
         
         # Convert to pandas for easier processing
@@ -248,12 +248,12 @@ class IllinoisJailDashboard:
         map_file = self.output_dir / "illinois_jail_map.html"
         m.save(str(map_file))
         
-        print(f"   ✅ Interactive map created: {map_file}")
+        print(f"   Interactive map created: {map_file}")
         return str(map_file)
     
     def create_summary_dashboard(self) -> str:
         """Create a comprehensive summary dashboard."""
-        print("📊 Creating summary dashboard...")
+        print("Creating summary dashboard...")
         
         if self.linked_data_df is None:
             raise ValueError("Data not loaded. Call load_data() first.")
@@ -317,7 +317,7 @@ class IllinoisJailDashboard:
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🏛️ Illinois Jail Data Dashboard</h1>
+                    <h1>Illinois Jail Data Dashboard</h1>
                     <p>Comprehensive Analysis of Jail Incidents and Facilities</p>
                 </div>
                 
@@ -341,7 +341,7 @@ class IllinoisJailDashboard:
                 </div>
                 
                 <div class="section">
-                    <h2>📈 Top Facilities by Incident Count</h2>
+                    <h2>Top Facilities by Incident Count</h2>
                     <table>
                         <thead>
                             <tr>
@@ -370,7 +370,7 @@ class IllinoisJailDashboard:
                 </div>
                 
                 <div class="section">
-                    <h2>🏘️ Top Counties by Incident Count</h2>
+                    <h2>Top Counties by Incident Count</h2>
                     <table>
                         <thead>
                             <tr>
@@ -428,7 +428,7 @@ class IllinoisJailDashboard:
                 </div>
                 
                 <div class="section">
-                    <h2>⚠️ Injury and Death Statistics</h2>
+                    <h2>Injury and Death Statistics</h2>
                     <div class="stats-grid">
         """
         
@@ -472,7 +472,7 @@ class IllinoisJailDashboard:
         with open(dashboard_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-        print(f"   ✅ Summary dashboard created: {dashboard_file}")
+        print(f"   Summary dashboard created: {dashboard_file}")
         return str(dashboard_file)
     
     def create_comprehensive_dashboard(self) -> Dict[str, str]:
@@ -503,9 +503,9 @@ class IllinoisJailDashboard:
         index_file = self.create_dashboard_index(dashboard_files)
         dashboard_files['index'] = index_file
         
-        print(f"\n🎉 Dashboard created successfully!")
-        print(f"   📁 Output directory: {self.output_dir}")
-        print(f"   📊 Components created: {len(dashboard_files)}")
+        print(f"\nDashboard created successfully!")
+        print(f"   Output directory: {self.output_dir}")
+        print(f"   Components created: {len(dashboard_files)}")
         
         return dashboard_files
     
@@ -536,22 +536,22 @@ class IllinoisJailDashboard:
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🏛️ Illinois Jail Data Dashboard</h1>
+                    <h1>Illinois Jail Data Dashboard</h1>
                     <p>Comprehensive Analysis and Visualization of Jail Incidents</p>
                 </div>
                 
                 <div class="section">
-                    <h2>📊 Main Dashboard</h2>
+                    <h2>Main Dashboard</h2>
                     <div class="link-grid">
                         <div class="link-card">
                             <a href="summary_dashboard.html">
-                                <h3>📈 Summary Dashboard</h3>
+                                <h3>Summary Dashboard</h3>
                                 <p>Overview statistics, top facilities, counties, and occurrence types</p>
                             </a>
                         </div>
                         <div class="link-card">
                             <a href="illinois_jail_map.html">
-                                <h3>🗺️ Interactive Map</h3>
+                                <h3>Interactive Map</h3>
                                 <p>Geographic visualization of facilities and incidents</p>
                             </a>
                         </div>
@@ -559,15 +559,15 @@ class IllinoisJailDashboard:
                 </div>
                 
                 <div class="section">
-                    <h2>📈 Time Series Analysis</h2>
+                    <h2>Time Series Analysis</h2>
                     <div class="link-grid">
         """
         
         chart_names = {
             'yearly_trends.html': '📅 Yearly Trends',
             'monthly_patterns.html': '📆 Monthly Patterns',
-            'facility_distribution.html': '🏛️ Facility Distribution',
-            'county_distribution.html': '🏘️ County Distribution',
+            'facility_distribution.html': 'Facility Distribution',
+            'county_distribution.html': 'County Distribution',
             'occurrence_types.html': '📋 Occurrence Types'
         }
         
@@ -600,7 +600,7 @@ class IllinoisJailDashboard:
         with open(index_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-        print(f"   ✅ Index page created: {index_file}")
+        print(f"   Index page created: {index_file}")
         return str(index_file)
 
 def create_illinois_jail_dashboard():
@@ -614,12 +614,12 @@ def create_illinois_jail_dashboard():
     # Create comprehensive dashboard
     dashboard_files = dashboard.create_comprehensive_dashboard()
     
-    print(f"\n🎉 Dashboard creation completed!")
-    print(f"   📁 All files saved to: {dashboard.output_dir}")
-    print(f"   🌐 Open index.html in your browser to view the dashboard")
+    print(f"\nDashboard creation completed!")
+    print(f"   All files saved to: {dashboard.output_dir}")
+    print(f"   Open index.html in your browser to view the dashboard")
     
     return dashboard, dashboard_files
 
 if __name__ == "__main__":
     dashboard, files = create_illinois_jail_dashboard()
-    print("\n🎉 Dashboard creation completed successfully!")
+    print("\nDashboard creation completed successfully!")

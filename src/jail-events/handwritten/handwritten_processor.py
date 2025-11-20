@@ -194,7 +194,7 @@ def process_handwritten_only(input_parquet: Path,
     
     # Check if output already exists
     if output_parquet.exists() and output_excel.exists():
-        print("✅ Handwritten processing already completed!")
+        print("Handwritten processing already completed!")
         print(f"   - Parquet: {output_parquet}")
         print(f"   - Excel: {output_excel}")
         return
@@ -250,7 +250,7 @@ def process_handwritten_only(input_parquet: Path,
     print(f"Creating Excel file with links: {output_excel}")
     create_handwritten_excel(df_to_clean.df, output_excel, base_url)
     
-    print("✅ Handwritten processing completed!")
+    print("Handwritten processing completed!")
     print(f"   - Processed {len(df_to_clean.df)} handwritten documents")
     print(f"   - Parquet saved to: {output_parquet}")
     print(f"   - Excel saved to: {output_excel}")

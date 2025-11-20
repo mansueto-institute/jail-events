@@ -35,13 +35,13 @@ class IllinoisJailKeplerMap:
         Returns:
             Path to the created HTML file
         """
-        print(f"🗺️ Creating Kepler.gl interactive map: {map_type}")
+        print(f"Creating Kepler.gl interactive map: {map_type}")
         
         # Load data
         data = self._load_data(map_type)
         
         if data.empty:
-            print("❌ No data to map!")
+            print("No data to map!")
             return None
         
         # Create Kepler.gl HTML
@@ -52,7 +52,7 @@ class IllinoisJailKeplerMap:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-        print(f"✅ Kepler.gl map created: {output_path}")
+        print(f"Kepler.gl map created: {output_path}")
         return str(output_path)
     
     def _load_data(self, map_type: str) -> pd.DataFrame:
@@ -60,7 +60,7 @@ class IllinoisJailKeplerMap:
         db_path = self.data_dir / "unified_illinois_jails.parquet"
         
         if not db_path.exists():
-            print(f"❌ Database not found: {db_path}")
+            print(f"Database not found: {db_path}")
             return pd.DataFrame()
         
         # Load data
@@ -79,7 +79,7 @@ class IllinoisJailKeplerMap:
         # Convert to pandas for Kepler.gl
         pandas_df = df.to_pandas()
         
-        print(f"📊 Loaded {len(pandas_df)} records for {map_type} map")
+        print(f"Loaded {len(pandas_df)} records for {map_type} map")
         return pandas_df
     
     def _create_kepler_html(self, data: pd.DataFrame, map_type: str) -> str:
@@ -452,14 +452,14 @@ class IllinoisJailKeplerMap:
         """Open map in default browser."""
         try:
             webbrowser.open(f"file://{os.path.abspath(map_path)}")
-            print(f"🌐 Opened Kepler.gl map in browser: {map_path}")
+            print(f"Opened Kepler.gl map in browser: {map_path}")
         except Exception as e:
-            print(f"❌ Could not open browser: {e}")
-            print(f"📁 Open manually: {map_path}")
+            print(f"Could not open browser: {e}")
+            print(f"Open manually: {map_path}")
 
 def create_illinois_jail_kepler_maps():
     """Main function to create Illinois jail Kepler.gl maps."""
-    print("🗺️ Creating Illinois Jail Interactive Maps with Kepler.gl")
+    print("Creating Illinois Jail Interactive Maps with Kepler.gl")
     print("=" * 60)
     
     # Create map creator
@@ -468,9 +468,9 @@ def create_illinois_jail_kepler_maps():
     # Create all map types
     created_maps = map_creator.create_multiple_maps()
     
-    print(f"\n✅ Created {len(created_maps)} Kepler.gl interactive maps:")
+    print(f"\nCreated {len(created_maps)} Kepler.gl interactive maps:")
     for map_path in created_maps:
-        print(f"   📁 {map_path}")
+        print(f"   {map_path}")
     
     # Open the main map
     if created_maps:
@@ -480,5 +480,5 @@ def create_illinois_jail_kepler_maps():
 
 if __name__ == "__main__":
     maps = create_illinois_jail_kepler_maps()
-    print("\n🎉 Kepler.gl interactive maps created successfully!")
-    print("💡 Note: You'll need a Mapbox API token for full functionality.")
+    print("\nKepler.gl interactive maps created successfully!")
+    print("Note: You'll need a Mapbox API token for full functionality.")

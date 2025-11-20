@@ -56,29 +56,29 @@ class IllinoisJailDatabaseBuilder:
         all_jails = []
         
         # Step 1: Add known major jails
-        print("📋 Step 1: Adding known major Illinois jails...")
+        print("Step 1: Adding known major Illinois jails...")
         known_jails = self._get_known_major_jails()
         all_jails.extend(known_jails)
         print(f"   Added {len(known_jails)} known major jails")
         
         # Step 2: Add county jails (one per county)
-        print("📋 Step 2: Adding county jails...")
+        print("Step 2: Adding county jails...")
         county_jails = self._get_county_jails()
         all_jails.extend(county_jails)
         print(f"   Added {len(county_jails)} county jails")
         
         # Step 3: Add municipal jails
-        print("📋 Step 3: Adding municipal jails...")
+        print("Step 3: Adding municipal jails...")
         municipal_jails = self._get_municipal_jails()
         all_jails.extend(municipal_jails)
         print(f"   Added {len(municipal_jails)} municipal jails")
         
         # Step 4: Geocode all addresses
-        print("🌍 Step 4: Geocoding all addresses...")
+        print("Step 4: Geocoding all addresses...")
         geocoded_jails = self._geocode_jails(all_jails)
         
         # Step 5: Create final database
-        print("💾 Step 5: Creating final database...")
+        print("Step 5: Creating final database...")
         df = pl.DataFrame(geocoded_jails)
         
         # Save to cache
@@ -297,7 +297,7 @@ class IllinoisJailDatabaseBuilder:
                     'geocoded_method': result['source'],
                     'geocoded_formatted_address': result['formatted_address']
                 })
-                print(f"     ✅ {result['latitude']:.4f}, {result['longitude']:.4f}")
+                print(f"      {result['latitude']:.4f}, {result['longitude']:.4f}")
             else:
                 jail.update({
                     'latitude': None,
@@ -305,7 +305,7 @@ class IllinoisJailDatabaseBuilder:
                     'geocoded_confidence': 0.0,
                     'geocoded_method': 'failed'
                 })
-                print(f"     ❌ Failed to geocode")
+                print(f"     Failed Failed to geocode")
             
             geocoded_jails.append(jail)
             time.sleep(1.1)  # Rate limiting
@@ -319,7 +319,7 @@ class IllinoisJailDatabaseBuilder:
         county_jails = len(df.filter(pl.col('facility_type') == 'county'))
         municipal_jails = len(df.filter(pl.col('facility_type') == 'municipal'))
         
-        print(f"\n📊 Database Statistics:")
+        print(f"\nDatabase Statistics:")
         print(f"   Total Jails: {total}")
         print(f"   Successfully Geocoded: {geocoded} ({geocoded/total*100:.1f}%)")
         print(f"   County Jails: {county_jails}")
@@ -343,7 +343,7 @@ class IllinoisJailDatabaseBuilder:
         Returns:
             Matched data with coordinates
         """
-        print("🔗 Matching with existing data...")
+        print("Matching with existing data...")
         
         matched_data = []
         
@@ -374,7 +374,7 @@ class IllinoisJailDatabaseBuilder:
                     'match_confidence': best_match['match_confidence'],
                     'match_method': best_match['match_method']
                 })
-                print(f"   ✅ Matched: {facility_name} -> {best_match['name']}")
+                print(f"   Matched: {facility_name} -> {best_match['name']}")
             else:
                 row.update({
                     'illinois_jail_id': None,
@@ -383,7 +383,7 @@ class IllinoisJailDatabaseBuilder:
                     'match_confidence': 0.0,
                     'match_method': 'no_match'
                 })
-                print(f"   ❌ No match: {facility_name}")
+                print(f"   No match: {facility_name}")
             
             matched_data.append(row)
         
@@ -424,4 +424,4 @@ def build_illinois_jail_database():
 if __name__ == "__main__":
     # Build the database
     illinois_db = build_illinois_jail_database()
-    print(f"\n🎉 Illinois jail database built with {len(illinois_db)} facilities!")
+    print(f"\nIllinois jail database built with {len(illinois_db)} facilities!")

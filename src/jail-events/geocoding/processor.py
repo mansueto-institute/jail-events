@@ -32,7 +32,7 @@ class JailAddressProcessor:
         Returns:
             DataFrame with geocoding results
         """
-        print("🔍 Processing jail addresses for geocoding...")
+        print("Processing jail addresses for geocoding...")
         
         # Step 1: Clean addresses
         print("  - Cleaning addresses...")
@@ -62,7 +62,7 @@ class JailAddressProcessor:
         print("  - Building Illinois jail database...")
         df_final = self.geocoder.build_illinois_jail_database(df_geocoded)
         
-        print("✅ Address processing completed!")
+        print("Address processing completed!")
         return df_final
     
     def _add_distance_calculations(self, df: pl.DataFrame) -> pl.DataFrame:
@@ -93,7 +93,7 @@ class JailAddressProcessor:
     
     def export_geocoded_data(self, df: pl.DataFrame, output_path: Path) -> None:
         """Export geocoded data to a file."""
-        print(f"💾 Exporting geocoded data to: {output_path}")
+        print(f"Exporting geocoded data to: {output_path}")
         
         # Create output directory if it doesn't exist
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -105,7 +105,7 @@ class JailAddressProcessor:
         summary_path = output_path.parent / f"{output_path.stem}_summary.txt"
         self._create_summary_report(df, summary_path)
         
-        print(f"✅ Data exported successfully!")
+        print(f"Data exported successfully!")
         print(f"   - Main file: {output_path}")
         print(f"   - Summary: {summary_path}")
     

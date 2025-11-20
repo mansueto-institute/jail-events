@@ -52,13 +52,13 @@ class IllinoisJailLeafletMap:
         Returns:
             Path to the created HTML file
         """
-        print(f"🗺️ Creating Leaflet interactive map: {map_type}")
+        print(f"Creating Leaflet interactive map: {map_type}")
         
         # Load data
         data = self._load_data(map_type)
         
         if data.empty:
-            print("❌ No data to map!")
+            print("No data to map!")
             return None
         
         # Create Leaflet HTML
@@ -69,7 +69,7 @@ class IllinoisJailLeafletMap:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-        print(f"✅ Leaflet map created: {output_path}")
+        print(f"Leaflet map created: {output_path}")
         return str(output_path)
     
     def _load_data(self, map_type: str) -> pd.DataFrame:
@@ -77,7 +77,7 @@ class IllinoisJailLeafletMap:
         db_path = self.data_dir / "unified_illinois_jails.parquet"
         
         if not db_path.exists():
-            print(f"❌ Database not found: {db_path}")
+            print(f"Database not found: {db_path}")
             return pd.DataFrame()
         
         # Load data
@@ -96,7 +96,7 @@ class IllinoisJailLeafletMap:
         # Convert to pandas for Leaflet
         pandas_df = df.to_pandas()
         
-        print(f"📊 Loaded {len(pandas_df)} records for {map_type} map")
+        print(f"Loaded {len(pandas_df)} records for {map_type} map")
         return pandas_df
     
     def _create_leaflet_html(self, data: pd.DataFrame, map_type: str) -> str:
@@ -106,7 +106,7 @@ class IllinoisJailLeafletMap:
         geocoded_data = data[data['latitude'].notna() & data['longitude'].notna()].copy()
         
         if geocoded_data.empty:
-            print("❌ No geocoded data to map!")
+            print("No geocoded data to map!")
             return self._create_empty_map_html(map_type)
         
         # Calculate center point
@@ -484,14 +484,14 @@ class IllinoisJailLeafletMap:
         """Open map in default browser."""
         try:
             webbrowser.open(f"file://{os.path.abspath(map_path)}")
-            print(f"🌐 Opened Leaflet map in browser: {map_path}")
+            print(f"Opened Leaflet map in browser: {map_path}")
         except Exception as e:
-            print(f"❌ Could not open browser: {e}")
-            print(f"📁 Open manually: {map_path}")
+            print(f"Could not open browser: {e}")
+            print(f"Open manually: {map_path}")
 
 def create_illinois_jail_leaflet_maps():
     """Main function to create Illinois jail Leaflet maps."""
-    print("🗺️ Creating Illinois Jail Interactive Maps with Leaflet")
+    print("Creating Illinois Jail Interactive Maps with Leaflet")
     print("=" * 60)
     
     # Create map creator
@@ -500,9 +500,9 @@ def create_illinois_jail_leaflet_maps():
     # Create all map types
     created_maps = map_creator.create_multiple_maps()
     
-    print(f"\n✅ Created {len(created_maps)} Leaflet interactive maps:")
+    print(f"\nCreated {len(created_maps)} Leaflet interactive maps:")
     for map_path in created_maps:
-        print(f"   📁 {map_path}")
+        print(f"   {map_path}")
     
     # Open the main map
     if created_maps:
@@ -512,5 +512,5 @@ def create_illinois_jail_leaflet_maps():
 
 if __name__ == "__main__":
     maps = create_illinois_jail_leaflet_maps()
-    print("\n🎉 Leaflet interactive maps created successfully!")
-    print("💡 Maps work without any API keys!")
+    print("\nLeaflet interactive maps created successfully!")
+    print("Maps work without any API keys!")

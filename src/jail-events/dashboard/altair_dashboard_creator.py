@@ -40,14 +40,14 @@ class IllinoisJailAltairDashboard:
         
     def load_data(self) -> Tuple[pl.DataFrame, pl.DataFrame]:
         """Load cleaned data and geocoded database."""
-        print("📂 Loading data for Altair dashboard...")
+        print("Loading data for Altair dashboard...")
         
         # Load cleaned data
         if not self.cleaned_data_path.exists():
             raise FileNotFoundError(f"Cleaned data not found: {self.cleaned_data_path}")
         
         self.cleaned_data_df = pl.read_parquet(self.cleaned_data_path)
-        print(f"   📊 Loaded {len(self.cleaned_data_df)} cleaned records")
+        print(f"   Loaded {len(self.cleaned_data_df)} cleaned records")
         
         # Apply the same facility name cleaning as in the presentation
         self.cleaned_data_df = self.cleaned_data_df.with_columns(
@@ -78,13 +78,13 @@ class IllinoisJailAltairDashboard:
             raise FileNotFoundError(f"Geocoded database not found: {self.geocoded_db_path}")
         
         self.geocoded_db_df = pl.read_parquet(self.geocoded_db_path)
-        print(f"   📍 Loaded {len(self.geocoded_db_df)} geocoded facilities")
+        print(f"   Loaded {len(self.geocoded_db_df)} geocoded facilities")
         
         return self.cleaned_data_df, self.geocoded_db_df
     
     def create_occurrence_analysis_charts(self) -> List[str]:
         """Create occurrence analysis charts matching the presentation style."""
-        print("📊 Creating occurrence analysis charts...")
+        print("Creating occurrence analysis charts...")
         
         if self.cleaned_data_df is None:
             raise ValueError("Data not loaded. Call load_data() first.")
@@ -291,12 +291,12 @@ class IllinoisJailAltairDashboard:
         final_restraints_chart.save(str(restraints_file))
         chart_files.append(str(restraints_file))
         
-        print(f"   ✅ Created {len(chart_files)} occurrence analysis charts")
+        print(f"   Created {len(chart_files)} occurrence analysis charts")
         return chart_files
     
     def create_facility_coverage_charts(self) -> List[str]:
         """Create facility coverage analysis charts."""
-        print("📈 Creating facility coverage charts...")
+        print("Creating facility coverage charts...")
         
         if self.cleaned_data_df is None:
             raise ValueError("Data not loaded. Call load_data() first.")
@@ -394,12 +394,12 @@ class IllinoisJailAltairDashboard:
         heatmap_chart.save(str(heatmap_file))
         chart_files.append(str(heatmap_file))
         
-        print(f"   ✅ Created {len(chart_files)} facility coverage charts")
+        print(f"   Created {len(chart_files)} facility coverage charts")
         return chart_files
     
     def create_interactive_map(self) -> str:
         """Create an interactive map showing jail facilities and incidents."""
-        print("🗺️ Creating interactive map...")
+        print("Creating interactive map...")
         
         if self.cleaned_data_df is None or self.geocoded_db_df is None:
             raise ValueError("Data not loaded. Call load_data() first.")
@@ -410,7 +410,7 @@ class IllinoisJailAltairDashboard:
         )
         
         if len(matched_records) == 0:
-            print("   ⚠️ No records with facility names found")
+            print("   No records with facility names found")
             return ""
         
         # Convert to pandas for easier processing
@@ -508,12 +508,12 @@ class IllinoisJailAltairDashboard:
         map_file = self.output_dir / "illinois_jail_map.html"
         m.save(str(map_file))
         
-        print(f"   ✅ Interactive map created: {map_file}")
+        print(f"   Interactive map created: {map_file}")
         return str(map_file)
     
     def create_summary_dashboard(self) -> str:
         """Create a comprehensive summary dashboard."""
-        print("📊 Creating summary dashboard...")
+        print("Creating summary dashboard...")
         
         if self.cleaned_data_df is None:
             raise ValueError("Data not loaded. Call load_data() first.")
@@ -569,7 +569,7 @@ class IllinoisJailAltairDashboard:
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🏛️ Illinois Jail Data Dashboard</h1>
+                    <h1>Illinois Jail Data Dashboard</h1>
                     <p>Comprehensive Analysis of Jail Incidents and Facilities (Altair Style)</p>
                 </div>
                 
@@ -593,7 +593,7 @@ class IllinoisJailAltairDashboard:
                 </div>
                 
                 <div class="section">
-                    <h2>📈 Top Facilities by Incident Count</h2>
+                    <h2>Top Facilities by Incident Count</h2>
                     <table>
                         <thead>
                             <tr>
@@ -664,7 +664,7 @@ class IllinoisJailAltairDashboard:
         with open(dashboard_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-        print(f"   ✅ Summary dashboard created: {dashboard_file}")
+        print(f"   Summary dashboard created: {dashboard_file}")
         return str(dashboard_file)
     
     def create_dashboard_index(self, chart_files: List[str], map_file: str, summary_file: str) -> str:
@@ -694,22 +694,22 @@ class IllinoisJailAltairDashboard:
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🏛️ Illinois Jail Data Dashboard</h1>
+                    <h1>Illinois Jail Data Dashboard</h1>
                     <p>Comprehensive Analysis and Visualization of Jail Incidents (Altair Style)</p>
                 </div>
                 
                 <div class="section">
-                    <h2>📊 Main Dashboard</h2>
+                    <h2>Main Dashboard</h2>
                     <div class="link-grid">
                         <div class="link-card">
                             <a href="summary_dashboard.html">
-                                <h3>📈 Summary Dashboard</h3>
+                                <h3>Summary Dashboard</h3>
                                 <p>Overview statistics, top facilities, and occurrence types</p>
                             </a>
                         </div>
                         <div class="link-card">
                             <a href="illinois_jail_map.html">
-                                <h3>🗺️ Interactive Map</h3>
+                                <h3>Interactive Map</h3>
                                 <p>Geographic visualization of facilities and incidents</p>
                             </a>
                         </div>
@@ -717,16 +717,16 @@ class IllinoisJailAltairDashboard:
                 </div>
                 
                 <div class="section">
-                    <h2>📈 Analysis Charts (Vega-Altair)</h2>
+                    <h2>Analysis Charts (Vega-Altair)</h2>
                     <div class="link-grid">
         """
         
         chart_names = {
             'occurrence_analysis.html': '📋 Occurrence Analysis',
-            'top_facilities.html': '🏛️ Top Facilities',
+            'top_facilities.html': 'Top Facilities',
             'time_series.html': '📅 Time Series',
-            'restraints_usage.html': '🔗 Restraint Usage',
-            'facility_coverage.html': '📊 Facility Coverage',
+            'restraints_usage.html': 'Restraint Usage',
+            'facility_coverage.html': 'Facility Coverage',
             'facility_heatmap.html': '🔥 Facility Heatmap'
         }
         
@@ -759,7 +759,7 @@ class IllinoisJailAltairDashboard:
         with open(index_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
-        print(f"   ✅ Index page created: {index_file}")
+        print(f"   Index page created: {index_file}")
         return str(index_file)
     
     def create_comprehensive_dashboard(self) -> Dict[str, str]:
@@ -795,9 +795,9 @@ class IllinoisJailAltairDashboard:
         index_file = self.create_dashboard_index(all_charts, map_file, summary_file)
         dashboard_files['index'] = index_file
         
-        print(f"\n🎉 Dashboard created successfully!")
-        print(f"   📁 Output directory: {self.output_dir}")
-        print(f"   📊 Components created: {len(dashboard_files)}")
+        print(f"\nDashboard created successfully!")
+        print(f"   Output directory: {self.output_dir}")
+        print(f"   Components created: {len(dashboard_files)}")
         
         return dashboard_files
 
@@ -812,12 +812,12 @@ def create_illinois_jail_altair_dashboard():
     # Create comprehensive dashboard
     dashboard_files = dashboard.create_comprehensive_dashboard()
     
-    print(f"\n🎉 Dashboard creation completed!")
-    print(f"   📁 All files saved to: {dashboard.output_dir}")
-    print(f"   🌐 Open index.html in your browser to view the dashboard")
+    print(f"\nDashboard creation completed!")
+    print(f"   All files saved to: {dashboard.output_dir}")
+    print(f"   Open index.html in your browser to view the dashboard")
     
     return dashboard, dashboard_files
 
 if __name__ == "__main__":
     dashboard, files = create_illinois_jail_altair_dashboard()
-    print("\n🎉 Dashboard creation completed successfully!")
+    print("\nDashboard creation completed successfully!")

@@ -52,13 +52,13 @@ class IllinoisJailFoliumMap:
         Returns:
             Path to the created HTML file
         """
-        print(f"🗺️ Creating interactive map: {map_type}")
+        print(f"Creating interactive map: {map_type}")
         
         # Load data
         data = self._load_data(map_type)
         
         if data.empty:
-            print("❌ No data to map!")
+            print("No data to map!")
             return None
         
         # Create map
@@ -68,7 +68,7 @@ class IllinoisJailFoliumMap:
         output_path = self.data_dir / output_file
         map_obj.save(str(output_path))
         
-        print(f"✅ Interactive map created: {output_path}")
+        print(f"Interactive map created: {output_path}")
         return str(output_path)
     
     def _load_data(self, map_type: str) -> pd.DataFrame:
@@ -76,7 +76,7 @@ class IllinoisJailFoliumMap:
         db_path = self.data_dir / "unified_illinois_jails.parquet"
         
         if not db_path.exists():
-            print(f"❌ Database not found: {db_path}")
+            print(f"Database not found: {db_path}")
             return pd.DataFrame()
         
         # Load data
@@ -95,7 +95,7 @@ class IllinoisJailFoliumMap:
         # Convert to pandas for Folium
         pandas_df = df.to_pandas()
         
-        print(f"📊 Loaded {len(pandas_df)} records for {map_type} map")
+        print(f"Loaded {len(pandas_df)} records for {map_type} map")
         return pandas_df
     
     def _create_folium_map(self, data: pd.DataFrame, map_type: str) -> folium.Map:
@@ -105,7 +105,7 @@ class IllinoisJailFoliumMap:
         geocoded_data = data[data['latitude'].notna() & data['longitude'].notna()].copy()
         
         if geocoded_data.empty:
-            print("❌ No geocoded data to map!")
+            print("No geocoded data to map!")
             return folium.Map(location=[40.0, -89.0], zoom_start=6)
         
         # Calculate center point
@@ -273,14 +273,14 @@ class IllinoisJailFoliumMap:
         """Open map in default browser."""
         try:
             webbrowser.open(f"file://{os.path.abspath(map_path)}")
-            print(f"🌐 Opened map in browser: {map_path}")
+            print(f"Opened map in browser: {map_path}")
         except Exception as e:
-            print(f"❌ Could not open browser: {e}")
-            print(f"📁 Open manually: {map_path}")
+            print(f"Could not open browser: {e}")
+            print(f"Open manually: {map_path}")
 
 def create_illinois_jail_maps():
     """Main function to create Illinois jail maps."""
-    print("🗺️ Creating Illinois Jail Interactive Maps with Folium")
+    print("Creating Illinois Jail Interactive Maps with Folium")
     print("=" * 60)
     
     # Create map creator
@@ -289,9 +289,9 @@ def create_illinois_jail_maps():
     # Create all map types
     created_maps = map_creator.create_multiple_maps()
     
-    print(f"\n✅ Created {len(created_maps)} interactive maps:")
+    print(f"\nCreated {len(created_maps)} interactive maps:")
     for map_path in created_maps:
-        print(f"   📁 {map_path}")
+        print(f"   {map_path}")
     
     # Open the main map
     if created_maps:
@@ -301,5 +301,5 @@ def create_illinois_jail_maps():
 
 if __name__ == "__main__":
     maps = create_illinois_jail_maps()
-    print("\n🎉 Interactive maps created successfully!")
-    print("💡 Maps are ready to use - no API keys required!")
+    print("\nInteractive maps created successfully!")
+    print("Maps are ready to use - no API keys required!")

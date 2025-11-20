@@ -26,7 +26,7 @@ class JailTimeSeriesAnalyzer:
             raise FileNotFoundError(f"Linked data not found: {self.linked_data_path}")
         
         self.linked_data_df = pl.read_parquet(self.linked_data_path)
-        print(f"📊 Loaded {len(self.linked_data_df)} linked records")
+        print(f"Loaded {len(self.linked_data_df)} linked records")
         
         return self.linked_data_df
     
@@ -106,7 +106,7 @@ class JailTimeSeriesAnalyzer:
         if self.time_series_data is None:
             raise ValueError("Time series data not prepared. Call extract_time_components() first.")
         
-        print("📈 Analyzing occurrence patterns over time...")
+        print("Analyzing occurrence patterns over time...")
         
         # Count occurrences by year
         yearly_counts = self.time_series_data.group_by("year").len().sort("year")
@@ -238,7 +238,7 @@ class JailTimeSeriesAnalyzer:
 
 def analyze_jail_time_series():
     """Main function to analyze jail time series data."""
-    print("📈 Illinois Jail Time Series Analysis")
+    print("Illinois Jail Time Series Analysis")
     print("=" * 45)
     
     # Initialize analyzer
@@ -254,7 +254,7 @@ def analyze_jail_time_series():
     summary = analyzer.get_time_series_summary()
     
     # Print key findings
-    print(f"\n📊 Key Findings:")
+    print(f"\nKey Findings:")
     print(f"   Total Records: {summary['summary_stats']['total_records']:,}")
     print(f"   Unique Facilities: {summary['summary_stats']['unique_facilities']}")
     print(f"   Unique Counties: {summary['summary_stats']['unique_counties']}")
@@ -265,12 +265,12 @@ def analyze_jail_time_series():
     for item in summary['time_analysis']['yearly_counts'][:5]:
         print(f"   {item['year']}: {item['len']:,} records")
     
-    print(f"\n🏛️ Top Facility Types:")
+    print(f"\nTop Facility Types:")
     for item in summary['occurrence_analysis']['facility_type_counts'][:5]:
         if item['matched_facility_type']:
             print(f"   {item['matched_facility_type']}: {item['len']:,} records")
     
-    print(f"\n🏘️ Top Counties:")
+    print(f"\nTop Counties:")
     for item in summary['occurrence_analysis']['county_counts'][:5]:
         if item['matched_county']:
             print(f"   {item['matched_county']}: {item['len']:,} records")
@@ -279,4 +279,4 @@ def analyze_jail_time_series():
 
 if __name__ == "__main__":
     analyzer, summary = analyze_jail_time_series()
-    print("\n🎉 Time series analysis completed successfully!")
+    print("\nTime series analysis completed successfully!")

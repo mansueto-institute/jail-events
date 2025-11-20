@@ -35,21 +35,21 @@ class JailDataLinker:
         
     def load_data(self) -> Tuple[pl.DataFrame, pl.DataFrame]:
         """Load both jail records and geocoded database."""
-        print("📂 Loading jail records and geocoded database...")
+        print("Loading jail records and geocoded database...")
         
         # Load jail records
         if not self.jail_records_path.exists():
             raise FileNotFoundError(f"Jail records not found: {self.jail_records_path}")
         
         self.jail_records_df = pl.read_parquet(self.jail_records_path)
-        print(f"   📊 Loaded {len(self.jail_records_df)} jail records")
+        print(f"   Loaded {len(self.jail_records_df)} jail records")
         
         # Load geocoded database
         if not self.geocoded_db_path.exists():
             raise FileNotFoundError(f"Geocoded database not found: {self.geocoded_db_path}")
         
         self.geocoded_db_df = pl.read_parquet(self.geocoded_db_path)
-        print(f"   📍 Loaded {len(self.geocoded_db_df)} geocoded facilities")
+        print(f"   Loaded {len(self.geocoded_db_df)} geocoded facilities")
         
         return self.jail_records_df, self.geocoded_db_df
     
@@ -109,7 +109,7 @@ class JailDataLinker:
         if self.jail_records_df is None or self.geocoded_db_df is None:
             raise ValueError("Data not loaded. Call load_data() first.")
         
-        print("🔗 Matching jail records to geocoded facilities...")
+        print("Matching jail records to geocoded facilities...")
         
         # Prepare geocoded database for matching
         geocoded_clean = self.geocoded_db_df.with_columns([
@@ -176,7 +176,7 @@ class JailDataLinker:
                     "match_confidence": best_score,
                     "match_method": "fuzzy_match"
                 })
-                print(f"   ✅ Matched: {jail_facility} -> {best_match} (score: {best_score:.3f})")
+                print(f"   Matched: {jail_facility} -> {best_match} (score: {best_score:.3f})")
             else:
                 # No match found
                 matched_record.update({
@@ -188,7 +188,7 @@ class JailDataLinker:
                     "match_confidence": 0.0,
                     "match_method": "no_match"
                 })
-                print(f"   ❌ No match: {jail_facility} (best score: {best_score:.3f})")
+                print(f"   No match: {jail_facility} (best score: {best_score:.3f})")
             
             matched_records.append(matched_record)
         
@@ -198,7 +198,7 @@ class JailDataLinker:
         matched_count = len(self.linked_data_df.filter(pl.col("match_confidence") > 0))
         match_rate = matched_count / total_records * 100
         
-        print(f"\n📊 Matching Results:")
+        print(f"\nMatching Results:")
         print(f"   Total Records: {total_records}")
         print(f"   Successfully Matched: {matched_count}")
         print(f"   Match Rate: {match_rate:.1f}%")
@@ -249,13 +249,13 @@ class JailDataLinker:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         
         self.linked_data_df.write_parquet(output_path)
-        print(f"💾 Linked data exported to: {output_path}")
+        print(f"Linked data exported to: {output_path}")
         
         return str(output_path)
 
 def link_jail_data():
     """Main function to link jail data with geocoded facilities."""
-    print("🔗 Illinois Jail Data Linking")
+    print("Illinois Jail Data Linking")
     print("=" * 40)
     
     # Initialize linker
@@ -270,16 +270,16 @@ def link_jail_data():
     # Get statistics
     stats = linker.get_matching_statistics()
     
-    print(f"\n📈 Detailed Statistics:")
+    print(f"\nDetailed Statistics:")
     print(f"   High Confidence (≥0.9): {stats['high_confidence_matches']}")
     print(f"   Medium Confidence (0.7-0.9): {stats['medium_confidence_matches']}")
     print(f"   Low Confidence (<0.7): {stats['low_confidence_matches']}")
     
-    print(f"\n🏛️ Top Matched Facility Types:")
+    print(f"\nTop Matched Facility Types:")
     for item in stats['facility_type_matches'][:5]:
         print(f"   {item['matched_facility_type']}: {item['len']}")
     
-    print(f"\n🏘️ Top Matched Counties:")
+    print(f"\nTop Matched Counties:")
     for item in stats['county_matches'][:5]:
         if item['matched_county']:
             print(f"   {item['matched_county']}: {item['len']}")
@@ -291,4 +291,4 @@ def link_jail_data():
 
 if __name__ == "__main__":
     linker, linked_data, stats = link_jail_data()
-    print("\n🎉 Data linking completed successfully!")
+    print("\nData linking completed successfully!")
